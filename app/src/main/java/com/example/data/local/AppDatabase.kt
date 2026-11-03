@@ -7,17 +7,20 @@ import androidx.room.RoomDatabase
 import com.example.data.local.dao.BoxDao
 import com.example.data.local.dao.CategoryDao
 import com.example.data.local.dao.ItemDao
+import com.example.data.local.dao.SearchHistoryDao
 import com.example.data.local.entity.BoxEntity
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
+import com.example.data.local.entity.SearchHistoryEntity
 
 @Database(
     entities = [
         BoxEntity::class,
         ItemEntity::class,
-        CategoryEntity::class
+        CategoryEntity::class,
+        SearchHistoryEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -25,6 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun boxDao(): BoxDao
     abstract fun itemDao(): ItemDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun searchHistoryDao(): SearchHistoryDao
 
     companion object {
         @Volatile

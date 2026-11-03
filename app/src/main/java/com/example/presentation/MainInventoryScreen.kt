@@ -7,6 +7,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -90,6 +92,7 @@ import com.example.presentation.components.EditBoxDialog
 import com.example.presentation.components.EditItemDialog
 import com.example.presentation.components.ItemCard
 import com.example.presentation.components.ItemGridCard
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import com.example.presentation.components.LoanDialog
 import com.example.presentation.components.LoansSheet
 import com.example.presentation.components.MoveBoxDialog
@@ -98,7 +101,7 @@ import com.example.presentation.components.SearchScreen
 import com.example.presentation.components.StatsDashboardDialog
 import com.example.presentation.components.parseColorSafe
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MainInventoryScreen(
     viewModel: InventoryViewModel = viewModel()
@@ -163,93 +166,110 @@ fun MainInventoryScreen(
                 Surface(
                     color = MaterialTheme.colorScheme.surface,
                     tonalElevation = 2.dp,
-                    shadowElevation = 1.dp,
-                    modifier = Modifier.fillMaxWidth()
+                    shadowElevation = 3.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("header_container")
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .statusBarsPadding()
                     ) {
-                        // Fila principal: Navegación/Logo, Título flexible y Acciones rápidas (Búsqueda y Vista)
-                        Row(
+                        // Fila principal: cabecera con flex-wrap: wrap y min-widths
+                        FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            if (currentBoxId != null) {
-                                IconButton(
-                                    onClick = { viewModel.navigateBack() },
-                                    modifier = Modifier.testTag("nav_back_button")
+                            // Elemento hijo: Bloque de identidad y título (flex-shrink: 0, min-width para evitar desbordes)
+                            Row(
+                                modifier = Modifier
+                                    .widthIn(min = 190.dp)
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (currentBoxId != null) {
+                                    IconButton(
+                                        onClick = { viewModel.navigateBack() },
+                                        modifier = Modifier.testTag("nav_back_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "Atrás",
+                                            tint = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                } else {
+                                    Image(
+                                        painter = painterResource(com.example.R.drawable.cajas_app_logo_1793724857669),
+                                        contentDescription = "Logo Inventario",
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                }
+
+                                Column(
+                                    modifier = Modifier.padding(end = 8.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Atrás",
-                                        tint = MaterialTheme.colorScheme.onSurface
+                                    Text(
+                                        text = currentBox?.name ?: "Inventario de Cajas",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = if (currentBoxId == null) {
+                                            "$totalBoxesCount cajas · $totalItemsCount objetos (${totalItemUnitsCount ?: 0} uds)"
+                                        } else {
+                                            "${boxesWithCounts.size} subcajas · ${itemsInBox.size} objetos"
+                                        },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(4.dp))
-                            } else {
-                                Image(
-                                    painter = painterResource(com.example.R.drawable.cajas_app_logo_1793724857669),
-                                    contentDescription = "Logo Inventario",
-                                    modifier = Modifier
-                                        .size(38.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
                             }
 
-                            // Título y subtítulo con weight(1f) para que nunca se desborden ni choquen con los botones
-                            Column(
+                            // Elemento hijo: Bloque de botones de acción (flex-shrink: 0, min-width)
+                            Row(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 8.dp)
+                                    .widthIn(min = 96.dp)
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.End
                             ) {
-                                Text(
-                                    text = currentBox?.name ?: "Inventario de Cajas",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = if (currentBoxId == null) {
-                                        "$totalBoxesCount cajas · $totalItemsCount objetos (${totalItemUnitsCount ?: 0} uds)"
-                                    } else {
-                                        "${boxesWithCounts.size} subcajas · ${itemsInBox.size} objetos"
-                                    },
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+                                // Botón de Búsqueda rápida
+                                IconButton(
+                                    onClick = { viewModel.setSearchActive(true) },
+                                    modifier = Modifier.testTag("search_icon_button")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "Buscar",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
 
-                            // Botón de Búsqueda rápida
-                            IconButton(
-                                onClick = { viewModel.setSearchActive(true) },
-                                modifier = Modifier.testTag("search_icon_button")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "Buscar",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            // Botón para alternar Vista Cuadrícula / Lista
-                            IconButton(
-                                onClick = { viewModel.toggleViewMode() },
-                                modifier = Modifier.testTag("toggle_view_mode_button")
-                            ) {
-                                Icon(
-                                    imageVector = if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
-                                    contentDescription = if (isGridView) "Vista lista" else "Vista cuadrícula",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                // Botón para alternar Vista Cuadrícula / Lista
+                                IconButton(
+                                    onClick = { viewModel.toggleViewMode() },
+                                    modifier = Modifier.testTag("toggle_view_mode_button")
+                                ) {
+                                    Icon(
+                                        imageVector = if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
+                                        contentDescription = if (isGridView) "Vista lista" else "Vista cuadrícula",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
 

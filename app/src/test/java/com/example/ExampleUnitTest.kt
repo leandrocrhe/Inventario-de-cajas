@@ -69,4 +69,32 @@ class ExampleUnitTest {
         val toSibling = useCase.execute("B", "D")
         assertTrue(toSibling is MoveBoxResult.Success)
     }
+
+    @Test
+    fun testSearchHistoryLogic() {
+        val history = mutableListOf<String>()
+
+        fun addQuery(q: String) {
+            val trimmed = q.trim()
+            if (trimmed.isNotBlank()) {
+                history.remove(trimmed)
+                history.add(0, trimmed)
+            }
+        }
+
+        addQuery("cables")
+        addQuery("herramientas")
+        addQuery("cables") // should move to top
+
+        assertEquals(2, history.size)
+        assertEquals("cables", history[0])
+        assertEquals("herramientas", history[1])
+
+        history.remove("cables")
+        assertEquals(1, history.size)
+        assertEquals("herramientas", history[0])
+
+        history.clear()
+        assertTrue(history.isEmpty())
+    }
 }

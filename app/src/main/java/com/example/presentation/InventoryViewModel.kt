@@ -8,6 +8,7 @@ import com.example.data.local.dao.BoxWithCounts
 import com.example.data.local.entity.BoxEntity
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
+import com.example.data.local.entity.SearchHistoryEntity
 import com.example.data.repository.CategoryStat
 import com.example.data.repository.InventoryRepository
 import com.example.domain.usecase.MoveBoxResult
@@ -142,6 +143,9 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
         .flatMapLatest { q -> repository.searchBoxes(q) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val recentSearches: StateFlow<List<SearchHistoryEntity>> = repository.getRecentSearches()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         viewModelScope.launch {
             repository.seedInitialDataIfNeeded()
@@ -197,6 +201,27 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    fun recordSearchQuery(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isNotBlank()) {
+            viewModelScope.launch {
+                repository.recordSearch(trimmed)
+            }
+        }
+    }
+
+    fun deleteRecentSearch(query: String) {
+        viewModelScope.launch {
+            repository.deleteSearch(query)
+        }
+    }
+
+    fun clearSearchHistory() {
+        viewModelScope.launch {
+            repository.clearSearchHistory()
+        }
     }
 
     fun setCategoryFilter(categoryId: String?) {

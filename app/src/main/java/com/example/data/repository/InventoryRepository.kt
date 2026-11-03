@@ -7,6 +7,7 @@ import com.example.data.local.dao.BoxWithCounts
 import com.example.data.local.entity.BoxEntity
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
+import com.example.data.local.entity.SearchHistoryEntity
 import com.example.domain.usecase.MoveBoxResult
 import com.example.domain.usecase.MoveBoxUseCase
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ class InventoryRepository(private val database: AppDatabase) {
     private val boxDao = database.boxDao()
     private val itemDao = database.itemDao()
     private val categoryDao = database.categoryDao()
+    private val searchHistoryDao = database.searchHistoryDao()
     private val moveBoxUseCase = MoveBoxUseCase(boxDao)
     private val backupManager = BackupManager(database)
 
@@ -61,6 +63,33 @@ class InventoryRepository(private val database: AppDatabase) {
         itemDao.searchItems(query, categoryId)
 
     fun searchBoxes(query: String): Flow<List<BoxEntity>> = boxDao.searchBoxes(query)
+
+    // Search History
+    fun getRecentSearches(limit: Int = 15): Flow<List<SearchHistoryEntity>> =
+        searchHistoryDao.getRecentSearches(limit)
+
+    suspend fun recordSearch(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isNotBlank()) {
+            withContext(Dispatchers.IO) {
+                searchHistoryDao.insertSearch(
+                    SearchHistoryEntity(query = trimmed, timestamp = System.currentTimeMillis())
+                )
+            }
+        }
+    }
+
+    suspend fun deleteSearch(query: String) {
+        withContext(Dispatchers.IO) {
+            searchHistoryDao.deleteSearch(query)
+        }
+    }
+
+    suspend fun clearSearchHistory() {
+        withContext(Dispatchers.IO) {
+            searchHistoryDao.clearAllHistory()
+        }
+    }
 
     // Breadcrumb calculation
     suspend fun getBreadcrumbs(boxId: String): List<BoxEntity> = withContext(Dispatchers.IO) {
