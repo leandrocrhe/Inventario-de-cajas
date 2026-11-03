@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.data.local.entity.BoxEntity
 
@@ -95,7 +96,9 @@ fun BreadcrumbBar(
                         Text(
                             text = box.name,
                             style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isLast) FontWeight.Bold else FontWeight.Medium
+                            fontWeight = if (isLast) FontWeight.Bold else FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     },
                     colors = AssistChipDefaults.assistChipColors(

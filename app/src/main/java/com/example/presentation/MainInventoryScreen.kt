@@ -56,6 +56,15 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -151,112 +160,166 @@ fun MainInventoryScreen(
     Scaffold(
         topBar = {
             if (!isSearchActive) {
-                TopAppBar(
-                    title = {
-                        Column {
-                            Text(
-                                text = currentBox?.name ?: "Inventario de Cajas",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (currentBoxId == null) {
-                                Text(
-                                    text = "$totalBoxesCount cajas · $totalItemsCount objetos (${totalItemUnitsCount ?: 0} uds)",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 2.dp,
+                    shadowElevation = 1.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                    ) {
+                        // Fila principal: Navegación/Logo, Título flexible y Acciones rápidas (Búsqueda y Vista)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (currentBoxId != null) {
+                                IconButton(
+                                    onClick = { viewModel.navigateBack() },
+                                    modifier = Modifier.testTag("nav_back_button")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Atrás",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(4.dp))
                             } else {
+                                Image(
+                                    painter = painterResource(com.example.R.drawable.cajas_app_logo_1793724857669),
+                                    contentDescription = "Logo Inventario",
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                            }
+
+                            // Título y subtítulo con weight(1f) para que nunca se desborden ni choquen con los botones
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
+                            ) {
                                 Text(
-                                    text = "${boxesWithCounts.size} subcajas · ${itemsInBox.size} objetos",
+                                    text = currentBox?.name ?: "Inventario de Cajas",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = if (currentBoxId == null) {
+                                        "$totalBoxesCount cajas · $totalItemsCount objetos (${totalItemUnitsCount ?: 0} uds)"
+                                    } else {
+                                        "${boxesWithCounts.size} subcajas · ${itemsInBox.size} objetos"
+                                    },
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
-                        }
-                    },
-                    navigationIcon = {
-                        if (currentBoxId != null) {
+
+                            // Botón de Búsqueda rápida
                             IconButton(
-                                onClick = { viewModel.navigateBack() },
-                                modifier = Modifier.testTag("nav_back_button")
+                                onClick = { viewModel.setSearchActive(true) },
+                                modifier = Modifier.testTag("search_icon_button")
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Atrás"
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Buscar",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            // Botón para alternar Vista Cuadrícula / Lista
+                            IconButton(
+                                onClick = { viewModel.toggleViewMode() },
+                                modifier = Modifier.testTag("toggle_view_mode_button")
+                            ) {
+                                Icon(
+                                    imageVector = if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
+                                    contentDescription = if (isGridView) "Vista lista" else "Vista cuadrícula",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
-                    },
-                    actions = {
-                        // Toggle Grid / List
-                        IconButton(
-                            onClick = { viewModel.toggleViewMode() },
-                            modifier = Modifier.testTag("toggle_view_mode_button")
-                        ) {
-                            Icon(
-                                imageVector = if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
-                                contentDescription = if (isGridView) "Vista lista" else "Vista cuadrícula"
-                            )
-                        }
 
-                        // Loans Sheet button with Badge
-                        IconButton(
-                            onClick = { viewModel.openLoansSheet() },
-                            modifier = Modifier.testTag("loans_button")
+                        // Fila de herramientas y estado en chips interactivos organizados
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            BadgedBox(
-                                badge = {
-                                    if (totalLoanedCount > 0) {
-                                        Badge(containerColor = Color(0xFF2563EB)) {
-                                            Text("$totalLoanedCount")
+                            // Chip de Préstamos con Badge reactivo
+                            FilterChip(
+                                selected = totalLoanedCount > 0,
+                                onClick = { viewModel.openLoansSheet() },
+                                label = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text("Préstamos")
+                                        if (totalLoanedCount > 0) {
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Badge(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                            ) {
+                                                Text("$totalLoanedCount")
+                                            }
                                         }
                                     }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AssignmentInd,
-                                    contentDescription = "Préstamos"
-                                )
-                            }
-                        }
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.AssignmentInd,
+                                        contentDescription = "Préstamos",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
+                                modifier = Modifier.testTag("loans_button")
+                            )
 
-                        // Stats Dashboard button
-                        IconButton(
-                            onClick = { viewModel.openStatsDialog() },
-                            modifier = Modifier.testTag("stats_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PieChart,
-                                contentDescription = "Estadísticas"
+                            // Chip de Estadísticas
+                            AssistChip(
+                                onClick = { viewModel.openStatsDialog() },
+                                label = { Text("Estadísticas") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.PieChart,
+                                        contentDescription = "Estadísticas",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
+                                modifier = Modifier.testTag("stats_button")
+                            )
+
+                            // Chip de Copias de seguridad
+                            AssistChip(
+                                onClick = { viewModel.openBackupDialog() },
+                                label = { Text("Copias de seguridad") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Storage,
+                                        contentDescription = "Copias de seguridad",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
+                                modifier = Modifier.testTag("backup_button")
                             )
                         }
-
-                        // Backup & Export/Import button
-                        IconButton(
-                            onClick = { viewModel.openBackupDialog() },
-                            modifier = Modifier.testTag("backup_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Storage,
-                                contentDescription = "Copias de seguridad"
-                            )
-                        }
-
-                        // Search button
-                        IconButton(
-                            onClick = { viewModel.setSearchActive(true) },
-                            modifier = Modifier.testTag("search_icon_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Buscar"
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                )
+                    }
+                }
             }
         },
         floatingActionButton = {
@@ -376,13 +439,17 @@ fun MainInventoryScreen(
                                 Text(
                                     text = activeBox.name,
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 if (!activeBox.description.isNullOrBlank()) {
                                     Text(
                                         text = activeBox.description,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
