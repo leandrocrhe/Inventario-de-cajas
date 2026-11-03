@@ -1,0 +1,6 @@
+{
+  "name": "Inventario de Cajas",
+  "description": "Gestión jerárquica y visual de cajas, subcajas y objetos con búsqueda y prevención de ciclos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

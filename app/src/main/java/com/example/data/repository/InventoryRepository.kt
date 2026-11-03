@@ -1,0 +1,340 @@
+package com.example.data.repository
+
+import com.example.data.backup.BackupManager
+import com.example.data.backup.ImportResult
+import com.example.data.local.AppDatabase
+import com.example.data.local.dao.BoxWithCounts
+import com.example.data.local.entity.BoxEntity
+import com.example.data.local.entity.CategoryEntity
+import com.example.data.local.entity.ItemEntity
+import com.example.domain.usecase.MoveBoxResult
+import com.example.domain.usecase.MoveBoxUseCase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import java.util.UUID
+
+data class CategoryStat(
+    val category: CategoryEntity,
+    val itemsCount: Int,
+    val unitsCount: Int,
+    val percentage: Float
+)
+
+class InventoryRepository(private val database: AppDatabase) {
+
+    private val boxDao = database.boxDao()
+    private val itemDao = database.itemDao()
+    private val categoryDao = database.categoryDao()
+    private val moveBoxUseCase = MoveBoxUseCase(boxDao)
+    private val backupManager = BackupManager(database)
+
+    // Flow queries
+    fun getRootBoxesWithCounts(): Flow<List<BoxWithCounts>> = boxDao.getRootBoxesWithCounts()
+
+    fun getChildBoxesWithCounts(parentId: String): Flow<List<BoxWithCounts>> =
+        boxDao.getChildBoxesWithCounts(parentId)
+
+    fun getBoxFlowById(id: String): Flow<BoxEntity?> = boxDao.getBoxFlowById(id)
+
+    suspend fun getBoxById(id: String): BoxEntity? = boxDao.getBoxById(id)
+
+    fun getAllBoxes(): Flow<List<BoxEntity>> = boxDao.getAllBoxes()
+
+    suspend fun getAllBoxesSync(): List<BoxEntity> = boxDao.getAllBoxesSync()
+
+    fun getItemsInBox(boxId: String): Flow<List<ItemEntity>> = itemDao.getItemsInBox(boxId)
+
+    fun getAllCategories(): Flow<List<CategoryEntity>> = categoryDao.getAllCategories()
+
+    fun getLoanedItems(): Flow<List<ItemEntity>> = itemDao.getLoanedItems()
+
+    fun getTotalBoxesCount(): Flow<Int> = boxDao.getTotalBoxesCount()
+
+    fun getTotalItemsCount(): Flow<Int> = itemDao.getTotalItemsCount()
+
+    fun getTotalItemUnitsCount(): Flow<Int?> = itemDao.getTotalItemUnitsCount()
+
+    fun getTotalLoanedCount(): Flow<Int> = itemDao.getTotalLoanedCount()
+
+    fun searchItems(query: String, categoryId: String? = null): Flow<List<ItemEntity>> =
+        itemDao.searchItems(query, categoryId)
+
+    fun searchBoxes(query: String): Flow<List<BoxEntity>> = boxDao.searchBoxes(query)
+
+    // Breadcrumb calculation
+    suspend fun getBreadcrumbs(boxId: String): List<BoxEntity> = withContext(Dispatchers.IO) {
+        val allBoxes = boxDao.getAllBoxesSync().associateBy { it.id }
+        val breadcrumbs = mutableListOf<BoxEntity>()
+        var current: BoxEntity? = allBoxes[boxId]
+
+        while (current != null) {
+            breadcrumbs.add(0, current)
+            current = current.parentBoxId?.let { allBoxes[it] }
+        }
+        breadcrumbs
+    }
+
+    // Category Distribution Stats
+    suspend fun getCategoryStats(): List<CategoryStat> = withContext(Dispatchers.IO) {
+        val items = itemDao.getAllItemsSync()
+        val categories = categoryDao.getAllCategoriesSync()
+        val totalUnits = items.sumOf { it.quantity }.coerceAtLeast(1)
+
+        val itemsByCat = items.groupBy { it.categoryId }
+
+        val stats = mutableListOf<CategoryStat>()
+        for (cat in categories) {
+            val catItems = itemsByCat[cat.id] ?: emptyList()
+            val units = catItems.sumOf { it.quantity }
+            val count = catItems.size
+            if (count > 0) {
+                stats.add(
+                    CategoryStat(
+                        category = cat,
+                        itemsCount = count,
+                        unitsCount = units,
+                        percentage = (units.toFloat() / totalUnits) * 100f
+                    )
+                )
+            }
+        }
+        stats.sortedByDescending { it.unitsCount }
+    }
+
+    // CRUD Box
+    suspend fun createBox(
+        name: String,
+        description: String?,
+        parentBoxId: String?,
+        primaryPhotoUri: String?,
+        colorHex: String
+    ): String = withContext(Dispatchers.IO) {
+        val id = UUID.randomUUID().toString()
+        val box = BoxEntity(
+            id = id,
+            name = name.trim(),
+            description = description?.takeIf { it.isNotBlank() }?.trim(),
+            parentBoxId = parentBoxId,
+            primaryPhotoUri = primaryPhotoUri,
+            colorHex = colorHex
+        )
+        boxDao.insertBox(box)
+        id
+    }
+
+    suspend fun updateBox(box: BoxEntity) = withContext(Dispatchers.IO) {
+        boxDao.updateBox(box)
+    }
+
+    suspend fun deleteBox(boxId: String) = withContext(Dispatchers.IO) {
+        boxDao.deleteBoxById(boxId)
+    }
+
+    suspend fun moveBox(boxId: String, targetParentBoxId: String?): MoveBoxResult =
+        withContext(Dispatchers.IO) {
+            moveBoxUseCase.execute(boxId, targetParentBoxId)
+        }
+
+    fun canMoveBox(boxId: String, targetParentBoxId: String?, allBoxes: List<BoxEntity>): Pair<Boolean, String?> =
+        moveBoxUseCase.isValidMove(boxId, targetParentBoxId, allBoxes)
+
+    // CRUD Item
+    suspend fun createItem(
+        name: String,
+        description: String?,
+        boxId: String,
+        categoryId: String?,
+        primaryPhotoUri: String?,
+        quantity: Int,
+        tags: String
+    ): String = withContext(Dispatchers.IO) {
+        val id = UUID.randomUUID().toString()
+        val item = ItemEntity(
+            id = id,
+            name = name.trim(),
+            description = description?.takeIf { it.isNotBlank() }?.trim(),
+            boxId = boxId,
+            categoryId = categoryId,
+            primaryPhotoUri = primaryPhotoUri,
+            quantity = quantity.coerceAtLeast(1),
+            tags = tags.trim()
+        )
+        itemDao.insertItem(item)
+        id
+    }
+
+    suspend fun updateItem(item: ItemEntity) = withContext(Dispatchers.IO) {
+        itemDao.updateItem(item)
+    }
+
+    suspend fun deleteItem(itemId: String) = withContext(Dispatchers.IO) {
+        itemDao.deleteItemById(itemId)
+    }
+
+    suspend fun updateItemQuantity(itemId: String, quantity: Int) = withContext(Dispatchers.IO) {
+        if (quantity <= 0) {
+            itemDao.deleteItemById(itemId)
+        } else {
+            itemDao.updateQuantity(itemId, quantity)
+        }
+    }
+
+    suspend fun moveItem(itemId: String, targetBoxId: String) = withContext(Dispatchers.IO) {
+        itemDao.moveItem(itemId, targetBoxId)
+    }
+
+    // Loans
+    suspend fun loanItem(itemId: String, loanedTo: String, notes: String?) = withContext(Dispatchers.IO) {
+        itemDao.loanItem(
+            itemId = itemId,
+            loanedTo = loanedTo.trim(),
+            loanedAt = System.currentTimeMillis(),
+            notes = notes?.trim()
+        )
+    }
+
+    suspend fun returnLoanedItem(itemId: String) = withContext(Dispatchers.IO) {
+        itemDao.returnLoanedItem(itemId)
+    }
+
+    // Backup & Export
+    suspend fun exportJson(): String = backupManager.exportJson()
+
+    suspend fun exportCsv(): String = backupManager.exportCsv()
+
+    suspend fun importJson(content: String): ImportResult = backupManager.importJson(content)
+
+    // Initial seeding
+    suspend fun seedInitialDataIfNeeded() = withContext(Dispatchers.IO) {
+        val existingBoxes = boxDao.getAllBoxesSync()
+        if (existingBoxes.isNotEmpty()) return@withContext
+
+        // Default categories
+        val catElec = CategoryEntity("cat_elec", "Electrónica", "memory", "#3B82F6")
+        val catHerr = CategoryEntity("cat_herr", "Herramientas", "build", "#F59E0B")
+        val catRopa = CategoryEntity("cat_ropa", "Ropa", "checkroom", "#EC4899")
+        val catDocs = CategoryEntity("cat_docs", "Documentos", "description", "#10B981")
+        val catHogar = CategoryEntity("cat_hogar", "Hogar", "home", "#8B5CF6")
+        val catCables = CategoryEntity("cat_cables", "Cables y Conexiones", "cable", "#06B6D4")
+
+        categoryDao.insertCategories(listOf(catElec, catHerr, catRopa, catDocs, catHogar, catCables))
+
+        val boxTrastero = BoxEntity(
+            id = "box_trastero",
+            name = "Trastero Principal",
+            description = "Estantería metálica del fondo, balda 2",
+            parentBoxId = null,
+            colorHex = "#F59E0B"
+        )
+        val boxHerramientas = BoxEntity(
+            id = "box_herramientas",
+            name = "Herramientas Taller",
+            description = "Maletín de llaves, tornillería y taladro",
+            parentBoxId = "box_trastero",
+            colorHex = "#EF4444"
+        )
+        val boxCables = BoxEntity(
+            id = "box_cables",
+            name = "Cables & Conexiones",
+            description = "HDMI, USB-C, adaptadores y regletas",
+            parentBoxId = "box_trastero",
+            colorHex = "#3B82F6"
+        )
+        val boxArmario = BoxEntity(
+            id = "box_armario",
+            name = "Armario Estudio",
+            description = "Cajonera blanca junto al escritorio",
+            parentBoxId = null,
+            colorHex = "#8B5CF6"
+        )
+        val boxArchivo = BoxEntity(
+            id = "box_archivo",
+            name = "Archivo Fiscal & Facturas",
+            description = "Carpetas 2024-2026 ordenadas alfabéticamente",
+            parentBoxId = "box_armario",
+            colorHex = "#10B981"
+        )
+        val boxRopa = BoxEntity(
+            id = "box_ropa",
+            name = "Ropa Temporada Invierno",
+            description = "Abrigos de montaña, guantes y bufandas al vacío",
+            parentBoxId = null,
+            colorHex = "#EC4899"
+        )
+
+        boxDao.insertBoxes(listOf(boxTrastero, boxHerramientas, boxCables, boxArmario, boxArchivo, boxRopa))
+
+        val items = listOf(
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Juego destornilladores precisión",
+                description = "Puntas Torx, Phillips y planas en estuche negro",
+                boxId = "box_herramientas",
+                categoryId = "cat_herr",
+                quantity = 1,
+                tags = "Bricolaje, Reparación"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Taladro percutor 18V",
+                description = "Con 2 baterías y cargador rápido",
+                boxId = "box_herramientas",
+                categoryId = "cat_herr",
+                quantity = 1,
+                tags = "Eléctrico, Taller",
+                isLoaned = true,
+                loanedTo = "Carlos (Vecino)",
+                loanedAt = System.currentTimeMillis() - 86400000L * 2,
+                notes = "Prometió devolverlo este viernes"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Cable HDMI 2.1 4K 120Hz (2 metros)",
+                description = "Trenzado de nylon ultra resistente",
+                boxId = "box_cables",
+                categoryId = "cat_cables",
+                quantity = 3,
+                tags = "Monitor, TV, Video"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Adaptador USB-C a Ethernet Gigabit",
+                description = "Aluminio gris espacial",
+                boxId = "box_cables",
+                categoryId = "cat_elec",
+                quantity = 2,
+                tags = "Red, Portátil"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Escrituras y contratos de alquiler",
+                description = "Sobre ignífugo etiquetado 'Casa'",
+                boxId = "box_archivo",
+                categoryId = "cat_docs",
+                quantity = 1,
+                tags = "Importante, Legal"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Abrigo térmico de plumas",
+                description = "Talla L, impermeable con capucha",
+                boxId = "box_ropa",
+                categoryId = "cat_ropa",
+                quantity = 1,
+                tags = "Montaña, Nieve"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Juego de sábanas térmicas de franela",
+                description = "Para cama de 150 cm",
+                boxId = "box_ropa",
+                categoryId = "cat_hogar",
+                quantity = 2,
+                tags = "Invierno, Cama"
+            )
+        )
+
+        itemDao.insertItems(items)
+    }
+}
