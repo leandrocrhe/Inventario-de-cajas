@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa Visual de Flujos de Navegación AMOLED</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            amoled: '#000000',
+            surface: {
+              0: '#000000',
+              1: '#0d0d0d',
+              2: '#161412',
+              3: '#201b17',
+              border: '#2a2420',
+              highlight: '#38302a'
+            },
+            amber: {
+              40: '#8b4a00',
+              60: '#d97706',
+              80: '#ffb77c',
+              container: '#331d04',
+              surface: '#fff4eb'
+            },
+            terracotta: {
+              500: '#904a3e',
+              light: '#f59e0b'
+            },
+            flow: {
+              home: '#ffb77c',
+              cajas: '#60a5fa',
+              zonas: '#34d399',
+              prestamos: '#fbbf24',
+              ajustes: '#a78bfa'
+            }
+          },
+          fontFamily: {
+            sans: ['Roboto Flex', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #000000;
+      color: #e5e0dc;
+      font-family: 'Roboto Flex', sans-serif;
+    }
+    .flow-connector {
+      position: relative;
+    }
+    .flow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    /* Glow highlights */
+    .glow-amber {
+      box-shadow: 0 0 24px -4px rgba(255, 183, 124, 0.15);
+    }
+    .glow-blue {
+      box-shadow: 0 0 24px -4px rgba(96, 165, 250, 0.15);
+    }
+    .glow-green {
+      box-shadow: 0 0 24px -4px rgba(52, 211, 153, 0.15);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-amoled text-neutral-200 antialiased selection:bg-amber-800 selection:text-white pb-24">
+
+  <!-- Header Superior -->
+  <header class="sticky top-0 z-50 bg-black/90 backdrop-blur-md border-b border-surface-border px-6 py-4">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber- container border border-amber-80/30 flex items-center justify-center text-amber-80">
+          <span class="material-symbols-outlined text-2xl">account_tree</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold tracking-tight text-white">Mapa Visual de Flujos de Usuario</h1>
+            <span class="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-amber-container text-amber-80 border border-amber-80/30">AMOLED True Black #000000</span>
+          </div>
+          <p class="text-xs text-neutral-400 mt-0.5">Inventario de Cajas · Arquitectura de Navegación M3, Botones, Modales y Estados</p>
+        </div>
+      </div>
+
+      <!-- Métricas del mapa -->
+      <div class="flex items-center gap-4 text-xs font-mono">
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-1 border border-surface-border">
+          <span class="w-2 h-2 rounded-full bg-amber-80 animate-pulse"></span>
+          <span class="text-neutral-300">4 Secciones Raíz</span>
+        </div>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-1 border border-surface-border">
+          <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+          <span class="text-neutral-300">6 Modales/Sheets</span>
+        </div>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-1 border border-surface-border">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span class="text-neutral-300">22 Puntos de Clic</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal del Diagrama -->
+  <main class="max-w-7xl mx-auto px-6 pt-8 space-y-12">
+
+    <!-- Leyenda de Convenciones -->
+    <section class="p-4 rounded-2xl bg-surface-1 border border-surface-border flex flex-wrap items-center justify-between gap-4 text-xs">
+      <div class="flex items-center gap-2 text-neutral-300 font-medium">
+        <span class="material-symbols-outlined text-amber-80 text-base">info</span>
+        <span>Convenciones de Interacción:</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded bg-amber-80 text-black font-bold text-[10px]">TAP / CLIC</span>
+          <span class="text-neutral-400">Pulsación directa de usuario</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded bg-surface-3 border border-surface-border text-neutral-300 font-mono text-[10px]">BOTTOM SHEET</span>
+          <span class="text-neutral-400">Modal deslizable M3 (250ms)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/40 font-mono text-[10px]">SNACKBAR</span>
+          <span class="text-neutral-400">Confirmación no bloqueante</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 border border-purple-800/40 font-mono text-[10px]">DRAG & DROP</span>
+          <span class="text-neutral-400">Gestos de reordenación táctil</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Nivel 0: Barra de Navegación Inferior Persistente (Global Backbone) -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded bg-surface-2 border border-surface-border text-xs font-mono text-amber-80">NIVEL 0</span>
+          <h2 class="text-lg font-bold text-white tracking-wide">Eje Global · Bottom Navigation Bar M3</h2>
+        </div>
+        <span class="text-xs text-neutral-500 font-mono">Persistente en pantallas principales (altura 72dp)</span>
+      </div>
+
+      <!-- Barra visual interactiva con conexiones -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        
+        <!-- Pestaña 1: Cajas -->
+        <div class="p-5 rounded-2xl bg-surface-1 border-2 border-amber-80/40 glow-amber relative group">
+          <div class="absolute -top-3 left-4 px-2 py-0.5 bg-amber-80 text-black text-[10px] font-bold rounded-full font-mono uppercase tracking-wider">
+            Ruta Activa Primaria
+          </div>
+          <div class="flex items-center justify-between mb-3 mt-1">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-amber-80/20 text-amber-80 flex items-center justify-center">
+                <span class="material-symbols-outlined text-lg">inventory_2</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-white text-base">1. Cajas (Home)</h3>
+                <span class="text-[11px] font-mono text-neutral-400">Ruta raíz: /cajas</span>
+              </div>
+            </div>
+            <span class="flow-badge bg-amber-container text-amber-80 border border-amber-80/30">M3 Tab #1</span>
+          </div>
+          <p class="text-xs text-neutral-300 mb-4 leading-relaxed">
+            Agrupación jerárquica por zonas con tarjetas con portada, selector de vistas y accesos rápidos.
+          </p>
+          <div class="pt-3 border-t border-surface-border text-xs flex flex-col gap-1.5 font-mono">
+            <div class="text-neutral-400 flex items-center justify-between">
+              <span>➔ Dispara Subflujo:</span>
+              <span class="text-amber-80 font-bold">Cajas & Objetos</span>
+            </div>
+            <div class="text-neutral-400 flex items-center justify-between">
+              <span>➔ FAB Flotante:</span>
+              <span class="text-amber-300 font-bold">+ Nueva Caja</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña 2: Zonas -->
+        <div class="p-5 rounded-2xl bg-surface-1 border border-surface-border hover:border-emerald-500/50 transition-colors relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-lg">location_on</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-white text-base">2. Zonas</h3>
+                <span class="text-[11px] font-mono text-neutral-400">Ruta: /zonas</span>
+              </div>
+            </div>
+            <span class="flow-badge bg-emerald-950/60 text-emerald-400 border border-emerald-800/30">M3 Tab #2</span>
+          </div>
+          <p class="text-xs text-neutral-300 mb-4 leading-relaxed">
+            Gestión física del espacio (armarios, trastero, garaje). Métricas de capacidad y reordenación.
+          </p>
+          <div class="pt-3 border-t border-surface-border text-xs flex flex-col gap-1.5 font-mono">
+            <div class="text-neutral-400 flex items-center justify-between">
+              <span>➔ Botón Superior:</span>
+              <span class="text-emerald-400 font-bold">⇅ Reordenar (Drag)</span>
+            </div>
+            <div class="text-neutral-400 flex items-center justify-between">
+              <span>➔ FAB Flotante:</span>
+              <span class="text-emerald-400 font-bold">+ Nueva Zona</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña 3: Préstamos -->
+        <div class="p-5 rounded-2xl bg-surface-1 border border-surface-border hover:border-amber-400/50 transition-colors relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-amber-400/10 text-amber-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-lg">sync_alt</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-white text-base">3. Préstamos</h3>
+                <span class="text-[11px] font-mono text-neutral-400">Ruta: /prestamos</span>
+              </div>
+            </div>
+            <span class="flow-badge bg-amber-950/60 text-amber-400 border border-amber-800/30">M3 Tab #3</span>
+          </div>
+          <p class="text-xs text-neutral-300 mb-4 leading-relaxed">
+            Control de objetos prestados a terceros, fechas de devolución límite y registro con calendario AMOLED.
+          </p>
+          <div class="pt-3 border-t border-surface-border text-xs flex flex-col gap-1.5 font-mono">
+            <div class="text-neutral-400 flex items-center justify-between">
+              <span>➔ Botón Principal:</span>
+              <span class="text-amber-400 font-bold">+ Nuevo Préstamo</span>
+            </div>
+            <div class="text-neutral-400 flex items-center justify-between">
+              <span>➔ Selector Modal:</span>
+              <span class="text-amber-400 font-bold">Calendario M3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña 4: Ajustes -->
+        <div class="p-5 rounded-2xl bg-surface-1 border border-surface-border hover:border-purple-400/50 transition-colors relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-lg">settings</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-white text-base">4. Ajustes</h3>
+                <span class="text-[11px] font-mono text-neutral-400">Ruta: /ajustes</span>
+              </div>
+            </div>
+            <span class="flow-badge bg-purple-950/60 text-purple-400 border border-purple-800/30">M3 Tab #4</span>
+          </div>
+          <p class="text-xs text-neutral-300 mb-4 leading-relaxed">
+            Preferencia tema puro OLED (#000000), backups automáticos, base de datos local y exportaciones.
+          </p>
+          <div class="pt-3 border-t border-surface-border text-xs flex flex-col gap-1.5 font-mono">
+            <div class="text-neutral-400 flex items-center justify-between">
+              <span>➔ Conmutador:</span>
+              <span class="text-purple-400 font-bold">Modo AMOLED puro</span>
+            </div>
+            <div class="text-neutral-400 flex items-center justify-between">
+              <span>➔ Exportación:</span>
+              <span class="text-purple-400 font-bold">JSON / Drive Backup</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Nivel 1: Flujo Profundo A — Gestión de Cajas y Objetos (Drill-Down Jerárquico) -->
+    <section class="space-y-6 p-6 rounded-3xl bg-surface-1 border border-surface-border">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-surface-border pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800/40 text-xs font-mono font-bold">FLUJO CRÍTICO A</span>
+            <h2 class="text-lg font-bold text-white">Cadena Jerárquica: Caja ➔ Objeto ➔ Ficha ➔ Galería</h2>
+          </div>
+          <p class="text-xs text-neutral-400 mt-1">Navegación recursiva de 4 niveles con preservación de contexto</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono px-3 py-1 rounded-full bg-surface-2 text-neutral-300 border border-surface-border">
+            Tiempo de animación: 250ms (EaseInOut)
+          </span>
+        </div>
+      </div>
+
+      <!-- Pasos del flujo en cuadrícula conectada -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+        
+        <!-- Paso 1 -->
+        <div class="p-4 rounded-xl bg-surface-2 border border-surface-border relative">
+          <div class="flex items-center justify-between text-xs font-mono text-neutral-400 mb-2">
+            <span class="text-amber-80 font-bold">PASO 1 · ORIGEN</span>
+            <span>Home Grid</span>
+          </div>
+          <h4 class="font-bold text-white text-sm mb-1">Tarjeta de Caja</h4>
+          <p class="text-[11px] text-neutral-400 mb-3">Ej: "T-01 Herramientas Taller" con indicador cromático ámbar y conteo de 5 objetos.</p>
+          
+          <div class="p-2.5 rounded-lg bg-black border border-amber-80/40 text-xs space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-neutral-300 font-medium">Evento Disparador:</span>
+              <span class="px-1.5 py-0.5 rounded bg-amber-80 text-black text-[10px] font-bold">TAP EN TARJETA</span>
+            </div>
+            <div class="text-[10px] text-neutral-400 font-mono">Despliega Bottom Sheet (Modal Detalle)</div>
+          </div>
+        </div>
+
+        <!-- Conector 1 a 2 -->
+        <div class="p-4 rounded-xl bg-surface-2 border border-surface-border relative">
+          <div class="flex items-center justify-between text-xs font-mono text-neutral-400 mb-2">
+            <span class="text-blue-400 font-bold">PASO 2 · CONTEXTO</span>
+            <span>Bottom Sheet</span>
+          </div>
+          <h4 class="font-bold text-white text-sm mb-1">Modal Detalle de Caja</h4>
+          <p class="text-[11px] text-neutral-400 mb-3">Visor de contenidos de la caja: cuadrícula de fotos o lista de objetos con botones de acción.</p>
+          
+          <div class="space-y-2">
+            <div class="p-2 rounded-lg bg-black border border-blue-500/40 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-neutral-300">Botón Foto Objeto:</span>
+                <span class="px-1.5 py-0.5 rounded bg-blue-500 text-black text-[10px] font-bold">TAP EN FOTO</span>
+              </div>
+              <div class="text-[10px] text-neutral-400 font-mono mt-0.5">Abre Ficha Detallada de Objeto</div>
+            </div>
+
+            <div class="p-2 rounded-lg bg-black border border-surface-border text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-neutral-300">Botón + Añadir:</span>
+                <span class="px-1.5 py-0.5 rounded bg-neutral-700 text-white text-[10px]">TAP</span>
+              </div>
+              <div class="text-[10px] text-neutral-400 font-mono mt-0.5">Abre Formulario Nuevo Objeto</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 3 -->
+        <div class="p-4 rounded-xl bg-surface-2 border border-surface-border relative">
+          <div class="flex items-center justify-between text-xs font-mono text-neutral-400 mb-2">
+            <span class="text-emerald-400 font-bold">PASO 3 · FICHA</span>
+            <span>Detalle Objeto</span>
+          </div>
+          <h4 class="font-bold text-white text-sm mb-1">Ficha Técnica Objeto</h4>
+          <p class="text-[11px] text-neutral-400 mb-3">Foto principal, stepper (+ / -), estado de préstamo, botón "Mover Caja" y "Prestar".</p>
+          
+          <div class="space-y-2">
+            <div class="p-2 rounded-lg bg-black border border-emerald-500/40 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-neutral-300">Tap en Portada:</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-400 text-black text-[10px] font-bold">FULLSCREEN</span>
+              </div>
+              <div class="text-[10px] text-neutral-400 font-mono mt-0.5">Abre Galería Inmersiva</div>
+            </div>
+
+            <div class="p-2 rounded-lg bg-black border border-amber-500/40 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-neutral-300">Botón "Prestar":</span>
+                <span class="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[10px] font-bold">DERIVA</span>
+              </div>
+              <div class="text-[10px] text-neutral-400 font-mono mt-0.5">Pestaña Préstamos + Calendario</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 4 -->
+        <div class="p-4 rounded-xl bg-surface-2 border border-surface-border relative">
+          <div class="flex items-center justify-between text-xs font-mono text-neutral-400 mb-2">
+            <span class="text-purple-400 font-bold">PASO 4 · FULLSCREEN</span>
+            <span>100% #000000</span>
+          </div>
+          <h4 class="font-bold text-white text-sm mb-1">Galería de Fotos AMOLED</h4>
+          <p class="text-[11px] text-neutral-400 mb-3">Inspección de alta resolución para números de serie, etiquetas y estado con zoom táctil.</p>
+          
+          <div class="p-2.5 rounded-lg bg-black border border-purple-500/40 text-xs space-y-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-neutral-300">Botón Volver:</span>
+              <span class="font-mono text-neutral-400">Retorno a Ficha</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-neutral-300">Añadir Foto:</span>
+              <span class="font-mono text-neutral-400">Cámara / Archivos</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-red-400">Eliminar Foto:</span>
+              <span class="font-mono text-neutral-400">Diálogo Confirmación</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Nivel 2: Flujo Crítico B — Mover Caja entre Zonas (Transición Asíncrona con SnackBar) -->
+    <section class="space-y-6 p-6 rounded-3xl bg-surface-1 border border-surface-border">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-surface-border pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/40 text-xs font-mono font-bold">FLUJO TRANSACCIONAL B</span>
+            <h2 class="text-lg font-bold text-white">Mover Caja de Zona ➔ Cierre Automático ➔ SnackBar</h2>
+          </div>
+          <p class="text-xs text-neutral-400 mt-1">Diseñado para confirmación rápida sin fricción y reversibilidad instantánea</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/40">
+            Ratio ergonómico: Botón 1:2 (Cancelar vs Confirmar)
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Fase 1: Invocación -->
+        <div class="p-5 rounded-2xl bg-surface-2 border border-surface-border space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-amber-80 font-bold">FASE 1</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-3 text-neutral-300">DISPARADOR</span>
+          </div>
+          <h3 class="font-bold text-white text-base">Invocación del Selector</h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            El usuario pulsa el botón <strong class="text-amber-80">"Mover a otra zona"</strong> desde:
+          </p>
+          <ul class="text-xs space-y-1.5 text-neutral-400">
+            <li class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm text-neutral-400">check_circle</span>
+              <span>Menú contextual de tres puntos en la tarjeta de caja</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm text-neutral-400">check_circle</span>
+              <span>Botón de acción rápida dentro del modal de detalle de caja</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm text-amber-80">warning</span>
+              <span>Banner de caja sin zona ("Caja M-99 Asignar a zona")</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Fase 2: Modal y Selección -->
+        <div class="p-5 rounded-2xl bg-surface-2 border border-surface-border space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-blue-400 font-bold">FASE 2</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-3 text-neutral-300">BOTTOM SHEET M3</span>
+          </div>
+          <h3 class="font-bold text-white text-base">Modal Selector de Zonas</h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            Lista interactiva con las zonas disponibles (Armario Estudio, Ropa Temporada, Trastero, Garaje) con radio button activo.
+          </p>
+          <div class="p-3 rounded-xl bg-black border border-surface-border space-y-2">
+            <div class="text-[11px] text-neutral-400 font-mono">Botonera de Acción Inferior:</div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="col-span-1 py-1.5 text-center bg-surface-3 text-neutral-300 text-xs rounded-lg border border-surface-border font-medium">
+                Cancelar (1x)
+              </div>
+              <div class="col-span-2 py-1.5 text-center bg-amber-80 text-black text-xs font-bold rounded-lg flex items-center justify-center gap-1">
+                <span>Confirmar (2x)</span>
+                <span class="material-symbols-outlined text-xs">arrow_forward</span>
+              </div>
+            </div>
+            <div class="text-[10px] text-neutral-500 text-center font-mono">Microestado: Spinner de carga 400ms al pulsar</div>
+          </div>
+        </div>
+
+        <!-- Fase 3: Feedback y Retorno -->
+        <div class="p-5 rounded-2xl bg-surface-2 border border-surface-border space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-emerald-400 font-bold">FASE 3</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/30">CONFIRMACIÓN</span>
+          </div>
+          <h3 class="font-bold text-white text-base">Cierre y SnackBar AMOLED</h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            El modal se cierra de forma instantánea y se proyecta en la base de la pantalla el SnackBar flotante de éxito:
+          </p>
+          <div class="p-3 rounded-xl bg-black border border-emerald-500/50 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-400 text-base">task_alt</span>
+              <span class="text-white font-medium">Caja movida a Garaje</span>
+            </div>
+            <button class="text-amber-80 font-bold hover:underline font-mono text-xs">DESHACER</button>
+          </div>
+          <div class="text-[10px] text-neutral-400 font-mono text-center">Duración en pantalla: 4 segundos con auto-dismiss</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Nivel 3: Flujo Crítico C — Registro de Préstamo con Calendario AMOLED -->
+    <section class="space-y-6 p-6 rounded-3xl bg-surface-1 border border-surface-border">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-surface-border pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/40 text-xs font-mono font-bold">FLUJO TRANSACCIONAL C</span>
+            <h2 class="text-lg font-bold text-white">Registro de Préstamo + Selector de Calendario M3</h2>
+          </div>
+          <p class="text-xs text-neutral-400 mt-1">Control de artículos fuera de inventario con fecha límite estipulada</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono px-3 py-1 rounded-full bg-surface-2 text-neutral-300 border border-surface-border">
+            Fondo Modal: Negro puro #000000 con bordes 24dp
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Tarjeta de Origen Préstamo -->
+        <div class="p-5 rounded-2xl bg-surface-2 border border-surface-border space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono text-neutral-400">
+            <span class="text-amber-80 font-bold">DISPARADORES</span>
+            <span>2 Orígenes</span>
+          </div>
+          <h3 class="font-bold text-white text-base">Acceso al Formulario</h3>
+          <div class="space-y-2 text-xs">
+            <div class="p-2.5 rounded-lg bg-black border border-surface-border">
+              <div class="font-medium text-white mb-0.5">Desde Ficha de Objeto</div>
+              <div class="text-[11px] text-neutral-400">Botón "Prestar este Objeto" precarga automáticamente el nombre e ID del artículo.</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-black border border-surface-border">
+              <div class="font-medium text-white mb-0.5">Desde Pestaña Préstamos</div>
+              <div class="text-[11px] text-neutral-400">Botón flotante o header "+ Registrar Préstamo" con selector de objeto en blanco.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Selector de Fecha -->
+        <div class="p-5 rounded-2xl bg-surface-2 border border-surface-border space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono text-neutral-400">
+            <span class="text-amber-400 font-bold">CALENDARIO AMOLED</span>
+            <span>Interactivo</span>
+          </div>
+          <h3 class="font-bold text-white text-base">Selección de Fecha Límite</h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            Al pulsar el campo de fecha, se abre el selector interactivo M3 con contraste optimizado:
+          </p>
+          <div class="p-3 rounded-xl bg-black border border-amber-80/40 text-xs space-y-2">
+            <div class="flex items-center justify-between font-mono text-[11px]">
+              <span class="text-neutral-400">Cabecera de Fecha:</span>
+              <span class="text-amber-80 font-bold">Mar, 24 Oct 2026</span>
+            </div>
+            <div class="text-[11px] text-neutral-300">
+              Día seleccionado destacado con círculo circular Amber 80 (<code class="text-amber-300">#FFB77C</code>) con texto negro de alto contraste.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Confirmación de Préstamo -->
+        <div class="p-5 rounded-2xl bg-surface-2 border border-surface-border space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono text-neutral-400">
+            <span class="text-emerald-400 font-bold">ACTUALIZACIÓN ESTADO</span>
+            <span>Badge & Contador</span>
+          </div>
+          <h3 class="font-bold text-white text-base">Impacto en el Sistema</h3>
+          <ul class="text-xs space-y-2 text-neutral-300">
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>Se actualiza el badge numérico en la pestaña inferior Préstamos (+1)</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>La tarjeta de caja muestra la etiqueta visible <strong class="text-amber-300">"1 prestado"</strong></span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>Acción rápida "Marcar como devuelto" habilitada en cualquier momento</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Nivel 4: Matriz de Acciones de Barra Superior & Búsqueda -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded bg-surface-2 border border-surface-border text-xs font-mono text-amber-80">NIVEL BARRA SUPERIOR</span>
+          <h2 class="text-lg font-bold text-white tracking-wide">Acciones de Encabezado, Modos de Vista & Búsqueda</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Búsqueda y Filtros -->
+        <div class="p-5 rounded-2xl bg-surface-1 border border-surface-border space-y-3">
+          <div class="flex items-center gap-2 text-amber-80">
+            <span class="material-symbols-outlined text-xl">search</span>
+            <h3 class="font-bold text-white text-sm">Lupa ➔ Búsqueda Expandida</h3>
+          </div>
+          <p class="text-xs text-neutral-400 leading-relaxed">
+            Al pulsar la lupa en la barra superior, la cabecera se transforma en un campo de búsqueda de ancho completo con chips de filtro por categoría (Herramientas, Ropa, Cables, Varios).
+          </p>
+          <div class="pt-2 border-t border-surface-border text-[11px] font-mono text-neutral-400 flex items-center justify-between">
+            <span>Retorno a vista normal:</span>
+            <span class="text-neutral-200">Botón ✕ o Atrás</span>
+          </div>
+        </div>
+
+        <!-- Selector de Modo de Vista -->
+        <div class="p-5 rounded-2xl bg-surface-1 border border-surface-border space-y-3">
+          <div class="flex items-center gap-2 text-amber-80">
+            <span class="material-symbols-outlined text-xl">view_agenda</span>
+            <h3 class="font-bold text-white text-sm">Selector Tri-Modal de Vistas</h3>
+          </div>
+          <p class="text-xs text-neutral-400 leading-relaxed">
+            Botón integrado en la barra de herramientas que permite alternar instantáneamente entre los estilos de inventario:
+          </p>
+          <div class="grid grid-cols-3 gap-1 text-[11px] font-mono text-center pt-1">
+            <span class="p-1 rounded bg-amber-container text-amber-80 border border-amber-80/30 font-bold">Portadas</span>
+            <span class="p-1 rounded bg-surface-2 text-neutral-400">Mosaico</span>
+            <span class="p-1 rounded bg-surface-2 text-neutral-400">Densa</span>
+          </div>
+        </div>
+
+        <!-- Menú de Ordenación Contextual -->
+        <div class="p-5 rounded-2xl bg-surface-1 border border-surface-border space-y-3">
+          <div class="flex items-center gap-2 text-amber-80">
+            <span class="material-symbols-outlined text-xl">sort</span>
+            <h3 class="font-bold text-white text-sm">Menú Desplegable de Ordenación</h3>
+          </div>
+          <p class="text-xs text-neutral-400 leading-relaxed">
+            Menú contextual con selección activa para ordenar contenedores por:
+          </p>
+          <div class="space-y-1 text-xs text-neutral-300 font-mono">
+            <div class="flex items-center justify-between">
+              <span>• Última modificación</span>
+              <span class="text-amber-80 font-bold">✓ Activo</span>
+            </div>
+            <div class="flex items-center justify-between text-neutral-400">
+              <span>• Nombre alfabético (A-Z)</span>
+              <span>Opción</span>
+            </div>
+            <div class="flex items-center justify-between text-neutral-400">
+              <span>• Mayor capacidad ocupada</span>
+              <span>Opción</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Resumen de Arquitectura de Pantallas Registradas en Stitch -->
+    <section class="p-6 rounded-3xl bg-surface-1 border border-surface-border space-y-4">
+      <div class="flex items-center justify-between border-b border-surface-border pb-3">
+        <h3 class="font-bold text-white text-base flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-80">dashboard_customize</span>
+          <span>Catálogo de Pantallas AMOLED Implementadas</span>
+        </h3>
+        <span class="text-xs font-mono text-neutral-400">Sincronizado con canvas activo</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono">
+        <div class="p-3 rounded-xl bg-black border border-surface-border">
+          <div class="text-amber-80 font-bold mb-1">INVENTARIO & HOME</div>
+          <ul class="text-neutral-400 space-y-1 text-[11px]">
+            <li>• Home Portadas AMOLED</li>
+            <li>• Búsqueda Expandida & Filtros</li>
+            <li>• Retorno Colapso Búsqueda</li>
+            <li>• Lista Densa & Escaneo</li>
+          </ul>
+        </div>
+
+        <div class="p-3 rounded-xl bg-black border border-surface-border">
+          <div class="text-emerald-400 font-bold mb-1">ZONAS & ESPACIO</div>
+          <ul class="text-neutral-400 space-y-1 text-[11px]">
+            <li>• Administrar Zonas AMOLED</li>
+            <li>• Simulación Drag & Drop</li>
+            <li>• Diálogo Nueva Zona (1:2)</li>
+            <li>• Mover Caja + SnackBar</li>
+          </ul>
+        </div>
+
+        <div class="p-3 rounded-xl bg-black border border-surface-border">
+          <div class="text-amber-400 font-bold mb-1">PRÉSTAMOS & FECHAS</div>
+          <ul class="text-neutral-400 space-y-1 text-[11px]">
+            <li>• Gestión de Préstamos AMOLED</li>
+            <li>• Modal Registrar Préstamo</li>
+            <li>• Selector Calendario M3</li>
+            <li>• Estado Devuelto / Pendiente</li>
+          </ul>
+        </div>
+
+        <div class="p-3 rounded-xl bg-black border border-surface-border">
+          <div class="text-purple-400 font-bold mb-1">OBJETOS & AJUSTES</div>
+          <ul class="text-neutral-400 space-y-1 text-[11px]">
+            <li>• Modal Detalle Caja Fotos</li>
+            <li>• Ficha Técnica de Objeto</li>
+            <li>• Galería Fullscreen AMOLED</li>
+            <li>• Ajustes & True Black OLED</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

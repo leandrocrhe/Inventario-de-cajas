@@ -1,0 +1,342 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC@100..1000,96,468,79,750,-203,738,514,712&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#F2EFE9", "inverse-on-surface": "#faefe7", "surface-container-lowest": "#ffffff", "tertiary-fixed-dim": "#ffb4a7", "on-secondary-fixed": "#271904", "primary-fixed-dim": "#ffb77d", "on-secondary-container": "#745f44", "on-secondary": "#ffffff", "secondary": "#6f5b40", "tag-green": "#10B981", "tertiary": "#6f3026", "on-primary-fixed": "#2f1500", "secondary-fixed": "#fadebc", "surface-tint": "#8f4d04", "background": "#fff8f4", "primary-fixed": "#ffdcc3", "outline-variant": "#d9c2b3", "on-surface": "#201b16", "tag-teal": "#14B8A6", "surface-bright": "#fff8f4", "tag-red": "#EF4444", "surface-container-highest": "#ebe1d9", "tertiary-container": "#8c473b", "tag-blue": "#3B82F6", "secondary-container": "#f7dbb9", "on-primary-container": "#ffc89d", "surface-dim": "#e3d8d0", "error-container": "#ffdad6", "on-primary": "#ffffff", "tag-slate": "#64748B", "primary-container": "#FFDCC1", "on-secondary-fixed-variant": "#56442a", "background-warm": "#FBF9F5", "on-surface-variant": "#534438", "inverse-primary": "#ffb77d", "on-tertiary-fixed-variant": "#733429", "on-surface-espresso": "#211A16", "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#6e3900", "secondary-fixed-dim": "#ddc2a1", "surface-container-low": "#fdf2e9", "tertiary-fixed": "#ffdad4", "on-error-container": "#93000a", "surface-container-high": "#f1e6de", "on-error": "#ffffff", "primary": "#693600", "surface-container": "#f7ece4", "tag-amber": "#F59E0B", "inverse-surface": "#352f2a", "on-tertiary-container": "#ffc6bb", "error": "#ba1a1a", "tag-purple": "#8B5CF6", "surface": "#fff8f4", "outline": "#867467", "on-background": "#201b16", "on-tertiary-fixed": "#3b0904", "surface-clean": "#FFFFFF" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "0.75rem", "margin": "1rem", "gutter-tablet": "1rem", "space-xs": "0.25rem", "margin-tablet": "1.5rem", "space-xl": "1.5rem", "space-sm": "0.5rem", "gutter": "0.75rem", "space-lg": "1rem" }, fontFamily: { "headline-md": ["Roboto Flex"], "label-sm": ["Roboto Flex"], "title-lg": ["Roboto Flex"], "display-lg": ["Roboto Flex"], "title-md": ["Roboto Flex"], "body-md": ["Roboto Flex"], "body-lg": ["Roboto Flex"], "label-lg": ["Roboto Flex"] }, fontSize: { "headline-md": ["24px", { "lineHeight": "30px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }], "title-lg": ["20px", { "lineHeight": "26px", "fontWeight": "700" }], "display-lg": ["32px", { "lineHeight": "38px", "fontWeight": "700" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm min-w-0"><div class="w-9 h-9 rounded-lg bg-primary-container flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary text-[20px]">inventory_2</span></div><div class="flex flex-col min-w-0"><h1 class="font-title-md text-title-md text-on-surface truncate">Inventario de Cajas</h1><span class="font-label-sm text-label-sm text-on-surface-variant truncate">Cajas</span></div></div><div class="flex items-center gap-space-xs shrink-0"><button aria-label="Buscar" class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full transition-colors"><span class="material-symbols-outlined text-[22px]">search</span></button><button aria-label="Filtrar o cambiar vista" class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full transition-colors"><span class="material-symbols-outlined text-[22px]">tune</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 px-margin bg-surface"><div class="flex flex-col w-full text-on-surface">
+<!-- Subheader & Quick Filters -->
+<div class="flex flex-col gap-space-sm mb-space-lg">
+<!-- View Switcher & Counter Summary -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Zonas activas</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">3</span>
+</div>
+<!-- Segmented View Mode Toggle -->
+<div aria-label="Modo de vista" class="flex items-center bg-surface-container-high rounded-full p-1" role="group">
+<button aria-label="Vista cuadrícula" class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center transition-all shadow-sm" id="viewGridBtn">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+<button aria-label="Vista lista" class="w-8 h-8 rounded-full text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-all" id="viewListBtn">
+<span class="material-symbols-outlined text-[18px]">view_list</span>
+</button>
+</div>
+</div>
+<!-- Filter Chips Carousel -->
+<div class="flex items-center justify-between pt-1 pb-0.5"><div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">tune</span><span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Modo visual:</span></div><div class="inline-flex items-center bg-surface-container-high rounded-full p-1 gap-1" role="radiogroup" aria-label="Modo visual de fotos"><button role="radio" aria-checked="true" class="flex items-center gap-1 px-space-md py-1 rounded-full bg-primary text-on-primary font-label-sm text-label-sm shadow-sm transition-all"><span class="material-symbols-outlined text-[16px]">dashboard</span><span class="">Mosaico</span></button><button role="radio" aria-checked="false" class="flex items-center gap-1 px-space-md py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors"><span class="material-symbols-outlined text-[16px]">image</span><span class="">Foto Portada</span></button></div></div><div class="flex items-center gap-space-xs overflow-x-auto pb-1 -mx-margin px-margin scrollbar-none">
+<button class="shrink-0 px-space-md py-1.5 rounded-full bg-primary-container text-primary font-label-lg text-label-lg transition-transform active:scale-95 shadow-sm flex items-center gap-1">
+<span class="">Todas</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</button>
+<button class="shrink-0 px-space-md py-1.5 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container font-label-lg text-label-lg transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">photo_library</span>
+<span class="">Con fotos</span>
+</button>
+<button class="shrink-0 px-space-md py-1.5 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container font-label-lg text-label-lg transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary">swap_horiz</span>
+<span class="">En préstamo</span>
+<span class="px-1.5 py-0.2 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">2</span>
+</button>
+<button class="shrink-0 px-space-md py-1.5 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container font-label-lg text-label-lg transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">label</span>
+<span class="">Etiquetas</span>
+</button>
+</div>
+</div>
+<!-- ZONE 1: Estudio Norte -->
+<section class="flex flex-col mb-space-xl">
+<!-- Zone Header -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-2 min-w-0">
+<span class="text-[18px] select-none">📍</span>
+<h2 class="font-title-lg text-title-lg text-on-surface truncate">Estudio Norte</h2>
+<span class="shrink-0 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">2 cajas</span>
+</div>
+<a class="shrink-0 flex items-center gap-0.5 text-primary font-label-lg text-label-lg hover:underline transition-colors" href="#">
+<span class="">Ver zona</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<!-- 2-Column Responsive Card Grid -->
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Card 1: BX-042 -->
+<article class="flex flex-col bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden transition-all duration-200 active:scale-[0.98]">
+<!-- Mosaic Photo Collage (2 stacked thumbs + 1 big) -->
+<div class="relative w-full h-32 bg-surface-container overflow-hidden grid grid-cols-3 gap-0.5">
+<div class="col-span-2 h-full relative">
+<img class="w-full h-full object-cover" data-alt="Close up photography of vintage film camera lenses and artisan wooden calligraphy fountain pens neatly organized in padded dividers, warm amber accent light, tactile wooden grain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBJ-XC0r0qEFo5lORwGpYJYerP8gY7TlHzf9Hx2_rMSDiXQFuqPf8t8cf4A0YMH7HmIdjYoPyE0k0k60ZB51p5ZhdGUwgJNc3zYticZ_6-UZrksQY8aLAyCBaUcv5MYH7h_cqiaM7JUXpBnJCDS7z0SK_b57nRcwCV020zFVzM-VNvKgBrxa12eNVHzwttyM7uUNSuFeJhhefg_fiqVYOyXW0hW2cyT5oMA5C69Gfu">
+</div>
+<div class="col-span-1 h-full flex flex-col gap-0.5">
+<div class="h-1/2 w-full relative">
+<img class="w-full h-full object-cover" data-alt="Architectural sketchbook with watercolor swatches and terracotta colored pencils in a tidy tray, soft warm daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK2wVpgGE67ieSZiCnqAsC3BmYDlEH5YbwiR3Cse6_q44PMVQ_OAGdkOn9M9XG0wlxrxe8w_aPaHwVXK-VpK5LTwZRU0BLYL04PsBYwYs2YRhtm1Q5aSRgzzYlllWebi2-_IkAP8IjIVO9UV5O5oBOmquAyavAw3dICUB58Ds09779uUsobYXTTG3U22HKQO6dGjAXH--NW9-FnZNc9WeHPp4EJ-dAQW7nPP3j5UV3">
+</div>
+<div class="h-1/2 w-full relative bg-surface-container-highest flex items-center justify-center">
+<img class="w-full h-full object-cover opacity-60" data-alt="Mechanical drafting compass and brass metal rulers on natural kraft cardstock background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6BODnwhdg0s1ZNBZoADe6-MKpfcADZJDM1uGfDBPY1DK16FlXRMyT6hKwYJJ5yIzk7ldSOUcKDZU9bex-_63tzuqaowCjeXLHLxqZtz-7h5dk6d5T962V16oc9238gWHX5DOKR0cf6-jwRFHIU-z5EzST_q4IGYXV6mA_tQICs0kGGVO3CBjK9UA_KL5dytzKtz7GDs53eMsnq9xGLAvIEQJY38sc21hbODvdtnRm">
+<div class="absolute inset-0 bg-on-surface/40 flex items-center justify-center">
+<span class="text-surface font-label-sm text-label-sm font-bold">+4</span>
+</div>
+</div>
+</div>
+<!-- Color Tag Strip Badge -->
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-purple/90 text-surface-clean backdrop-blur-sm shadow-sm font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-clean"></span>
+<span class="font-medium">Creativo</span>
+</div>
+<!-- Numeric ID Badge -->
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface font-label-sm text-label-sm font-mono shadow-xs">
+            #BX-042
+          </div>
+</div>
+<!-- Box Details Content -->
+<div class="p-space-sm flex flex-col flex-1 justify-between gap-space-xs">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface line-clamp-1">Ópticas &amp; Bocetos</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">12 objetos · 2 subcajas</p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-tag-green">
+<span class="w-1.5 h-1.5 rounded-full bg-tag-green"></span>
+              Disponible
+            </span>
+<button aria-label="Opciones de caja #BX-042" class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 2: BX-019 (With Loan Status) -->
+<article class="flex flex-col bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden transition-all duration-200 active:scale-[0.98]">
+<!-- Mosaic Photo Collage (Split 50/50 horizontal) -->
+<div class="relative w-full h-32 bg-surface-container overflow-hidden grid grid-cols-2 gap-0.5">
+<div class="h-full relative">
+<img class="w-full h-full object-cover" data-alt="Microphones audio interface and brass braided cables arranged inside protective kraft foam insert, cinematic studio light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvc7WOVegl2t7uD0XtvAsm1EPfyUypnd4k5pY6rXMoQUCR4HEWYXq_DDE90XTxDUNfnJNZLOjzdgQKCaanYDUwKPiQlVkjgei_6LgK18wcpODsrazawa14g97flekSro0lVfiiYweKoxnOaadjZOGu7_MdwiujIY1onlU1TMS2w9R134vbUamXNveNV0WDEbfgmwNx1WDiWlKJbX5EToZxf1KTv2Jzo_0M9G6gsvGf">
+</div>
+<div class="h-full relative bg-surface-container-highest flex items-center justify-center">
+<img class="w-full h-full object-cover opacity-60" data-alt="Professional over-ear audio monitor headphones with amber leather cushions resting inside kraft box" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDTWndFB9eImVRVr7cyCOGg7G6zEAiqCxsrjZi_g-ejqT5IR0OmzZwn9M7cJ4Z_F8hDf-lPxLjKyXw7jdAKIsYpzjqijeweaLH4qkj-c4wZifrWIJuPaQSgSeheUm9XbhFa2l6wHSng13dl1_6VdP0vArHPOE12GtT0U-6RF8EoracHm1htSIz6yn25gw_QmyCdD1-dEwT2EuWPSIDSwdA1XNTSgijurgDf6ZU3Qgx">
+<div class="absolute inset-0 bg-on-surface/40 flex items-center justify-center">
+<span class="text-surface font-label-sm text-label-sm font-bold">+2</span>
+</div>
+</div>
+<!-- Color Tag Strip Badge -->
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-blue/90 text-surface-clean backdrop-blur-sm shadow-sm font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-clean"></span>
+<span class="font-medium">Audio Lab</span>
+</div>
+<!-- Numeric ID Badge -->
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface font-label-sm text-label-sm font-mono shadow-xs">
+            #BX-019
+          </div>
+<!-- Loan State Alert Badge -->
+<div class="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md bg-tertiary-fixed text-on-tertiary-fixed shadow-sm font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[12px]">swap_horiz</span>
+<span class="">1 prestado</span>
+</div>
+</div>
+<!-- Box Details Content -->
+<div class="p-space-sm flex flex-col flex-1 justify-between gap-space-xs">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface line-clamp-1">Micrófonos &amp; DAC</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">8 objetos · 0 subcajas</p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-tertiary truncate">A: Marcos V.</span>
+<button aria-label="Opciones de caja #BX-019" class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- ZONE 2: Trastero Principal -->
+<section class="flex flex-col mb-space-xl">
+<!-- Zone Header -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-2 min-w-0">
+<span class="text-[18px] select-none">📍</span>
+<h2 class="font-title-lg text-title-lg text-on-surface truncate">Trastero Principal</h2>
+<span class="shrink-0 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">3 cajas</span>
+</div>
+<a class="shrink-0 flex items-center gap-0.5 text-primary font-label-lg text-label-lg hover:underline transition-colors" href="#">
+<span class="">Ver zona</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<!-- 2-Column Responsive Card Grid -->
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Card 3: BX-088 -->
+<article class="flex flex-col bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden transition-all duration-200 active:scale-[0.98]">
+<!-- Mosaic Photo Collage -->
+<div class="relative w-full h-32 bg-surface-container overflow-hidden grid grid-cols-3 gap-0.5">
+<div class="col-span-2 h-full relative">
+<img class="w-full h-full object-cover" data-alt="Heavy duty chrome vanadium wrenches, socket set and precision screwdrivers neatly placed in custom cut foam toolbox, high clarity industrial aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAUtTEZC3uuuP0SORuwDbBqS0-j3R8ubFvtosVDXmaMKtqgt5aTOhLMygDwnxDomfmBjiAOddQqK6h6CTo6ZS2DWSBYFgexFpLUnYuVKbCKicaZPtI3eAUMdgLAeKBAlk_GO_CSiyNKwoE3_yeR7rX6JAwBang5njCHfe16zMv9SVs9bjIhZGXh6oD9xmonEo8vA8sLzS5cqq1CoUZ7CuXze_kenazk91gcKbnLNHh">
+</div>
+<div class="col-span-1 h-full flex flex-col gap-0.5">
+<div class="h-1/2 w-full relative">
+<img class="w-full h-full object-cover" data-alt="Cordless impact drill with amber lithium battery pack resting on clean workshop surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9_Hgyed3-bjdfh0j5J2tB25oZYxdLP7vkX1_nFIFZ02FPZAXAdisbs8sEr3AeqW5wtjKE1MEehBBzjHirsxvG7IRumT_uZGUGMtqL7rCOYYQkozSpuYCh-UnQWcJUaZIZSjYSOwX2U3IW_ov1sKR6Vw_pTh6wDS0DgfNAoqQVzhWal1wLy67TGoTYnUMw1rzmBAaEiDd5X45ZqZGTEGdd4FitBSgvfj4IaV2IJT1k">
+</div>
+<div class="h-1/2 w-full relative bg-surface-container-highest flex items-center justify-center">
+<img class="w-full h-full object-cover opacity-60" data-alt="Stainless steel screws, washers and bolts inside clear compartment organizer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6_d6tbJ_K67n-SFHAajoB5uxyFXuyc3PxD3yQEWbyBrFta3UnQzwfKTF3q4ci2t5Q2CkPCK5SEn9uECeHnHTzvDE6Dxg1KSHJpqmaQEnmdU44k_7ZTcZwYv11ntCArqiCCtLYz_RpNQgrQE7lawp5fBJ6uxcKMXbBYKL-Ik7Eu1HDD24ce7OKqMczxRZWclXUPNWJliQD2csg8crrcZEiSs5eTIOmIwkWyBhrnbQ2">
+<div class="absolute inset-0 bg-on-surface/40 flex items-center justify-center">
+<span class="text-surface font-label-sm text-label-sm font-bold">+5</span>
+</div>
+</div>
+</div>
+<!-- Color Tag Strip Badge -->
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-amber/95 text-on-secondary-fixed backdrop-blur-sm shadow-sm font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-on-secondary-fixed"></span>
+<span class="font-medium">Herramientas</span>
+</div>
+<!-- Numeric ID Badge -->
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface font-label-sm text-label-sm font-mono shadow-xs">
+            #BX-088
+          </div>
+</div>
+<!-- Box Details Content -->
+<div class="p-space-sm flex flex-col flex-1 justify-between gap-space-xs">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface line-clamp-1">Taller &amp; Bricolaje</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">24 objetos · 3 subcajas</p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-tag-green">
+<span class="w-1.5 h-1.5 rounded-full bg-tag-green"></span>
+              Completo
+            </span>
+<button aria-label="Opciones de caja #BX-088" class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 4: BX-054 -->
+<article class="flex flex-col bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden transition-all duration-200 active:scale-[0.98]">
+<!-- Mosaic Photo Collage -->
+<div class="relative w-full h-32 bg-surface-container overflow-hidden grid grid-cols-2 gap-0.5">
+<div class="h-full relative">
+<img class="w-full h-full object-cover" data-alt="Nordic wool blankets and beige cashmere knit sweaters rolled neatly into textile preservation box, warm cozy lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfVl5cGXgJhf0JKeErZ7nWfeBUVPHJX9BhYX7Dw1QWrWY-NJLSEYWv_dxblWXjRGFCqX6_ZxUe49I6qt_ziXK52IPA1KONINE_z6A89s98IWUcK9KW1K_oDWSWH-vVK6Hi07oNJsfNK8wWctFFupLbO2H4OyQrHICy9i3AaVM9YHy9Pafb7d4idhE7L2mqQp__DwNRashhkEq32YIyZZx3Ynsg3iw9n6U1orw_5ai8">
+</div>
+<div class="h-full relative bg-surface-container-highest flex items-center justify-center">
+<img class="w-full h-full object-cover opacity-60" data-alt="Cedar moth-repellent rings and vacuum sealed garment bags stacked inside wooden trunk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjuJ08zox-HHRrW0kLoAfj5qru0gq5pk04IZIFiWNXNL9TP35zxmIuX7-KyCjwI0Z6hW7ep9DKRf0sh8Sqvo8HEoxlWEpICRWmZaZmtQVCtcz7o24-fsMm2oEPZLuBJ49eZwykLSRQFE--rp0ymC8K6H5i3cQgie-aAPJrTdzAnVUADCcMK_U0Zofdg_qEZIFy7qJ5Dy0P1yOGwag5gqDXkKbH7ol9zzURXTML3qHj">
+<div class="absolute inset-0 bg-on-surface/40 flex items-center justify-center">
+<span class="text-surface font-label-sm text-label-sm font-bold">+3</span>
+</div>
+</div>
+<!-- Color Tag Strip Badge -->
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-teal/90 text-surface-clean backdrop-blur-sm shadow-sm font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-clean"></span>
+<span class="font-medium">Textil</span>
+</div>
+<!-- Numeric ID Badge -->
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface font-label-sm text-label-sm font-mono shadow-xs">
+            #BX-054
+          </div>
+</div>
+<!-- Box Details Content -->
+<div class="p-space-sm flex flex-col flex-1 justify-between gap-space-xs">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface line-clamp-1">Ropa Invierno A</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">15 objetos · 1 subcaja</p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-tag-green">
+<span class="w-1.5 h-1.5 rounded-full bg-tag-green"></span>
+              Almacenado
+            </span>
+<button aria-label="Opciones de caja #BX-054" class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- ZONE 3: Dormitorio Principal -->
+<section class="flex flex-col mb-space-lg">
+<!-- Zone Header -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-2 min-w-0">
+<span class="text-[18px] select-none">📍</span>
+<h2 class="font-title-lg text-title-lg text-on-surface truncate">Dormitorio Principal</h2>
+<span class="shrink-0 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">1 caja</span>
+</div>
+<a class="shrink-0 flex items-center gap-0.5 text-primary font-label-lg text-label-lg hover:underline transition-colors" href="#">
+<span class="">Ver zona</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<!-- 2-Column Responsive Card Grid -->
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Card 5: BX-103 -->
+<article class="flex flex-col bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden transition-all duration-200 active:scale-[0.98]">
+<!-- Mosaic Photo Collage -->
+<div class="relative w-full h-32 bg-surface-container overflow-hidden grid grid-cols-2 gap-0.5">
+<div class="h-full relative">
+<img class="w-full h-full object-cover" data-alt="Classic hardbound literary novels and leather journals stacked horizontally in organized cardboard chest, soft ambient warm lamp lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhBT_7N5djB5oI26Hj4SIE8A1RfWxrDlMxDW1R3igq5y4nF4uvbtnzy0Z-TKSB8_4jm8wEJhZXQoWnxbR-GslLzR8lAGHZmOvICg5BcmUKaV_b3zDe9A6ozBJwuf4bvFUPETiCidoL4grkMQgl7jqxwedL_1sIbZuaYdwzqV5brokSgS1pKKlSfHJo6L0HrZjmIcnY076qognieKJtW_aeLfq7gqaXAbzTkqSzipGt">
+</div>
+<div class="h-full relative bg-surface-container-highest flex items-center justify-center">
+<img class="w-full h-full object-cover opacity-60" data-alt="Antique brass bookmark and magnifying glass resting on vintage embossed book covers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1UZL1RJdg68_OrqhqmuoBBZL5ybcwJJsAhvqE5kh3FGXhP1ZqUhmt2m8jPDJtqJDeyW2MDyZHvD9Eu2Sq1916_abjm1oGR9bWZmxrIeUCknQ6gOjSJkeo2THZeD2jijdvqKbKDTPHfctGhaOOFGZgwBM_Oyc8B6wb6UbHJ8Wed_9XatVq5B3rwb4W1uO_sWKVVFQeH2pmz_eSSsZddrmHypHe8xMgnfXHglcu-fYL">
+<div class="absolute inset-0 bg-on-surface/40 flex items-center justify-center">
+<span class="text-surface font-label-sm text-label-sm font-bold">+1</span>
+</div>
+</div>
+<!-- Color Tag Strip Badge -->
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary text-surface-clean backdrop-blur-sm shadow-sm font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-clean"></span>
+<span class="font-medium">Lectura</span>
+</div>
+<!-- Numeric ID Badge -->
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface font-label-sm text-label-sm font-mono shadow-xs">
+            #BX-103
+          </div>
+</div>
+<!-- Box Details Content -->
+<div class="p-space-sm flex flex-col flex-1 justify-between gap-space-xs">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface line-clamp-1">Libros Colección</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">9 objetos · 0 subcajas</p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-tag-green">
+<span class="w-1.5 h-1.5 rounded-full bg-tag-green"></span>
+              Disponible
+            </span>
+<button aria-label="Opciones de caja #BX-103" class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Quick Add Zone Placeholder Card -->
+<button class="flex flex-col items-center justify-center h-full min-h-[200px] rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors p-space-sm text-center group cursor-pointer active:scale-95">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest group-hover:bg-primary-container text-on-surface-variant group-hover:text-primary flex items-center justify-center mb-2 transition-colors">
+<span class="material-symbols-outlined text-[22px]">add</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Añadir caja</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">En Dormitorio Principal</span>
+</button>
+</div>
+</section>
+<!-- Floating Action Button (FAB) -->
+<div class="fixed bottom-20 right-margin z-40">
+<button class="flex items-center gap-2 pl-4 pr-5 h-14 rounded-2xl bg-primary-fixed-dim hover:bg-primary-fixed text-on-primary-fixed shadow-[0_8px_16px_rgba(33,26,22,0.18)] transition-all active:scale-95 active:shadow-md cursor-pointer">
+<span class="material-symbols-outlined text-[22px]">add</span>
+<span class="font-title-md text-title-md tracking-tight font-semibold">+ Nueva Caja</span>
+</button>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for View Switcher toggling
+  const gridBtn = document.getElementById('viewGridBtn');
+  const listBtn = document.getElementById('viewListBtn');
+
+  if (gridBtn && listBtn) {
+    gridBtn.addEventListener('click', () => {
+      gridBtn.className = 'w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center transition-all shadow-sm';
+      listBtn.className = 'w-8 h-8 rounded-full text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-all';
+    });
+
+    listBtn.addEventListener('click', () => {
+      listBtn.className = 'w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center transition-all shadow-sm';
+      gridBtn.className = 'w-8 h-8 rounded-full text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-all';
+    });
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-title-md"><div class="flex justify-around items-center h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-colors text-primary font-title-md" data-path="cajas" href="#"><span class="material-symbols-outlined text-[22px]">package_2</span><span class="font-label-sm text-label-sm mt-space-xs">Cajas</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-on-surface-variant transition-colors" data-path="zonas" href="#"><span class="material-symbols-outlined text-[22px]">grid_view</span><span class="font-label-sm text-label-sm mt-space-xs">Zonas</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-on-surface-variant transition-colors" data-path="prestamos" href="#"><span class="material-symbols-outlined text-[22px]">swap_horiz</span><span class="font-label-sm text-label-sm mt-space-xs">Préstamos</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-on-surface-variant transition-colors" data-path="ajustes" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="font-label-sm text-label-sm mt-space-xs">Ajustes</span></a></div></nav>
+
+</body></html>
