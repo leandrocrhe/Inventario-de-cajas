@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#000000;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "outline-variant": "#d9c2b3", "tag-blue": "#3B82F6", "inverse-primary": "#ffb77d", "error": "#ba1a1a", "tag-red": "#EF4444", "on-primary-fixed-variant": "#6e3900", "secondary-fixed": "#fadebc", "primary-fixed": "#ffdcc3", "inverse-surface": "#352f2a", "on-secondary-container": "#745f44", "surface-container-low": "#fdf2e9", "surface-container-highest": "#ebe1d9", "outline": "#867467", "surface-tint": "#8f4d04", "surface-container": "#f7ece4", "on-error": "#ffffff", "on-primary-fixed": "#2f1500", "on-surface": "#201b16", "on-tertiary": "#ffffff", "tertiary-container": "#8c473b", "tag-purple": "#8B5CF6", "on-error-container": "#93000a", "secondary": "#6f5b40", "on-background": "#201b16", "tag-teal": "#14B8A6", "tertiary-fixed": "#ffdad4", "on-secondary-fixed": "#271904", "tag-slate": "#64748B", "background-warm": "#FBF9F5", "surface-container-high": "#f1e6de", "on-surface-variant": "#534438", "tag-green": "#10B981", "surface-dim": "#e3d8d0", "background": "#fff8f4", "tertiary-fixed-dim": "#ffb4a7", "on-tertiary-fixed-variant": "#733429", "on-primary-container": "#2E1500", "primary-container": "#FFDCC1", "surface-container-lowest": "#ffffff", "surface": "#fff8f4", "secondary-container": "#f7dbb9", "on-secondary-fixed-variant": "#56442a", "tertiary": "#6f3026", "primary-fixed-dim": "#ffb77d", "on-tertiary-fixed": "#3b0904", "surface-clean": "#FFFFFF", "on-surface-espresso": "#211A16", "on-tertiary-container": "#ffc6bb", "primary": "#693600", "inverse-on-surface": "#faefe7", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-variant": "#F2EFE9", "tag-amber": "#F59E0B", "surface-bright": "#fff8f4", "secondary-fixed-dim": "#ddc2a1", "on-secondary": "#ffffff" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xs": "0.25rem", "gutter": "0.75rem", "margin": "1rem", "space-lg": "1rem", "gutter-tablet": "1rem", "space-xl": "1.5rem", "margin-tablet": "1.5rem", "space-md": "0.75rem", "space-sm": "0.5rem" }, "fontFamily": { "body-md": ["Roboto Flex"], "body-lg": ["Roboto Flex"], "label-lg": ["Roboto Flex"], "title-md": ["Roboto Flex"], "headline-md": ["Roboto Flex"], "label-sm": ["Roboto Flex"], "title-lg": ["Roboto Flex"], "display-lg": ["Roboto Flex"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "500" }], "headline-md": ["24px", { "lineHeight": "30px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }], "title-lg": ["20px", { "lineHeight": "26px", "fontWeight": "700" }], "display-lg": ["32px", { "lineHeight": "38px", "fontWeight": "700" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Volver" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-variant transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-title-lg text-title-lg text-on-surface">Reordenación De Zonas</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Opciones de vista" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined text-[22px]">more_vert</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen px-margin"><div class="flex flex-col w-full pb-8">
+<!-- Status & Quick Action Summary Header -->
+<div class="flex items-center justify-between py-3 mb-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary-fixed-dim uppercase tracking-wider">Configuración de Flujo</span>
+<p class="font-body-md text-body-md text-outline-variant">Arrastra para reordenar la vista principal</p>
+</div>
+<button class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-fixed-dim text-on-primary-fixed font-label-lg text-label-lg shadow-sm hover:brightness-110 active:scale-95 transition-all" id="save-order-btn">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+<span>Guardar</span>
+</button>
+</div>
+<!-- Warm Tactile Helper Card -->
+<div class="relative overflow-hidden rounded-xl bg-inverse-surface text-inverse-on-surface p-4 mb-5 shadow-sm">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-tint/20 text-primary-fixed-dim flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">swap_vert</span>
+</div>
+<div class="flex flex-col min-w-0 pr-6">
+<h2 class="font-title-md text-title-md text-inverse-on-surface font-semibold mb-0.5">Prioridad visual de almacén</h2>
+<p class="font-body-md text-body-md text-outline-variant leading-relaxed">
+          El orden establecido aquí definirá la secuencia en que se organizan las cajas en tus rutas de inventario.
+        </p>
+</div>
+<button class="absolute top-3 right-3 text-outline hover:text-inverse-on-surface transition-colors p-1" onclick="this.closest('.relative').style.display='none'">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Reorderable List Container -->
+<div class="flex flex-col gap-2.5" id="zone-sortable-list">
+<!-- Item 1: Estudio Norte -->
+<div class="zone-item group flex items-center justify-between p-3.5 rounded-xl bg-inverse-surface shadow-sm cursor-grab active:cursor-grabbing transition-all select-none" data-id="1">
+<div class="flex items-center gap-3.5 min-w-0">
+<!-- Zone Visual Indicator & Icon -->
+<div class="w-11 h-11 rounded-lg bg-surface-container-high text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">desktop_windows</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-inverse-on-surface truncate">Estudio Norte</span>
+<span class="w-2 h-2 rounded-full bg-tag-blue"></span>
+</div>
+<span class="font-label-sm text-label-sm text-outline-variant">2 cajas asociadas · Rack A</span>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button aria-label="Cambiar visibilidad" class="toggle-visibility w-9 h-9 flex items-center justify-center rounded-full text-outline-variant hover:text-inverse-on-surface active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button aria-label="Más opciones" class="w-9 h-9 flex items-center justify-center rounded-full text-outline-variant hover:text-inverse-on-surface active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<div class="drag-handle w-9 h-9 flex items-center justify-center text-primary-fixed-dim hover:text-primary active:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[24px]">drag_indicator</span>
+</div>
+</div>
+</div>
+<!-- Item 2: Dormitorio -->
+<div class="zone-item group flex items-center justify-between p-3.5 rounded-xl bg-inverse-surface shadow-sm cursor-grab active:cursor-grabbing transition-all select-none" data-id="2">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-11 h-11 rounded-lg bg-surface-container-high text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">bed</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-inverse-on-surface truncate">Dormitorio</span>
+<span class="w-2 h-2 rounded-full bg-tag-purple"></span>
+</div>
+<span class="font-label-sm text-label-sm text-outline-variant">1 caja asociada · Armario</span>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button aria-label="Cambiar visibilidad" class="toggle-visibility w-9 h-9 flex items-center justify-center rounded-full text-outline-variant hover:text-inverse-on-surface active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button aria-label="Más opciones" class="w-9 h-9 flex items-center justify-center rounded-full text-outline-variant hover:text-inverse-on-surface active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<div class="drag-handle w-9 h-9 flex items-center justify-center text-primary-fixed-dim hover:text-primary active:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[24px]">drag_indicator</span>
+</div>
+</div>
+</div>
+<!-- Item 3: Trastero & Garaje (Highlighted/Active Tactile feel) -->
+<div class="zone-item group flex items-center justify-between p-3.5 rounded-xl bg-surface-dim shadow-md cursor-grab active:cursor-grabbing transition-all select-none" data-id="3">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-11 h-11 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[22px]">garage_home</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Trastero & Garaje</span>
+<span class="w-2 h-2 rounded-full bg-tag-amber"></span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">2 cajas asociadas · Palet B2</span>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button aria-label="Cambiar visibilidad" class="toggle-visibility w-9 h-9 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button aria-label="Más opciones" class="w-9 h-9 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<div class="drag-handle w-9 h-9 flex items-center justify-center text-primary active:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[24px]">drag_indicator</span>
+</div>
+</div>
+</div>
+<!-- Item 4: Buhardilla / Ático -->
+<div class="zone-item group flex items-center justify-between p-3.5 rounded-xl bg-inverse-surface shadow-sm cursor-grab active:cursor-grabbing transition-all select-none opacity-85" data-id="4">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-11 h-11 rounded-lg bg-surface-container-high text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">roofing</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-inverse-on-surface truncate">Buhardilla / Ático</span>
+<span class="w-2 h-2 rounded-full bg-tag-slate"></span>
+</div>
+<span class="font-label-sm text-label-sm text-outline-variant">0 cajas asociadas · Espacio libre</span>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button aria-label="Cambiar visibilidad" class="toggle-visibility w-9 h-9 flex items-center justify-center rounded-full text-outline-variant hover:text-inverse-on-surface active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button aria-label="Más opciones" class="w-9 h-9 flex items-center justify-center rounded-full text-outline-variant hover:text-inverse-on-surface active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<div class="drag-handle w-9 h-9 flex items-center justify-center text-primary-fixed-dim hover:text-primary active:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[24px]">drag_indicator</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Dynamic Feedback Banner (Hidden by default, shown on changes) -->
+<div class="hidden mt-4 p-3 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-between" id="reorder-toast">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">touch_app</span>
+<span class="font-label-sm text-label-sm">Orden modificado manualmente</span>
+</div>
+<span class="font-label-sm text-label-sm underline cursor-pointer" id="reset-order-btn">Restablecer</span>
+</div>
+<!-- Ambient Bottom Action Section -->
+<div class="mt-6 flex flex-col gap-3">
+<button class="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl bg-inverse-surface hover:bg-surface-container-high text-primary-fixed-dim hover:text-primary font-title-md text-title-md shadow-sm active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[22px]">add_circle</span>
+<span>Añadir Otra Zona</span>
+</button>
+<div class="flex items-center justify-center gap-2 text-outline-variant py-2">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span class="font-label-sm text-label-sm">Los cambios sincronizan en todos tus dispositivos</span>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const list = document.getElementById('zone-sortable-list');
+    const toast = document.getElementById('reorder-toast');
+    const saveBtn = document.getElementById('save-order-btn');
+    const resetBtn = document.getElementById('reset-order-btn');
+    let draggedItem = null;
+    let initialOrder = Array.from(list.children);
+
+    // Visibility Toggle micro-interaction
+    list.querySelectorAll('.toggle-visibility').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const icon = btn.querySelector('.material-symbols-outlined');
+        const parentCard = btn.closest('.zone-item');
+        if (icon.textContent === 'visibility') {
+          icon.textContent = 'visibility_off';
+          parentCard.classList.add('opacity-40');
+        } else {
+          icon.textContent = 'visibility';
+          parentCard.classList.remove('opacity-40');
+        }
+      });
+    });
+
+    // Touch & Pointer Drag simulation for mobile list
+    const items = list.querySelectorAll('.zone-item');
+    items.forEach(item => {
+      item.setAttribute('draggable', 'true');
+
+      item.addEventListener('dragstart', (e) => {
+        draggedItem = item;
+        item.classList.add('opacity-50', 'scale-[0.98]', 'shadow-xl');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      item.addEventListener('dragend', () => {
+        item.classList.remove('opacity-50', 'scale-[0.98]', 'shadow-xl');
+        draggedItem = null;
+        toast.classList.remove('hidden');
+      });
+
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (draggedItem && draggedItem !== item) {
+          const rect = item.getBoundingClientRect();
+          const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+          list.insertBefore(draggedItem, next ? item.nextSibling : item);
+        }
+      });
+    });
+
+    // Save action animation
+    saveBtn.addEventListener('click', () => {
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span><span>Guardado</span>';
+      toast.classList.add('hidden');
+      setTimeout(() => {
+        saveBtn.innerHTML = originalText;
+      }, 1800);
+    });
+
+    // Reset action
+    resetBtn.addEventListener('click', () => {
+      initialOrder.forEach(node => list.appendChild(node));
+      toast.classList.add('hidden');
+    });
+  })();
+</script></main></body></html>
