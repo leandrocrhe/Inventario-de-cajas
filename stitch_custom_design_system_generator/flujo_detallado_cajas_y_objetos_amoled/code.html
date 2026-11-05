@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <title>Flujo de Cajas y Objetos - Arquitectura & Interacción AMOLED</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@100..900&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "pure-black": "#000000",
+            "surface-dark": "#0D0B0A",
+            "surface-card": "#151210",
+            "surface-elevated": "#1E1A17",
+            "surface-border": "#2E2620",
+            "surface-border-subtle": "#201A16",
+            "amber-primary": "#FFB77C",
+            "amber-dim": "#8B4A00",
+            "amber-container": "#4D2700",
+            "text-high": "#FAF6F2",
+            "text-medium": "#B8AEA5",
+            "text-muted": "#7A7067",
+            "tag-amber": "#F59E0B",
+            "tag-blue": "#3B82F6",
+            "tag-green": "#10B981",
+            "tag-purple": "#8B5CF6",
+            "tag-red": "#EF4444",
+            "tag-teal": "#14B8A6"
+          },
+          fontFamily: {
+            sans: ["Roboto Flex", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #000000;
+      color: #FAF6F2;
+      font-family: 'Roboto Flex', system-ui, sans-serif;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    ::-webkit-scrollbar { display: none; }
+    .node-active {
+      box-shadow: 0 0 0 2px #FFB77C, 0 8px 24px rgba(255, 183, 124, 0.15);
+    }
+    .flow-line {
+      position: relative;
+    }
+    .flow-line::before {
+      content: '';
+      position: absolute;
+      left: 20px;
+      top: 36px;
+      bottom: -16px;
+      width: 2px;
+      background: linear-gradient(to bottom, #FFB77C 0%, #3E3228 100%);
+      z-index: 1;
+    }
+  </style>
+</head>
+<body class="bg-black min-h-screen text-text-high flex flex-col antialiased">
+  
+  <!-- Fixed Top Header -->
+  <header class="sticky top-0 z-50 bg-black/95 backdrop-blur-md border-b border-surface-border px-4 py-3">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="#" onclick="history.back(); return false;" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-card text-text-medium hover:text-white border border-surface-border transition-colors">
+          <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        </a>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-amber-primary animate-pulse"></span>
+            <span class="text-xs uppercase tracking-wider font-semibold text-amber-primary">Flujo Detallado</span>
+          </div>
+          <h1 class="text-lg font-bold text-white tracking-tight">Cajas y Objetos</h1>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button id="view-mode-btn" class="px-3 py-1.5 rounded-full bg-surface-card border border-surface-border text-xs font-medium text-amber-primary flex items-center gap-1.5 hover:bg-surface-elevated transition-colors">
+          <span class="material-symbols-outlined text-[16px]">touch_app</span>
+          <span>Interactivo</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Breadcrumb & Legend -->
+  <section class="px-4 py-3 bg-surface-dark border-b border-surface-border-subtle">
+    <div class="flex items-center justify-between text-xs text-text-muted mb-2">
+      <span class="font-medium">Cadena de Interacción Jerárquica:</span>
+      <span class="text-amber-primary font-mono text-[11px]">4 Pasos · 7 Botones Clave</span>
+    </div>
+    <!-- Step Indicators Horizontal -->
+    <div class="grid grid-cols-4 gap-1.5">
+      <div class="flex flex-col items-center p-2 rounded-lg bg-surface-card border border-amber-primary/40 text-center">
+        <span class="text-[10px] font-bold text-amber-primary mb-0.5">1. HOME</span>
+        <span class="text-[11px] text-white font-medium truncate w-full">Mis Cajas</span>
+      </div>
+      <div class="flex flex-col items-center p-2 rounded-lg bg-surface-card border border-surface-border text-center">
+        <span class="text-[10px] font-bold text-text-muted mb-0.5">2. MODAL</span>
+        <span class="text-[11px] text-text-medium truncate w-full">Detalle Caja</span>
+      </div>
+      <div class="flex flex-col items-center p-2 rounded-lg bg-surface-card border border-surface-border text-center">
+        <span class="text-[10px] font-bold text-text-muted mb-0.5">3. FICHA</span>
+        <span class="text-[11px] text-text-medium truncate w-full">Objeto</span>
+      </div>
+      <div class="flex flex-col items-center p-2 rounded-lg bg-surface-card border border-surface-border text-center">
+        <span class="text-[10px] font-bold text-text-muted mb-0.5">4. FULL</span>
+        <span class="text-[11px] text-text-medium truncate w-full">Galería</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flow Visual Canvas -->
+  <main class="flex-1 px-4 py-6 max-w-lg mx-auto w-full space-y-6 pb-28">
+
+    <!-- PASO 1: PANTALLA PRINCIPAL (HOME) -->
+    <div class="rounded-2xl bg-surface-dark border border-surface-border overflow-hidden shadow-2xl">
+      <!-- Node Header -->
+      <div class="p-4 bg-surface-card border-b border-surface-border flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-primary/10 border border-amber-primary/30 flex items-center justify-center text-amber-primary font-bold text-sm">
+            1
+          </div>
+          <div>
+            <span class="text-[11px] uppercase tracking-wider text-amber-primary font-semibold">Pantalla de Origen</span>
+            <h2 class="text-base font-bold text-white">Inventario (Home / Cuadrícula)</h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full bg-black text-[11px] text-text-muted border border-surface-border">Vista Base</span>
+      </div>
+
+      <!-- Content Breakdown & Trigger Buttons -->
+      <div class="p-4 space-y-3">
+        <p class="text-xs text-text-medium leading-relaxed">
+          Punto de entrada de la aplicación. Muestra las cajas agrupadas por zonas o en vista general. Dispone de dos acciones principales:
+        </p>
+
+        <!-- Triggers List -->
+        <div class="space-y-2">
+          <!-- Button 1.1: Tap en Tarjeta de Caja -->
+          <div class="p-3 rounded-xl bg-surface-card border border-amber-primary/40 flex items-center justify-between group hover:border-amber-primary transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-tag-amber/15 text-tag-amber flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold text-white">Tap en Tarjeta de Caja</span>
+                  <span class="px-1.5 py-0.2 bg-amber-primary text-black font-extrabold text-[9px] rounded">PRIMARIO</span>
+                </div>
+                <p class="text-[11px] text-text-muted truncate">Ej: "Trastero Principal" o "Armario Estudio"</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-amber-primary text-xs font-semibold shrink-0 pl-2">
+              <span>Abre Modal</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+            </div>
+          </div>
+
+          <!-- Button 1.2: Botón Flotante '+ Nueva Caja' -->
+          <div class="p-3 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between hover:border-text-medium transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-surface-elevated text-amber-primary flex items-center justify-center shrink-0 border border-surface-border">
+                <span class="material-symbols-outlined text-[18px]">add_box</span>
+              </div>
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-white">Botón FAB: + Nueva Caja</span>
+                <p class="text-[11px] text-text-muted truncate">Botón flotante fijado en esquina inferior derecha</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-text-medium text-xs font-semibold shrink-0 pl-2">
+              <span>Crear Caja</span>
+              <span class="material-symbols-outlined text-[16px]">add</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR 1 -> 2 -->
+    <div class="flex flex-col items-center justify-center -my-2 relative z-10">
+      <div class="w-0.5 h-6 bg-gradient-to-b from-amber-primary to-amber-primary/40"></div>
+      <div class="px-3 py-1 rounded-full bg-surface-elevated border border-amber-primary/40 text-[11px] text-amber-primary font-mono font-medium shadow-lg flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px]">south</span>
+        <span>Abre Bottom Sheet (Animación 250ms)</span>
+      </div>
+      <div class="w-0.5 h-6 bg-gradient-to-b from-amber-primary/40 to-surface-border"></div>
+    </div>
+
+    <!-- PASO 2: MODAL DETALLE DE CAJA -->
+    <div class="rounded-2xl bg-surface-dark border border-amber-primary/40 overflow-hidden shadow-2xl">
+      <!-- Node Header -->
+      <div class="p-4 bg-surface-card border-b border-surface-border flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-primary text-black flex items-center justify-center font-bold text-sm">
+            2
+          </div>
+          <div>
+            <span class="text-[11px] uppercase tracking-wider text-amber-primary font-semibold">Sub-vista Contextual</span>
+            <h2 class="text-base font-bold text-white">Modal Detalle de Caja</h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full bg-amber-primary/10 text-amber-primary text-[11px] font-semibold border border-amber-primary/30">Bottom Sheet M3</span>
+      </div>
+
+      <!-- Content Breakdown & Trigger Buttons inside Box Detail -->
+      <div class="p-4 space-y-3">
+        <!-- Visual miniature representation -->
+        <div class="p-3 rounded-xl bg-black border border-surface-border flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-tag-amber"></span>
+            <div>
+              <div class="text-xs font-bold text-white">T-01 · Herramientas Taller</div>
+              <div class="text-[10px] text-text-muted">Zona: Trastero Principal · 4 objetos</div>
+            </div>
+          </div>
+          <span class="text-[11px] text-amber-primary font-mono">Modo Fotos/Lista</span>
+        </div>
+
+        <p class="text-xs text-text-medium leading-relaxed">
+          En esta vista el usuario explora los objetos contenidos en la caja y ejecuta acciones de gestión:
+        </p>
+
+        <!-- Triggers List inside Step 2 -->
+        <div class="space-y-2">
+          <!-- Button 2.1: Tap en Foto de Objeto -->
+          <div class="p-3 rounded-xl bg-surface-card border border-amber-primary/60 flex items-center justify-between group hover:border-amber-primary transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-surface-elevated text-tag-green flex items-center justify-center shrink-0 border border-surface-border">
+                <span class="material-symbols-outlined text-[18px]">photo_camera</span>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold text-white">Tap en Miniatura / Foto</span>
+                  <span class="px-1.5 py-0.2 bg-tag-green/20 text-tag-green font-extrabold text-[9px] rounded">ACCIÓN CLAVE</span>
+                </div>
+                <p class="text-[11px] text-text-muted truncate">Abre la ficha técnica individual del objeto</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-tag-green text-xs font-semibold shrink-0 pl-2">
+              <span>Ficha Objeto</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+            </div>
+          </div>
+
+          <!-- Button 2.2: + Añadir Objeto -->
+          <div class="p-3 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between hover:border-text-medium transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-surface-elevated text-amber-primary flex items-center justify-center shrink-0 border border-surface-border">
+                <span class="material-symbols-outlined text-[18px]">add_circle</span>
+              </div>
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-white">+ Añadir Objeto a esta Caja</span>
+                <p class="text-[11px] text-text-muted truncate">Abre formulario con captura de foto o texto rápido</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-text-medium text-xs font-semibold shrink-0 pl-2">
+              <span>Formulario</span>
+              <span class="material-symbols-outlined text-[16px]">edit</span>
+            </div>
+          </div>
+
+          <!-- Button 2.3: Mover de Zona -->
+          <div class="p-3 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between hover:border-text-medium transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-surface-elevated text-tag-blue flex items-center justify-center shrink-0 border border-surface-border">
+                <span class="material-symbols-outlined text-[18px]">drive_file_move</span>
+              </div>
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-white">Botón: Mover Caja de Zona</span>
+                <p class="text-[11px] text-text-muted truncate">Despliega selector modal de ubicación de destino</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-tag-blue text-xs font-semibold shrink-0 pl-2">
+              <span>Selector Zona</span>
+              <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR 2 -> 3 -->
+    <div class="flex flex-col items-center justify-center -my-2 relative z-10">
+      <div class="w-0.5 h-6 bg-gradient-to-b from-surface-border to-tag-green/60"></div>
+      <div class="px-3 py-1 rounded-full bg-surface-elevated border border-tag-green/40 text-[11px] text-tag-green font-mono font-medium shadow-lg flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px]">south</span>
+        <span>Tap en Objeto ➔ Ficha Detallada</span>
+      </div>
+      <div class="w-0.5 h-6 bg-gradient-to-b from-tag-green/60 to-surface-border"></div>
+    </div>
+
+    <!-- PASO 3: FICHA DETALLADA DEL OBJETO -->
+    <div class="rounded-2xl bg-surface-dark border border-surface-border overflow-hidden shadow-2xl">
+      <!-- Node Header -->
+      <div class="p-4 bg-surface-card border-b border-surface-border flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-surface-elevated border border-tag-green text-tag-green flex items-center justify-center font-bold text-sm">
+            3
+          </div>
+          <div>
+            <span class="text-[11px] uppercase tracking-wider text-tag-green font-semibold">Ficha Específica</span>
+            <h2 class="text-base font-bold text-white">Ficha Detallada de Objeto</h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full bg-black text-[11px] text-text-muted border border-surface-border">Información & Préstamo</span>
+      </div>
+
+      <!-- Content Breakdown & Trigger Buttons -->
+      <div class="p-4 space-y-3">
+        <div class="p-3 rounded-xl bg-black border border-surface-border flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-surface-card border border-surface-border flex items-center justify-center overflow-hidden">
+              <span class="material-symbols-outlined text-amber-primary text-[22px]">brush</span>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white">Set de Pinceles Sintéticos</div>
+              <div class="text-[10px] text-text-muted">Caja T-01 · 6 uds · Estado: Disponible</div>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-amber-primary/20 text-amber-primary text-[10px] font-bold">1/4 Fotos</span>
+        </div>
+
+        <p class="text-xs text-text-medium leading-relaxed">
+          Concentra las características, stepper de cantidades, historial y estado de préstamo del objeto:
+        </p>
+
+        <!-- Triggers List inside Step 3 -->
+        <div class="space-y-2">
+          <!-- Button 3.1: Tap en Foto Principal para Galería Fullscreen -->
+          <div class="p-3 rounded-xl bg-surface-card border border-tag-purple/60 flex items-center justify-between group hover:border-tag-purple transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-tag-purple/20 text-tag-purple flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[18px]">fullscreen</span>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold text-white">Tap en Portada / Galería</span>
+                  <span class="px-1.5 py-0.2 bg-tag-purple/30 text-tag-purple font-extrabold text-[9px] rounded">PANTALLA COMPLETA</span>
+                </div>
+                <p class="text-[11px] text-text-muted truncate">Abre visor inmersivo con zoom táctil</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-tag-purple text-xs font-semibold shrink-0 pl-2">
+              <span>Ver Galería</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+            </div>
+          </div>
+
+          <!-- Button 3.2: Registrar / Marcar Préstamo -->
+          <div class="p-3 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between hover:border-text-medium transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-surface-elevated text-tag-amber flex items-center justify-center shrink-0 border border-surface-border">
+                <span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+              </div>
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-white">Botón: Prestar este Objeto</span>
+                <p class="text-[11px] text-text-muted truncate">Deriva al flujo de préstamo y selección de fecha</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-tag-amber text-xs font-semibold shrink-0 pl-2">
+              <span>A Préstamos</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </div>
+          </div>
+
+          <!-- Button 3.3: Mover a Otra Caja -->
+          <div class="p-3 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between hover:border-text-medium transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-surface-elevated text-text-medium flex items-center justify-center shrink-0 border border-surface-border">
+                <span class="material-symbols-outlined text-[18px]">drive_file_move_rtl</span>
+              </div>
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-white">Botón: Reubicar a otra caja</span>
+                <p class="text-[11px] text-text-muted truncate">Transfiere el objeto a un contenedor diferente</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-text-muted text-xs font-semibold shrink-0 pl-2">
+              <span>Reubicar</span>
+              <span class="material-symbols-outlined text-[16px]">sync_alt</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR 3 -> 4 -->
+    <div class="flex flex-col items-center justify-center -my-2 relative z-10">
+      <div class="w-0.5 h-6 bg-gradient-to-b from-surface-border to-tag-purple/60"></div>
+      <div class="px-3 py-1 rounded-full bg-surface-elevated border border-tag-purple/40 text-[11px] text-tag-purple font-mono font-medium shadow-lg flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px]">south</span>
+        <span>Apertura Visor Fullscreen AMOLED</span>
+      </div>
+      <div class="w-0.5 h-6 bg-gradient-to-b from-tag-purple/60 to-surface-border"></div>
+    </div>
+
+    <!-- PASO 4: GALERÍA DE PANTALLA COMPLETA -->
+    <div class="rounded-2xl bg-surface-dark border border-surface-border overflow-hidden shadow-2xl">
+      <!-- Node Header -->
+      <div class="p-4 bg-surface-card border-b border-surface-border flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-tag-purple text-white flex items-center justify-center font-bold text-sm">
+            4
+          </div>
+          <div>
+            <span class="text-[11px] uppercase tracking-wider text-tag-purple font-semibold">Inmersión Máxima</span>
+            <h2 class="text-base font-bold text-white">Galería de Fotos AMOLED</h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full bg-black text-[11px] text-text-muted border border-surface-border">Negro 100% #000000</span>
+      </div>
+
+      <!-- Content Breakdown & Return Path -->
+      <div class="p-4 space-y-3">
+        <p class="text-xs text-text-medium leading-relaxed">
+          Modo sin distracciones para examinar etiquetas, detalles de roturas, números de serie o fotos de comprobación.
+        </p>
+
+        <!-- Actions inside Gallery -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-text-medium">arrow_back</span>
+            <div>
+              <div class="text-xs font-bold text-white">Volver Atrás</div>
+              <div class="text-[10px] text-text-muted">Retorna a Ficha</div>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-tag-amber">add_a_photo</span>
+            <div>
+              <div class="text-xs font-bold text-white">Añadir Foto</div>
+              <div class="text-[10px] text-text-muted">Cámara o archivo</div>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-tag-blue">share</span>
+            <div>
+              <div class="text-xs font-bold text-white">Compartir</div>
+              <div class="text-[10px] text-text-muted">Exporta imagen</div>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-tag-red">delete</span>
+            <div>
+              <div class="text-xs font-bold text-white">Eliminar Foto</div>
+              <div class="text-[10px] text-text-muted">Diálogo borrado</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN DE CONEXIÓN CON OTRAS ÁREAS -->
+    <div class="mt-8 p-4 rounded-2xl bg-surface-card border border-surface-border space-y-3">
+      <div class="flex items-center gap-2 text-amber-primary font-bold text-xs uppercase tracking-wider">
+        <span class="material-symbols-outlined text-[18px]">hub</span>
+        <span>Conexiones Cruzadas del Flujo</span>
+      </div>
+      <div class="space-y-2 text-xs text-text-medium">
+        <div class="flex items-start gap-2">
+          <span class="text-amber-primary font-bold">➔</span>
+          <p><strong class="text-white">A Administrar Zonas:</strong> Al pulsar "Mover Caja de Zona" se abre el modal selector y culmina en la animación de SnackBar.</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-amber-primary font-bold">➔</span>
+          <p><strong class="text-white">A Préstamos:</strong> Al pulsar "Prestar este Objeto" dentro de la Ficha se precarga el objeto en el modal con selector de fecha AMOLED.</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-amber-primary font-bold">➔</span>
+          <p><strong class="text-white">A Búsqueda Rápida:</strong> Cualquier objeto o caja es localizable desde el buscador expandido con filtros por categoría.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Sticky Bottom Navigation Bar (Persistent AMOLED) -->
+  <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-surface-border-subtle pb-safe">
+    <div class="max-w-lg mx-auto flex items-center justify-around h-16 px-2">
+      <a href="#" class="flex flex-col items-center justify-center min-w-[64px] py-1 text-amber-primary">
+        <div class="w-12 h-8 rounded-full bg-amber-primary/15 flex items-center justify-center mb-0.5">
+          <span class="material-symbols-outlined text-[22px]">inventory_2</span>
+        </div>
+        <span class="text-[11px] font-bold">Cajas</span>
+      </a>
+      <a href="#" class="flex flex-col items-center justify-center min-w-[64px] py-1 text-text-muted hover:text-text-medium transition-colors">
+        <span class="material-symbols-outlined text-[22px] mb-0.5">location_on</span>
+        <span class="text-[11px] font-medium">Zonas</span>
+      </a>
+      <a href="#" class="flex flex-col items-center justify-center min-w-[64px] py-1 text-text-muted hover:text-text-medium transition-colors">
+        <span class="material-symbols-outlined text-[22px] mb-0.5">swap_horiz</span>
+        <span class="text-[11px] font-medium">Préstamos</span>
+      </a>
+      <a href="#" class="flex flex-col items-center justify-center min-w-[64px] py-1 text-text-muted hover:text-text-medium transition-colors">
+        <span class="material-symbols-outlined text-[22px] mb-0.5">settings</span>
+        <span class="text-[11px] font-medium">Ajustes</span>
+      </a>
+    </div>
+  </nav>
+
+  <script>
+    // Toggle Interactive Focus Simulation
+    const viewBtn = document.getElementById('view-mode-btn');
+    let isDetailed = false;
+
+    if (viewBtn) {
+      viewBtn.addEventListener('click', () => {
+        isDetailed = !isDetailed;
+        viewBtn.classList.toggle('bg-amber-primary');
+        viewBtn.classList.toggle('text-black');
+        viewBtn.classList.toggle('bg-surface-card');
+        viewBtn.classList.toggle('text-amber-primary');
+        viewBtn.querySelector('span:last-child').textContent = isDetailed ? 'Modo Expandido' : 'Interactivo';
+      });
+    }
+  </script>
+</body>
+</html>

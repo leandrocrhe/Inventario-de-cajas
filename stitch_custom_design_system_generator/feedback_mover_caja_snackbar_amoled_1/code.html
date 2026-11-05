@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#000000;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "outline-variant": "#d9c2b3", "tag-blue": "#3B82F6", "inverse-primary": "#ffb77d", "error": "#ba1a1a", "tag-red": "#EF4444", "on-primary-fixed-variant": "#6e3900", "secondary-fixed": "#fadebc", "primary-fixed": "#ffdcc3", "inverse-surface": "#352f2a", "on-secondary-container": "#745f44", "surface-container-low": "#fdf2e9", "surface-container-highest": "#ebe1d9", "outline": "#867467", "surface-tint": "#8f4d04", "surface-container": "#f7ece4", "on-error": "#ffffff", "on-primary-fixed": "#2f1500", "on-surface": "#201b16", "on-tertiary": "#ffffff", "tertiary-container": "#8c473b", "tag-purple": "#8B5CF6", "on-error-container": "#93000a", "secondary": "#6f5b40", "on-background": "#201b16", "tag-teal": "#14B8A6", "tertiary-fixed": "#ffdad4", "on-secondary-fixed": "#271904", "tag-slate": "#64748B", "background-warm": "#FBF9F5", "surface-container-high": "#f1e6de", "on-surface-variant": "#534438", "tag-green": "#10B981", "surface-dim": "#e3d8d0", "background": "#fff8f4", "tertiary-fixed-dim": "#ffb4a7", "on-tertiary-fixed-variant": "#733429", "on-primary-container": "#2E1500", "primary-container": "#FFDCC1", "surface-container-lowest": "#ffffff", "surface": "#fff8f4", "secondary-container": "#f7dbb9", "on-secondary-fixed-variant": "#56442a", "tertiary": "#6f3026", "primary-fixed-dim": "#ffb77d", "on-tertiary-fixed": "#3b0904", "surface-clean": "#FFFFFF", "on-surface-espresso": "#211A16", "on-tertiary-container": "#ffc6bb", "primary": "#693600", "inverse-on-surface": "#faefe7", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-variant": "#F2EFE9", "tag-amber": "#F59E0B", "surface-bright": "#fff8f4", "secondary-fixed-dim": "#ddc2a1", "on-secondary": "#ffffff" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xs": "0.25rem", "gutter": "0.75rem", "margin": "1rem", "space-lg": "1rem", "gutter-tablet": "1rem", "space-xl": "1.5rem", "margin-tablet": "1.5rem", "space-md": "0.75rem", "space-sm": "0.5rem" }, "fontFamily": { "body-md": ["Roboto Flex"], "body-lg": ["Roboto Flex"], "label-lg": ["Roboto Flex"], "title-md": ["Roboto Flex"], "headline-md": ["Roboto Flex"], "label-sm": ["Roboto Flex"], "title-lg": ["Roboto Flex"], "display-lg": ["Roboto Flex"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "500" }], "headline-md": ["24px", { "lineHeight": "30px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }], "title-lg": ["20px", { "lineHeight": "26px", "fontWeight": "700" }], "display-lg": ["32px", { "lineHeight": "38px", "fontWeight": "700" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Volver" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-variant transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-title-lg text-title-lg text-on-surface">Feedback Mover Caja</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Opciones de vista" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined text-[22px]">more_vert</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen px-margin"><div class="flex flex-col w-full relative">
+<!-- Status & Quick Navigation Strip -->
+<div class="flex items-center justify-between py-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container">
+<span class="material-symbols-outlined text-[18px]">warehouse</span>
+</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Ubicación Actual</p>
+<p class="font-title-md text-title-md text-on-surface flex items-center gap-1">
+          Dormitorio Principal
+          <span class="material-symbols-outlined text-[18px] text-primary">expand_more</span>
+</p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button aria-label="Filtrar" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+<button aria-label="Cambiar vista" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">view_agenda</span>
+</button>
+</div>
+</div>
+<!-- Breadcrumbs & Category Bar -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-space-sm mb-space-md no-scrollbar">
+<span class="px-space-md py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold flex items-center gap-1 whitespace-nowrap shadow-sm">
+<span class="material-symbols-outlined text-[16px]">bed</span>
+      Dormitorio (4 cajas)
+    </span>
+<span class="px-space-md py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1 whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">kitchen</span>
+      Cocina (6)
+    </span>
+<span class="px-space-md py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1 whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">garage</span>
+      Garaje (12)
+    </span>
+<span class="px-space-md py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1 whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">archive</span>
+      Trastero (8)
+    </span>
+</div>
+<!-- Main Inventory Section -->
+<div class="flex flex-col gap-space-md pb-32">
+<!-- HERO TARGET CARD: Recién Movida (Herramientas Pro) -->
+<div class="relative rounded-xl bg-surface-container-lowest p-space-md shadow-md transition-all duration-300" id="moved-card">
+<!-- Glow aura for the newly moved item -->
+<div class="absolute inset-0 rounded-xl bg-gradient-to-r from-tag-amber/10 via-tag-green/10 to-transparent pointer-events-none"></div>
+<div class="relative flex flex-col gap-space-sm">
+<!-- Card Top Bar: Badge and QR Tag -->
+<div class="flex items-center justify-between">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-tag-green/15 text-tag-green">
+<span class="w-2 h-2 rounded-full bg-tag-green animate-pulse"></span>
+<span class="font-label-sm text-label-sm font-bold tracking-tight">Recién movida aquí</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono">
+            #BX-0482
+          </span>
+</div>
+<!-- Main Card Content: Image & Metadata -->
+<div class="flex gap-space-md items-center mt-1">
+<div class="relative w-20 h-20 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Heavy-duty professional toolbox with precision mechanical hand tools in a foam organizer, warm ambient workshop lighting with rich amber wood accents, detailed tactile leather finish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIJ7CpXZmg503so9UsKNhKRUIcpr0ux9Nwgd3vkraWEcSSBgp9i1bizUU2OC6tKgzeJig4zrrHBojxGmGmOq7-oJSg14vwjzBuGeXd69J7jztFBG9d2nGFL6XE93ouTkbsrDbigpkHp32xDqN1-KNMdj8NxTxy0RSQbuBH6DJQ-cIqlh320SYS2VWcRxi4LwV1kHrGGp2OsQg42VXgUqOcDKJ7GLah8yWFbiL7u3Hw"/>
+<div class="absolute bottom-0 inset-x-0 bg-primary/80 py-0.5 text-center">
+<span class="font-label-sm text-label-sm text-on-primary font-medium text-[10px]">PRO</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between gap-1">
+<h2 class="font-title-lg text-title-lg text-on-surface font-semibold truncate">
+                Herramientas Pro
+              </h2>
+<span class="material-symbols-outlined text-tag-amber text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<!-- Context Breadcrumb Transfer -->
+<div class="flex items-center gap-1.5 mt-0.5 text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined text-[16px] text-outline">garage</span>
+<span class="line-through text-outline">Garaje</span>
+<span class="material-symbols-outlined text-[14px] text-primary">arrow_forward</span>
+<span class="font-semibold text-primary">Dormitorio</span>
+</div>
+<!-- Counters and Details -->
+<div class="flex items-center gap-space-sm mt-2">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px]">category</span>
+                11 artículos
+              </span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px]">scale</span>
+                14.2 kg
+              </span>
+</div>
+</div>
+</div>
+<!-- Quick Items Pill Preview inside this container -->
+<div class="flex items-center gap-1.5 pt-2 mt-1 overflow-hidden">
+<span class="text-on-surface-variant font-label-sm text-label-sm flex-shrink-0">Contiene:</span>
+<span class="font-label-sm text-label-sm bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded truncate max-w-[110px]">Taladro Percutor</span>
+<span class="font-label-sm text-label-sm bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded truncate max-w-[110px]">Juego Llaves</span>
+<span class="font-label-sm text-label-sm bg-surface-variant text-on-surface-variant px-1.5 py-0.5 rounded font-medium">+9 más</span>
+</div>
+</div>
+</div>
+<!-- EXISTING CARD 1: Ropa de Temporada -->
+<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono">
+          #BX-0114
+        </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">history</span>
+          hace 3 semanas
+        </span>
+</div>
+<div class="flex gap-space-md items-center">
+<div class="w-16 h-16 rounded-lg overflow-hidden bg-surface-container flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Folded warm wool sweaters and winter winter apparel neatly arranged in a linen storage bin, soft organic neutral lighting, cozy warm terracotta textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUPeaxBym4WrH4n2dQTH5IOAuc9J_afEqEOrB3dzuIT0lpfN73jQblL46YRuO8Pk0CDbymWAJKolgEbSYV1A3E413dcgB5lyZDPGLKiC3s3mKvNHtXGUGihthcGr9oWeCzDbge71Ic6WEpt-UlFEaVHUWmKw3Z8-cX3_dAOakjSF0cMlNr5zG5Oxh85g2tT2T81-GD6P-b9hL1ooDJ6zYnnkg_fGL-i5q1Sjzh0ZSs"/>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<h3 class="font-title-md text-title-md text-on-surface font-semibold truncate">Ropa de Invierno</h3>
+<p class="font-body-md text-body-md text-on-surface-variant truncate">Armario lateral alto • Estante 3</p>
+<div class="flex items-center gap-space-sm mt-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full">
+              24 artículos
+            </span>
+<span class="font-label-sm text-label-sm text-tag-teal bg-tag-teal/10 px-2 py-0.5 rounded-full">
+              Textil
+            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- EXISTING CARD 2: Documentos & Archivo -->
+<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono">
+          #BX-0089
+        </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+          Privado
+        </span>
+</div>
+<div class="flex gap-space-md items-center">
+<div class="w-16 h-16 rounded-lg overflow-hidden bg-surface-container flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Manila folders and organized stationery files inside a crafted kraft paper archive binder, soft tactile ambient illumination with natural warm leather tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACYnLYAftojX7fk5_4zwJtytYS4UqH26bdDjzE82Vb4L_hbIA6wawOfy0cRmBKLZUNT18QfhiDWH249yn35OWJyMy0h5EOU4cqKBvx3ogZ6k0xvzUH6DNNgX7RYxiQvQYWyDu7DjsuQDBxhCTmiIWoSYrf1ES8NgW3b1Z_7fIl_p9IyAuacdus324BlfMWBGUh43uRe3o09-3pQ2td8E2oh--OjBqhqPEWzc8l_Ltu"/>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<h3 class="font-title-md text-title-md text-on-surface font-semibold truncate">Documentos Personales</h3>
+<p class="font-body-md text-body-md text-on-surface-variant truncate">Cajón bajo escritorio • Llave A</p>
+<div class="flex items-center gap-space-sm mt-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full">
+              18 artículos
+            </span>
+<span class="font-label-sm text-label-sm text-tag-purple bg-tag-purple/10 px-2 py-0.5 rounded-full">
+              Papel / Legal
+            </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- FLOATING MATERIAL DESIGN 3 SUCCESS SNACKBAR / TOAST -->
+<aside aria-live="polite" class="fixed bottom-6 left-margin right-margin z-40 max-w-lg mx-auto transition-all duration-300 transform translate-y-0" id="success-toast" role="status">
+<div class="relative bg-inverse-surface text-inverse-on-surface rounded-xl shadow-2xl p-space-md flex items-start gap-space-md">
+<!-- Ambient Glow Behind Pill -->
+<div class="absolute inset-0 rounded-xl bg-tag-green/5 pointer-events-none"></div>
+<!-- Left Icon: Check / Swap Confirmation Badge -->
+<div class="w-9 h-9 rounded-full bg-tag-green/20 text-tag-green flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">
+          check_circle
+        </span>
+</div>
+<!-- Central Text Message Content -->
+<div class="flex flex-col min-w-0 flex-1">
+<p class="font-label-lg text-label-lg text-inverse-on-surface leading-tight font-medium">
+          Caja <span class="font-bold text-inverse-primary">“Herramientas Pro”</span> trasladada a Dormitorio con éxito
+        </p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="material-symbols-outlined text-inverse-on-surface/70 text-[14px]">swap_horiz</span>
+<span class="font-label-sm text-label-sm text-inverse-on-surface/80">
+            11 artículos reubicados correctamente
+          </span>
+</div>
+</div>
+<!-- Right Direct Action: Undo Button & Dismiss -->
+<div class="flex items-center gap-space-xs flex-shrink-0 -mr-1">
+<!-- Interactive Undo Action Button -->
+<button aria-label="Deshacer traslado de caja" class="px-space-sm py-1.5 rounded-lg text-inverse-primary hover:bg-inverse-primary/10 active:scale-95 transition-all font-title-md text-title-md font-bold tracking-wide uppercase flex items-center gap-1" id="btn-undo" onclick="handleUndo()">
+<span class="material-symbols-outlined text-[18px]">undo</span>
+<span>Deshacer</span>
+</button>
+<!-- Quick Close 'X' Button -->
+<button aria-label="Cerrar notificación" class="w-8 h-8 rounded-full flex items-center justify-center text-inverse-on-surface/60 hover:text-inverse-on-surface hover:bg-inverse-surface/30 active:scale-90 transition-all" id="btn-close" onclick="dismissToast()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Local Script for Toast Feedback & Tactile Response -->
+<script>
+    function dismissToast() {
+      const toast = document.getElementById('success-toast');
+      if (toast) {
+        toast.classList.add('opacity-0', 'translate-y-8', 'pointer-events-none');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }
+    }
+
+    function handleUndo() {
+      const movedCard = document.getElementById('moved-card');
+      const toast = document.getElementById('success-toast');
+      
+      if (movedCard) {
+        movedCard.style.transform = 'scale(0.98)';
+        movedCard.style.opacity = '0.5';
+      }
+
+      if (toast) {
+        toast.innerHTML = `
+          <div class="relative bg-inverse-surface text-inverse-on-surface rounded-xl shadow-2xl p-space-md flex items-center gap-space-md w-full">
+            <span class="material-symbols-outlined text-tag-amber text-[22px] animate-spin">sync</span>
+            <p class="font-label-lg text-label-lg text-inverse-on-surface flex-1">
+              Restaurando a Garaje...
+            </p>
+          </div>
+        `;
+      }
+
+      setTimeout(() => {
+        dismissToast();
+      }, 1200);
+    }
+
+    // Auto-dismiss safety timer (10s)
+    setTimeout(() => {
+      const toast = document.getElementById('success-toast');
+      if (toast) {
+        dismissToast();
+      }
+    }, 10000);
+  </script>
+</div></main></body></html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC@100..1000,96,468,79,750,-203,738,514,712&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#F2EFE9", "inverse-on-surface": "#faefe7", "surface-container-lowest": "#ffffff", "tertiary-fixed-dim": "#ffb4a7", "on-secondary-fixed": "#271904", "primary-fixed-dim": "#ffb77d", "on-secondary-container": "#745f44", "on-secondary": "#ffffff", "secondary": "#6f5b40", "tag-green": "#10B981", "tertiary": "#6f3026", "on-primary-fixed": "#2f1500", "secondary-fixed": "#fadebc", "surface-tint": "#8f4d04", "background": "#fff8f4", "primary-fixed": "#ffdcc3", "outline-variant": "#d9c2b3", "on-surface": "#201b16", "tag-teal": "#14B8A6", "surface-bright": "#fff8f4", "tag-red": "#EF4444", "surface-container-highest": "#ebe1d9", "tertiary-container": "#8c473b", "tag-blue": "#3B82F6", "secondary-container": "#f7dbb9", "on-primary-container": "#ffc89d", "surface-dim": "#e3d8d0", "error-container": "#ffdad6", "on-primary": "#ffffff", "tag-slate": "#64748B", "primary-container": "#FFDCC1", "on-secondary-fixed-variant": "#56442a", "background-warm": "#FBF9F5", "on-surface-variant": "#534438", "inverse-primary": "#ffb77d", "on-tertiary-fixed-variant": "#733429", "on-surface-espresso": "#211A16", "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#6e3900", "secondary-fixed-dim": "#ddc2a1", "surface-container-low": "#fdf2e9", "tertiary-fixed": "#ffdad4", "on-error-container": "#93000a", "surface-container-high": "#f1e6de", "on-error": "#ffffff", "primary": "#693600", "surface-container": "#f7ece4", "tag-amber": "#F59E0B", "inverse-surface": "#352f2a", "on-tertiary-container": "#ffc6bb", "error": "#ba1a1a", "tag-purple": "#8B5CF6", "surface": "#fff8f4", "outline": "#867467", "on-background": "#201b16", "on-tertiary-fixed": "#3b0904", "surface-clean": "#FFFFFF" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "0.75rem", "margin": "1rem", "gutter-tablet": "1rem", "space-xs": "0.25rem", "margin-tablet": "1.5rem", "space-xl": "1.5rem", "space-sm": "0.5rem", "gutter": "0.75rem", "space-lg": "1rem" }, fontFamily: { "headline-md": ["Roboto Flex"], "label-sm": ["Roboto Flex"], "title-lg": ["Roboto Flex"], "display-lg": ["Roboto Flex"], "title-md": ["Roboto Flex"], "body-md": ["Roboto Flex"], "body-lg": ["Roboto Flex"], "label-lg": ["Roboto Flex"] }, fontSize: { "headline-md": ["24px", { "lineHeight": "30px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }], "title-lg": ["20px", { "lineHeight": "26px", "fontWeight": "700" }], "display-lg": ["32px", { "lineHeight": "38px", "fontWeight": "700" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm min-w-0"><div class="w-9 h-9 rounded-lg bg-primary-container flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary text-[20px]">inventory_2</span></div><div class="flex flex-col min-w-0"><h1 class="font-title-md text-title-md text-on-surface truncate">Inventario de Cajas</h1><span class="font-label-sm text-label-sm text-on-surface-variant truncate">Cajas</span></div></div><div class="flex items-center gap-space-xs shrink-0"><div class="flex items-center p-0.5 rounded-full bg-surface-container-high/80 border border-outline-variant/30 shrink-0"><button aria-label="Vista mosaico" title="Mosaico" class="w-7 h-7 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface transition-all"><span class="material-symbols-outlined text-[17px]">auto_awesome_mosaic</span></button><button aria-label="Vista cuadrícula con portada" title="Cuadrícula" class="w-7 h-7 flex items-center justify-center rounded-full bg-primary text-on-primary shadow-sm transition-all"><span class="material-symbols-outlined text-[17px]">grid_view</span></button><button aria-label="Vista lista compacta" title="Lista" class="w-7 h-7 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface transition-all"><span class="material-symbols-outlined text-[17px]">view_list</span></button></div><button aria-label="Buscar" class="w-9 h-9 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full transition-colors"><span class="material-symbols-outlined text-[20px]">search</span></button><button aria-label="Filtrar o cambiar vista" class="w-9 h-9 flex items-center justify-center text-on-surface-variant hover:text-on-surface rounded-full transition-colors"><span class="material-symbols-outlined text-[20px]">tune</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 px-margin bg-surface"><div class="flex flex-col w-full text-on-surface">
+<div class="fixed inset-0 pointer-events-none -z-10" style="background-color: #000000;"></div>
+<div class="flex flex-col gap-space-md mb-space-lg">
+<div class="flex items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex items-center gap-space-xs overflow-x-auto no-scrollbar py-space-xs">
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary text-on-primary font-label-lg text-label-lg shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[18px]">photo_library</span>
+<span class="">Por Zonas</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-inverse-surface text-surface-container-highest font-label-lg text-label-lg shrink-0 hover:bg-surface-variant/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]">category</span>
+<span class="">Categorías</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-inverse-surface text-surface-container-highest font-label-lg text-label-lg shrink-0 hover:bg-surface-variant/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span class="">Recientes</span>
+</button>
+</div>
+<button aria-label="Contraer o expandir todas las zonas" class="flex items-center justify-center w-9 h-9 rounded-full bg-inverse-surface text-surface-container-highest shrink-0 hover:text-on-primary transition-colors" id="toggle-all-zones">
+<span class="material-symbols-outlined text-[20px]" id="toggle-all-icon">unfold_less</span>
+</button>
+</div>
+<div class="flex items-center justify-between px-space-xs"><div class="flex items-center gap-space-xs"><span class="font-title-md text-title-md text-surface-container-lowest font-semibold">5 Cajas</span><span class="font-label-sm text-label-sm text-surface-variant">· 3 Zonas activas</span></div><button class="text-primary-fixed-dim hover:text-primary-fixed font-label-sm text-label-sm flex items-center gap-space-xs"><span class="">Reordenar</span><span class="material-symbols-outlined text-[16px]">swap_vert</span></button></div>
+</div>
+<section class="flex flex-col gap-space-lg mb-space-xl">
+<div class="zone-accordion-group flex flex-col gap-space-md">
+<div class="flex items-center justify-between py-space-xs px-space-xs rounded-xl transition-colors cursor-pointer zone-header" data-target="zone-estudio">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-inverse-surface flex items-center justify-center shrink-0 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<h2 class="font-title-md text-title-md text-surface-container-lowest truncate">Estudio Norte</h2>
+<span class="px-space-xs py-0.5 rounded-full bg-inverse-surface text-surface-container-highest font-label-sm text-label-sm shrink-0">2 cajas</span>
+</div>
+<span class="font-label-sm text-label-sm text-surface-variant truncate">Nivel superior · Mueble archivador</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<button aria-label="Gestionar zona" class="w-8 h-8 rounded-full flex items-center justify-center text-surface-variant hover:text-surface-container-lowest hover:bg-inverse-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+<span class="material-symbols-outlined text-surface-variant transform transition-transform duration-200 zone-chevron text-[20px]">expand_more</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-gutter transition-all duration-300" id="zone-estudio">
+<article class="flex flex-col rounded-xl overflow-hidden shadow-md group transition-transform active:scale-[0.98]" style="background-color: #12100E;">
+<div class="relative w-full aspect-[4/3] bg-inverse-surface overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Close-up photograph inside an open craft storage box showing premium mechanical keyboard switches, artisan keycaps in pastel tones, braided audio cables, and vintage lenses under warm soft studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUj9geDQBhgmf756qfUrtwUrHfkAMA0Y4KzQpon1nLUhaR-0ZzXAthPQjmJif3yaLxfa7jhI6-ImK1pLEh4ipmJc358uK3Pg_4J6eO9Ts_zdp-lmqu6yM_k0-x6tqHsXahTQ59wE2op6s0YNFVpKjlpzuXEaOFxC0qdUt11OCFCPeiAETg2FixYBL2i_AsR61Zo1nw_JwKiNCVZW37Fj7ScbegI-pTw9NuWZxH_e3r">
+<div class="absolute inset-0 bg-gradient-to-t from-[#12100E] via-transparent to-black/30"></div>
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-purple/90 backdrop-blur-md shadow-sm">
+<span class="material-symbols-outlined text-surface-container-lowest text-[12px]">hardware</span>
+<span class="font-label-sm text-label-sm text-surface-container-lowest font-semibold">Tecno</span>
+</div>
+<div class="absolute bottom-2 right-2 flex items-center -space-x-1.5 p-0.5 rounded-lg bg-black/60 backdrop-blur-md">
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Macro detail of colorful braided studio audio cables and brass TRS jacks neatly rolled inside organizer compartment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5c_eotg_L7-SgM5x8QHAoGRvckDezg3GNUL-IdDcSzxT5T1GJDje_bzcQBzhKQs6VS8DYor4R1A-KzUy2V5ckrEJkj8GuqOeYD5ETAIzejOOVPSDbikFD9SDoYBhziHdHskHpO0xm0sagCbaeUUW2-ip1pxDesTui6-mvhYNyovqcw7xOdzlC7OdT2o3FW3C86r2c7s2xQGaoMpznpUwhR1tXIlCIotT4b6MANPmF">
+</div>
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Macro shot of custom acrylic keyboard switches inside a clear compartment tray with warm amber backlight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnHsmtGkAHoP61NzA5uVby1Y5fKg2Dbs1ZdgQw2LsX_TU5xh1s9JNrgAjMWrJKnMeGDGceyT25TGOw4XzM7t9bIA4cwKT9WgOUtQfiajY9JipJ5jHcd_TivSZ_Lp1XK79cOHCycp0Xp_tiPYqMY0ullnetyP547Y2h9qjPRNN1rcXLLNCpsv8MG5qY-jsOXWVXwFy3JpFRetvPM4IVy1q6nz6XuBNu3bUzqGf5a6PX">
+</div>
+<div class="w-5 h-5 rounded-md bg-inverse-surface flex items-center justify-center ring-1 ring-black text-surface-container-lowest font-label-sm text-[10px]">
+                +2
+              </div>
+</div>
+</div>
+<div class="flex flex-col p-space-sm gap-space-xs">
+<div class="flex items-start justify-between gap-space-xs">
+<h3 class="font-title-md text-title-md text-surface-container-lowest font-bold truncate">Periféricos &amp; Audio</h3>
+</div>
+<div class="flex items-center justify-between text-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">inventory</span>
+                7 artículos
+              </span>
+<span class="px-1.5 py-0.5 rounded-md bg-tag-green/20 text-tag-green font-label-sm text-label-sm font-medium">Frecuente</span>
+</div>
+<div class="flex flex-col gap-1 mt-space-xs">
+<div class="flex justify-between items-center text-surface-variant font-label-sm text-[10px]">
+<span class="">Volumen</span>
+<span class="">85% lleno</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-inverse-surface overflow-hidden">
+<div class="h-full rounded-full bg-tag-amber" style="width: 85%;"></div>
+</div>
+</div>
+</div>
+</article>
+<article class="flex flex-col rounded-xl overflow-hidden shadow-md group transition-transform active:scale-[0.98]" style="background-color: #12100E;">
+<div class="relative w-full aspect-[4/3] bg-inverse-surface overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Top down overhead photograph inside an organized craft box filled with watercolor paint tubes, Japanese ink bottles, sable brushes, and leather bound sketchbooks softly illuminated by studio lamplight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAew30R10pnSi74P-3gS6FwxtvW-QjepoKz-jmgBPY7DEP6iLOcG22hxX-a7ucTOuIJRk8UcE3AlZn5inE-aj_ZNiwctuFLmLHLZ-Ww0Lb_ftR7vjeOR3nOu9rGWaAhD5KP3vsvVpsFAxjlKl4rW74diWttEVxo644O_BGFDMSIoaThon86W0Nt2NGary8tJDNlD-6vLsjqYp725yQ1MZpgVeW5SWHPVjIMPIzrU_y">
+<div class="absolute inset-0 bg-gradient-to-t from-[#12100E] via-transparent to-black/30"></div>
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-amber/90 backdrop-blur-md shadow-sm">
+<span class="material-symbols-outlined text-on-surface-espresso text-[12px]">palette</span>
+<span class="font-label-sm text-label-sm text-on-surface-espresso font-semibold">Arte</span>
+</div>
+<div class="absolute bottom-2 right-2 flex items-center -space-x-1.5 p-0.5 rounded-lg bg-black/60 backdrop-blur-md">
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Close up of traditional calligraphy wooden pen holders and nib boxes laid out on textured kraft paper." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR34FFaXdllXOspcft5Lsc1Y_AACpTlvLROB9FHKJxt9UqG7w_Axy7XKp3HQUCMoJpbcDQYHRZjRzrZ6rPi-4PltN2FQVpsz0yOTw0lLIWcHR6AC3doY0rnvYyr4LLpY0CcFnSb286KpDFC8_faHUTPfPuiqgWwHhCSo62yNDluxyYEQMPBsO_CPdkQjyLz4ArenYuevyOWA_eI7Gd2l1aJVeN2YqRF0-3tFK8Ne2z">
+</div>
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Handcrafted ceramic watercolor mixing palettes with dried pigment dots under warm directional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcu-_HZ6sZHG6IKCBiKXNo2JZNNR0XjicyoF4SoEXLvIke9G_OI5OYV2FmrVmvAgZ2UEwJsJ7GsYkGc0viayBqjZA308XW2y3QWJTIPSoJFzI95SVsCAE7URWI4MWRBN3u-Q22P1WwCkXjX8VITnlLs8DTtvhREoJMg46PMa5NQZbGrrya3y4y8DWB1IoMr1FteX3Djy6JKrzDHBf7VD4aTMKp3nbhTbaVp6a0HbM9">
+</div>
+<div class="w-5 h-5 rounded-md bg-inverse-surface flex items-center justify-center ring-1 ring-black text-surface-container-lowest font-label-sm text-[10px]">
+                +4
+              </div>
+</div>
+</div>
+<div class="flex flex-col p-space-sm gap-space-xs">
+<div class="flex items-start justify-between gap-space-xs">
+<h3 class="font-title-md text-title-md text-surface-container-lowest font-bold truncate">Acuarelas &amp; Tintas</h3>
+</div>
+<div class="flex items-center justify-between text-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">inventory</span>
+                14 artículos
+              </span>
+<span class="px-1.5 py-0.5 rounded-md bg-tag-blue/20 text-tag-blue font-label-sm text-label-sm font-medium">En préstamo</span>
+</div>
+<div class="flex flex-col gap-1 mt-space-xs">
+<div class="flex justify-between items-center text-surface-variant font-label-sm text-[10px]">
+<span class="">Volumen</span>
+<span class="">40% lleno</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-inverse-surface overflow-hidden">
+<div class="h-full rounded-full bg-tag-teal" style="width: 40%;"></div>
+</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+<div class="zone-accordion-group flex flex-col gap-space-md">
+<div class="flex items-center justify-between py-space-xs px-space-xs rounded-xl transition-colors cursor-pointer zone-header" data-target="zone-trastero">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-inverse-surface flex items-center justify-center shrink-0 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-[18px]">warehouse</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<h2 class="font-title-md text-title-md text-surface-container-lowest truncate">Trastero &amp; Garaje</h2>
+<span class="px-space-xs py-0.5 rounded-full bg-inverse-surface text-surface-container-highest font-label-sm text-label-sm shrink-0">2 cajas</span>
+</div>
+<span class="font-label-sm text-label-sm text-surface-variant truncate">Estantería metálica C · Nivel central</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<button aria-label="Gestionar zona" class="w-8 h-8 rounded-full flex items-center justify-center text-surface-variant hover:text-surface-container-lowest hover:bg-inverse-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+<span class="material-symbols-outlined text-surface-variant transform transition-transform duration-200 zone-chevron text-[20px]">expand_more</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-gutter transition-all duration-300" id="zone-trastero">
+<article class="flex flex-col rounded-xl overflow-hidden shadow-md group transition-transform active:scale-[0.98]" style="background-color: #12100E;">
+<div class="relative w-full aspect-[4/3] bg-inverse-surface overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="High quality top view of a heavy-duty storage box packed with cordless power tools, lithium drill batteries, driver bit sets, and brass calipers on protective foam inserts with dramatic moody spotlighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvNIZTdt6d1k4sFVLbeJwB4TxDvZkY3Rl4NHQADwU0ScvcB-U_EcDalFrtijg3DmQFXf7qhTVqMFZsrSbVAjse4zuCUu9CWPF-QqVa4itniDDKIHmuNvamF9m-Kv_dUNIhdFeoVPx8SfTXezDIJVAQWMHI0YaRoUnVmpukF2YKeCpAhxydjqb-5xS7_BLjNEZ2CilmdnLG8Kha5jr_4pJo6EsAcaYnqc78j8FGcRfb">
+<div class="absolute inset-0 bg-gradient-to-t from-[#12100E] via-transparent to-black/30"></div>
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-blue/90 backdrop-blur-md shadow-sm">
+<span class="material-symbols-outlined text-surface-container-lowest text-[12px]">build</span>
+<span class="font-label-sm text-label-sm text-surface-container-lowest font-semibold">Taller</span>
+</div>
+<div class="absolute bottom-2 right-2 flex items-center -space-x-1.5 p-0.5 rounded-lg bg-black/60 backdrop-blur-md">
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Close up of steel socket wrench kit and magnetic bit holders arranged in a compact case." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwk-ILGGFWq3RT5sQFnxGlTmu3h3-Jc4RrZ5EHsKkbtSxfHr8sQvkSTtikkvmMKrHUXRFIbWrWM5Tb2Ip6Eb99QMfSZlTTyAJB_Wo6roNl7UPlDxPMqXXx6Sxm-uWtL73MCCouFWRCu2Dp6sRDSaHzYPzrGWU9ItCVU8LxU5tXeaDNcDOg36H_0jBBPiuVzamwVUYRe9_Wse0IaRDbfoUpccEJ8VvUPui2ZghaBlb_">
+</div>
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Precision digital multimeter with black and red probes coiled inside a padded divider." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxwIWmOX9ha0pNj9uGYeX2-Tl8Ai02PTQFpikmNWaEmRWmiWEOqdxaKKB9Y5I_aApeQLHL3pjpITug21aDRPCP3UDpoffUg4G0NeVYV8vY00u9_918gTjibDzVa5Ocve7X5ixuOA56Tl4beMy47bk11k-dhIoSGv1W_4q-NE5JK-iSwSW9bqRVPqOJj3qMzz62ZSlKYC42g6ReIF8Lr-0KTBs_QvKx_OSiwXNe5m78">
+</div>
+<div class="w-5 h-5 rounded-md bg-inverse-surface flex items-center justify-center ring-1 ring-black text-surface-container-lowest font-label-sm text-[10px]">
+                +3
+              </div>
+</div>
+</div>
+<div class="flex flex-col p-space-sm gap-space-xs">
+<div class="flex items-start justify-between gap-space-xs">
+<h3 class="font-title-md text-title-md text-surface-container-lowest font-bold truncate">Herramientas Pro</h3>
+</div>
+<div class="flex items-center justify-between text-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">inventory</span>
+                11 artículos
+              </span>
+<span class="px-1.5 py-0.5 rounded-md bg-tag-slate/20 text-tag-slate font-label-sm text-label-sm font-medium">Estacional</span>
+</div>
+<div class="flex flex-col gap-1 mt-space-xs">
+<div class="flex justify-between items-center text-surface-variant font-label-sm text-[10px]">
+<span class="">Volumen</span>
+<span class="">95% lleno</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-inverse-surface overflow-hidden">
+<div class="h-full rounded-full bg-tag-red" style="width: 95%;"></div>
+</div>
+</div>
+</div>
+</article>
+<article class="flex flex-col rounded-xl overflow-hidden shadow-md group transition-transform active:scale-[0.98]" style="background-color: #12100E;">
+<div class="relative w-full aspect-[4/3] bg-inverse-surface overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Interior view of a transparent utility bin showing colorful trekking gear, ultralight camp stove, titanium mugs, coiled climbing rope, and compact lanterns under focused natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7_R_cqUvDyQULOuhwA-_1iZ3Qg4CUoIJyo3a75MYSw3S9qE8mDCEcToxW7FrtJAFsR70CC_z4kKcLHosxvOrQSoNk5Xj_ZZoGI-XfS13C2RGCPkBsoEGfHgZLm6T8wxpB7ladlvEixFzqvzrwxx-bKHpBeYSsegtZ-T2oYVMNUu9QWXyjAUnEKU67Q3gyEJe9igzp8hShkpkHJiAp1rA5E_m-L-HZVLFJGHDvnFpF">
+<div class="absolute inset-0 bg-gradient-to-t from-[#12100E] via-transparent to-black/30"></div>
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-green/90 backdrop-blur-md shadow-sm">
+<span class="material-symbols-outlined text-surface-container-lowest text-[12px]">hiking</span>
+<span class="font-label-sm text-label-sm text-surface-container-lowest font-semibold">Camping</span>
+</div>
+<div class="absolute bottom-2 right-2 flex items-center -space-x-1.5 p-0.5 rounded-lg bg-black/60 backdrop-blur-md">
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Ultralight gas backpacking burner screwed onto an orange isobutane canister inside an organizer box." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBagPPcK6hdlm9dcF3-HJVYgmmT6FSTL8cDb0XLafqQSb0Qo0B_pvGJv0KKk22x6OcWP0AGVw7bIYHduSm2B9iA0gPGXqX0W3hWEkGWaMJck8o9GorUAxkrtn_7ZxoQEX5daNJmauHnnhBz1X0u_6gizq7SFUtU3VHzBG3Fz_J9X-SsIDTLBHQw8nXhzoaaVrn2hR8SvZ1g__3xbyI207CnP9Oy8SyKRobiRzuxJxFX">
+</div>
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Compact LED headlamp with braided olive headband tucked in a side compartment pouch." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL7Mcvd2YzqEMtQnhQ3HdekW2O6fW_gVf-k-bjcFRTbAlXkr4SIiNiw0MWO3_5pRPYGO9BcG7mf4hPqN0tHFzsxELgR9K3vvn7NNigj1VACZUKgwRiqwylcAamoMTDkk7WSx98C4wtvm0ZSGnJ2bWpKrGNoabbRozOU6g6SyNcEJeiW0nSYQyxSPwh_3nW28H-xTpB-y963XWPwy4FUJwoc0GlQXy_W_dP4eaVlhI0">
+</div>
+<div class="w-5 h-5 rounded-md bg-inverse-surface flex items-center justify-center ring-1 ring-black text-surface-container-lowest font-label-sm text-[10px]">
+                +6
+              </div>
+</div>
+</div>
+<div class="flex flex-col p-space-sm gap-space-xs">
+<div class="flex items-start justify-between gap-space-xs">
+<h3 class="font-title-md text-title-md text-surface-container-lowest font-bold truncate">Equipo Montaña</h3>
+</div>
+<div class="flex items-center justify-between text-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">inventory</span>
+                18 artículos
+              </span>
+<span class="px-1.5 py-0.5 rounded-md bg-tag-green/20 text-tag-green font-label-sm text-label-sm font-medium">Revisado</span>
+</div>
+<div class="flex flex-col gap-1 mt-space-xs">
+<div class="flex justify-between items-center text-surface-variant font-label-sm text-[10px]">
+<span class="">Volumen</span>
+<span class="">70% lleno</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-inverse-surface overflow-hidden">
+<div class="h-full rounded-full bg-tag-amber" style="width: 70%;"></div>
+</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+<div class="zone-accordion-group flex flex-col gap-space-md">
+<div class="flex items-center justify-between py-space-xs px-space-xs rounded-xl transition-colors cursor-pointer zone-header" data-target="zone-dormitorio">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-inverse-surface flex items-center justify-center shrink-0 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-[18px]">bed</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<h2 class="font-title-md text-title-md text-surface-container-lowest truncate">Dormitorio</h2>
+<span class="px-space-xs py-0.5 rounded-full bg-inverse-surface text-surface-container-highest font-label-sm text-label-sm shrink-0">1 caja</span>
+</div>
+<span class="font-label-sm text-label-sm text-surface-variant truncate">Armario empotrado · Balda superior</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<button aria-label="Gestionar zona" class="w-8 h-8 rounded-full flex items-center justify-center text-surface-variant hover:text-surface-container-lowest hover:bg-inverse-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+<span class="material-symbols-outlined text-surface-variant transform transition-transform duration-200 zone-chevron text-[20px]">expand_more</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-gutter transition-all duration-300" id="zone-dormitorio">
+<article class="flex flex-col rounded-xl overflow-hidden shadow-md group transition-transform active:scale-[0.98]" style="background-color: #12100E;">
+<div class="relative w-full aspect-[4/3] bg-inverse-surface overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Overhead aesthetic perspective inside an organizer box filled with folded chunky knit merino wool sweaters, cashmere beanies, and wool scarves in warm oatmeal and terracotta shades." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4Cc6nV-Wjrrg-O9Zq-G0J-Vkfz2Y2yn2dVC3pKE9kSeUHx9NPsbGsGIgxStAKxj0iRLW7vBLQX9_kVSEYeVsSbh1kQ5vwsSM53XH_DeBn6BAEaT6gVRyHkT7jgUzDMRFFWENtj5urshpaMVH_JYGGCiBuVJTi8nXuQo1rt4_MDQ61Gkn1UEv7XFiZR8aZ9mGMSVEBH3g0yxnNO3tem01ffTNhSyrG3fSWLSca3WWE">
+<div class="absolute inset-0 bg-gradient-to-t from-[#12100E] via-transparent to-black/30"></div>
+<div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-tag-amber/90 backdrop-blur-md shadow-sm">
+<span class="material-symbols-outlined text-on-surface-espresso text-[12px]">checkroom</span>
+<span class="font-label-sm text-label-sm text-on-surface-espresso font-semibold">Textil</span>
+</div>
+<div class="absolute bottom-2 right-2 flex items-center -space-x-1.5 p-0.5 rounded-lg bg-black/60 backdrop-blur-md">
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Detail shot of rolled cedar wood moth repellent blocks nestled between woolen garments in a dark storage container." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDc4KFmuoq3pnHe_6zlRNoTPZRlolTgT4f5F9J5tNdGTBmBXAHGZuNRg2QmEx7jX-goSLcUDqZrYznpxI2Lh0NKuaWa1caint1WLIJ2r7ujB2htC3n9QKDV1VGA3kSJms3dBIzeVvM9FSh6FVJE4-3yEy20iQhY9ECJjXoSO4e5nkDntVBWQGgjAbKDNJBOJfGDkM2OvkBna9sbUrBq9tcXbiZNXFfX_33YOKrn76O7">
+</div>
+<div class="w-5 h-5 rounded-md overflow-hidden ring-1 ring-black">
+<img class="w-full h-full object-cover" data-alt="Warm wool mittens and handknitted cable scarf resting inside an organized compartment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdAXXh6EG3n5fkgdSj8ckx7GdPfK4LZJNTHU0Ja4TLBexo4f_1fyHhL9W0BbY94OaBZDHi02mr4l-w90yFqV0-ZkKh0-pw3NKqvxlAxvnz7apxHsA1bfxy6bdc6gX5m1yxdF7NaogVl07Tf0DoqF3Bk6R63xv9kuvYv_lffudHctbsZimnTU1p5dHqoccTF06irl1IHJFAXZXyC1OMB8piJDe_Z3cbbJlXMg4VUZ59">
+</div>
+<div class="w-5 h-5 rounded-md bg-inverse-surface flex items-center justify-center ring-1 ring-black text-surface-container-lowest font-label-sm text-[10px]">
+                +1
+              </div>
+</div>
+</div>
+<div class="flex flex-col p-space-sm gap-space-xs">
+<div class="flex items-start justify-between gap-space-xs">
+<h3 class="font-title-md text-title-md text-surface-container-lowest font-bold truncate">Ropa de Invierno</h3>
+</div>
+<div class="flex items-center justify-between text-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">inventory</span>
+                5 artículos
+              </span>
+<span class="px-1.5 py-0.5 rounded-md bg-tag-amber/20 text-tag-amber font-label-sm text-label-sm font-medium">Almacenado</span>
+</div>
+<div class="flex flex-col gap-1 mt-space-xs">
+<div class="flex justify-between items-center text-surface-variant font-label-sm text-[10px]">
+<span class="">Volumen</span>
+<span class="">90% lleno</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-inverse-surface overflow-hidden">
+<div class="h-full rounded-full bg-tag-amber" style="width: 90%;"></div>
+</div>
+</div>
+</div>
+</article>
+<div class="flex flex-col items-center justify-center rounded-xl p-space-md text-center group cursor-pointer transition-colors" style="background-color: #12100E; min-height: 180px;">
+<div class="w-12 h-12 rounded-full bg-inverse-surface flex items-center justify-center mb-space-xs text-primary-fixed-dim group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[24px]">add</span>
+</div>
+<span class="font-title-md text-title-md text-surface-container-lowest font-medium">Asignar Caja</span>
+<span class="font-label-sm text-label-sm text-surface-variant mt-1">Añadir otra a Dormitorio</span>
+</div>
+</div>
+</div>
+</section>
+<div class="fixed bottom-20 right-margin z-40">
+<button class="flex items-center gap-space-sm px-space-xl py-3.5 rounded-2xl shadow-xl transition-transform active:scale-95 text-on-primary-fixed font-title-md text-title-md font-semibold" style="background-color: #FFB77C;">
+<span class="material-symbols-outlined text-[22px]">add</span>
+<span class="">Nueva Caja</span>
+</button>
+</div>
+</div>
+<script>
+  (function () {
+    const headers = document.querySelectorAll('.zone-header');
+    headers.forEach(header => {
+      header.addEventListener('click', () => {
+        const targetId = header.getAttribute('data-target');
+        const content = document.getElementById(targetId);
+        const chevron = header.querySelector('.zone-chevron');
+        if (!content || !chevron) return;
+        
+        const isHidden = content.classList.contains('hidden');
+        if (isHidden) {
+          content.classList.remove('hidden');
+          chevron.classList.remove('-rotate-90');
+        } else {
+          content.classList.add('hidden');
+          chevron.classList.add('-rotate-90');
+        }
+      });
+    });
+
+    const toggleAllBtn = document.getElementById('toggle-all-zones');
+    const toggleAllIcon = document.getElementById('toggle-all-icon');
+    let allCollapsed = false;
+
+    if (toggleAllBtn && toggleAllIcon) {
+      toggleAllBtn.addEventListener('click', () => {
+        allCollapsed = !allCollapsed;
+        document.querySelectorAll('.zone-header').forEach(header => {
+          const targetId = header.getAttribute('data-target');
+          const content = document.getElementById(targetId);
+          const chevron = header.querySelector('.zone-chevron');
+          if (!content || !chevron) return;
+
+          if (allCollapsed) {
+            content.classList.add('hidden');
+            chevron.classList.add('-rotate-90');
+          } else {
+            content.classList.remove('hidden');
+            chevron.classList.remove('-rotate-90');
+          }
+        });
+        toggleAllIcon.textContent = allCollapsed ? 'unfold_more' : 'unfold_less';
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-title-md"><div class="flex justify-around items-center h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-colors text-primary font-title-md" data-path="cajas" href="#"><span class="material-symbols-outlined text-[22px]">package_2</span><span class="font-label-sm text-label-sm mt-space-xs">Cajas</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-on-surface-variant transition-colors" data-path="zonas" href="#"><span class="material-symbols-outlined text-[22px]">grid_view</span><span class="font-label-sm text-label-sm mt-space-xs">Zonas</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-on-surface-variant transition-colors" data-path="prestamos" href="#"><span class="material-symbols-outlined text-[22px]">swap_horiz</span><span class="font-label-sm text-label-sm mt-space-xs">Préstamos</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-on-surface-variant transition-colors" data-path="ajustes" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="font-label-sm text-label-sm mt-space-xs">Ajustes</span></a></div></nav>
+
+
+
+</body></html>

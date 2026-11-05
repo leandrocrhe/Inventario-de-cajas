@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "tertiary-fixed": "#ffdad4", "tag-blue": "#3B82F6", "surface-bright": "#fff8f4", "on-primary-container": "#2E1500", "on-error-container": "#93000a", "on-surface-variant": "#534438", "on-tertiary-container": "#ffc6bb", "on-secondary-fixed-variant": "#56442a", "primary-fixed-dim": "#ffb77d", "secondary-fixed-dim": "#ddc2a1", "tertiary-fixed-dim": "#ffb4a7", "inverse-on-surface": "#faefe7", "surface-dim": "#e3d8d0", "primary-fixed": "#ffdcc3", "on-primary": "#ffffff", "tag-teal": "#14B8A6", "on-tertiary-fixed": "#3b0904", "surface-container": "#f7ece4", "error-container": "#ffdad6", "tag-red": "#EF4444", "inverse-primary": "#ffb77d", "on-surface-espresso": "#211A16", "primary-container": "#FFDCC1", "secondary": "#6f5b40", "secondary-container": "#FBE0BD", "on-secondary": "#ffffff", "background": "#fff8f4", "surface-variant": "#ebe1d9", "on-tertiary-fixed-variant": "#733429", "on-error": "#ffffff", "tag-green": "#10B981", "outline": "#867467", "secondary-fixed": "#fadebc", "surface": "#fff8f4", "tag-purple": "#8B5CF6", "on-primary-fixed-variant": "#6e3900", "surface-container-highest": "#ebe1d9", "surface-container-low": "#fdf2e9", "inverse-surface": "#352f2a", "surface-container-lowest": "#ffffff", "outline-variant": "#d9c2b3", "on-tertiary": "#ffffff", "tag-amber": "#F59E0B", "on-surface": "#201b16", "surface-tint": "#8f4d04", "tertiary-container": "#8c473b", "tertiary": "#6f3026", "primary": "#693600", "on-background": "#201b16", "tag-slate": "#64748B", "on-primary-fixed": "#2f1500", "error": "#ba1a1a", "on-secondary-container": "#745f44", "on-secondary-fixed": "#271904", "surface-clean": "#FFFFFF", "surface-container-high": "#f1e6de", "background-warm": "#FBF9F5" }, borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" }, spacing: { gutter: "0.75rem", "space-lg": "1rem", "space-sm": "0.5rem", "margin-tablet": "1.5rem", "space-xs": "0.25rem", "gutter-tablet": "1rem", "space-md": "0.75rem", margin: "1rem", "space-xl": "1.5rem" }, fontFamily: { "headline-md": ["Roboto Flex"], "title-lg": ["Roboto Flex"], "body-lg": ["Roboto Flex"], "body-md": ["Roboto Flex"], "title-md": ["Roboto Flex"], "display-lg": ["Roboto Flex"], "label-lg": ["Roboto Flex"], "label-sm": ["Roboto Flex"] }, fontSize: { "headline-md": ["24px", { lineHeight: "30px", fontWeight: "600" }], "title-lg": ["20px", { lineHeight: "26px", fontWeight: "700" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "title-md": ["16px", { lineHeight: "22px", fontWeight: "500" }], "display-lg": ["32px", { lineHeight: "38px", fontWeight: "700" }], "label-lg": ["14px", { lineHeight: "20px", fontWeight: "500" }], "label-sm": ["11px", { lineHeight: "16px", letterSpacing: "0.5px", fontWeight: "500" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-space-md flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm flex-1 min-w-0"><button aria-label="Back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-variant transition-colors" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button><h1 class="font-title-lg text-title-lg text-on-surface truncate">Photo Gallery Viewer</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Share" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined">share</span></button><button aria-label="More options" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined">more_vert</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 w-full bg-surface pt-16"><div class="flex flex-col w-full bg-[#000000] text-inverse-on-surface select-none pb-space-lg">
+<!-- Immersive Floating Top Bar -->
+<div class="w-full flex items-center justify-between px-space-md py-space-sm bg-gradient-to-b from-[#000000]/90 via-[#000000]/60 to-transparent z-30">
+<div class="flex items-center gap-space-sm min-w-0">
+<button aria-label="Volver atrás" class="w-11 h-11 rounded-full flex items-center justify-center bg-inverse-surface/60 text-inverse-on-surface active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[22px]">arrow_back</span>
+</button>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-primary-fixed-dim font-bold" id="gallery-counter">1 de 4</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-label-sm text-label-sm text-surface-variant font-medium">#BX-042</span>
+</div>
+<p class="font-body-md text-body-md text-surface-dim truncate max-w-[180px]">Set de Pinceles Sintéticos</p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<button aria-label="Compartir fotografía" class="w-10 h-10 rounded-full flex items-center justify-center bg-inverse-surface/60 text-inverse-on-surface active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button aria-label="Descargar original" class="w-10 h-10 rounded-full flex items-center justify-center bg-inverse-surface/60 text-inverse-on-surface active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+</button>
+<button aria-label="Más opciones" class="w-10 h-10 rounded-full flex items-center justify-center bg-inverse-surface/60 text-inverse-on-surface active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Stage: Fullscreen Photo Canvas Area -->
+<div class="relative w-full aspect-[4/5] max-h-[512px] flex items-center justify-center overflow-hidden bg-[#000000]">
+<!-- Floating Metadata Badge (Top Left of image) -->
+<div class="absolute top-space-md left-space-md z-20 flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-[#000000]/75 backdrop-blur-md shadow-md shadow-black/80">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-inverse-on-surface tracking-wide" id="badge-title">Foto Principal · 12 Oct 2026</span>
+</div>
+<!-- Zoom Hint Chip (Top Right) -->
+<div class="absolute top-space-md right-space-md z-20 flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-[#000000]/70 backdrop-blur-md text-surface-variant shadow-sm">
+<span class="material-symbols-outlined text-[15px]">pinch</span>
+<span class="font-label-sm text-label-sm tracking-tight text-surface-dim">Pellizcar para zoom</span>
+</div>
+<!-- Active Image Container -->
+<div class="relative w-full h-full flex items-center justify-center touch-pan-y" id="image-viewer-container">
+<img alt="Set de Pinceles Sintéticos Profesionales" class="w-full h-full object-contain transition-all duration-300 transform scale-100 cursor-zoom-in" data-alt="High detail macro close up shot of ultra-soft synthetic artist brush bristles held in polished copper and brass ferrules resting on an artisan raw wood table, soft natural amber studio lighting, fine craftsmanship, warm earth tones, deep shadows" id="main-view-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6ixcQ8U2npaKKogLgbMeQBYutT73izeFm-vZA0gmKHEtwA1c_p2VqZr3X0OWPd21krs2QbMutCEeZTTKm5aaoGnnnuhEqpJXqFHuHUUBI7iYclbQz9d9xAd7WsfguL_vb8-UF3JbkHLiWLwzAAJbU3woyQWxVsY_VsbEz6ol4_SrKZqhGDspnabSJgM7s3Yjpeyj2DuFX0l3UP8giGE13PoTyXb1DZogPhvITfC9P"/>
+</div>
+<!-- Previous / Next Visual Nav Chevrons -->
+<button aria-label="Foto anterior" class="absolute left-space-sm top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-[#000000]/60 text-inverse-on-surface backdrop-blur-sm active:scale-90 transition-transform" id="prev-btn" type="button">
+<span class="material-symbols-outlined text-[28px]">chevron_left</span>
+</button>
+<button aria-label="Foto siguiente" class="absolute right-space-sm top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-[#000000]/60 text-inverse-on-surface backdrop-blur-sm active:scale-90 transition-transform" id="next-btn" type="button">
+<span class="material-symbols-outlined text-[28px]">chevron_right</span>
+</button>
+</div>
+<!-- Bottom Interactive Floating Control Dock -->
+<div class="w-full px-space-md pt-space-sm flex flex-col gap-space-md z-20">
+<!-- Horizontal Thumbnails Strip Card -->
+<div class="w-full bg-[#111111] p-space-sm rounded-xl shadow-xl shadow-black flex flex-col gap-space-xs">
+<div class="flex items-center justify-between px-space-xs pb-space-xs">
+<span class="font-label-sm text-label-sm text-surface-variant font-medium tracking-wider uppercase">Carrete de Inventario</span>
+<span class="font-label-sm text-label-sm text-primary-fixed-dim flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-tag-green"></span>
+          Sincronizado en la nube
+        </span>
+</div>
+<!-- Carousel Track -->
+<div class="flex items-center gap-space-sm overflow-x-auto py-space-xs px-0.5 no-scrollbar" id="thumbnail-track">
+<!-- Thumbnail 1 (Active) -->
+<button class="thumb-btn shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden relative shadow-md transition-all scale-105" data-badge="Foto Principal · 12 Oct 2026" data-index="0" style="box-shadow: 0 0 0 2.5px #FFB77D;" type="button">
+<img alt="Detalle de cerdas" class="w-full h-full object-cover" data-alt="Macro close-up details of synthetic paint brush tips and polished metallic ferrule on warm aged studio walnut wood table with warm ambient sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDayTODYQnYsvFDE0gGuRn0ug-7eLZrqSGdOV71bEkKtdQ_sq57DUbAsXtMuMqWItTfgZxnIujph74W8aid6Tq66Z11KLc0ovkVqyEenlUF2FJRqf1lfFRQYywI-85REdcltM6Q1-QmScASzQck3xRCapIa-woXVtrZ3j3CoeOURZpdDJXKStc8KgHs_3wNu5LcVqJZJtHgYZDnV2wPZLaIxHCwCrbjjb96XdvWImx9"/>
+<span class="absolute bottom-0 inset-x-0 bg-[#000000]/70 text-[9px] font-label-sm text-center py-0.5 text-primary-fixed-dim">Cerdas</span>
+</button>
+<!-- Thumbnail 2 -->
+<button class="thumb-btn shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden relative shadow-sm opacity-60 transition-all hover:opacity-90" data-badge="Caja Almacén · 12 Oct 2026" data-index="1" type="button">
+<img alt="Caja organizadora abierta" class="w-full h-full object-cover" data-alt="Handcrafted cedar wood storage organizer box open displaying arranged professional paint brushes in custom fitted foam slots studio lighting warm amber background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOV_9lvkUSXaKDFhYWIhi0xQs_t1puPeLCVWs5V-5MDyWyJMvOzS2MzrDdOZj4hdlf1Nn-8xA4JiRjFtDr6zCMm08gjm-GAow4iCHPhXgeo0n_OW51oAw1kkn-5tLn3cx6S16A9pAuv6iNymWdPumNYUtKhVuLSxcQ2aPL4tckhbUz3Upm7b28oaiRQJOEWNrI2ML7EupJcfaniD7T82OzpYdyFCMeVVbrPVmQoDD9"/>
+<span class="absolute bottom-0 inset-x-0 bg-[#000000]/70 text-[9px] font-label-sm text-center py-0.5 text-surface-dim">Estuche</span>
+</button>
+<!-- Thumbnail 3 -->
+<button class="thumb-btn shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden relative shadow-sm opacity-60 transition-all hover:opacity-90" data-badge="Uso en Taller · 12 Oct 2026" data-index="2" type="button">
+<img alt="Mesa de trabajo y paleta" class="w-full h-full object-cover" data-alt="Art workshop desk with ceramic paint palette, watercolor pigments, oil paint tubes, glass jars of water, and fine brushes resting beside finished canvas painting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYPz0qpcOkhUWow7XIC_GMqvXUC64bEflPCAeeAnQDmanDmoHywmrj4DogDJ_QV5HfTL0BdJsmDVo-wBhirZOPjjcdh91Y17w_rtWvzvRWjsGQBDUqaePfoF7no3RjzdXvkqJSduUBd5MosywEYrQt5sCLp4QdcS4CXYoIjUKakF3f-mbLfn68YhN1dRl04LX8LkOUimh4PKp3IjDvYnG3eYwD8mDMy6AB1MB0hxJ8"/>
+<span class="absolute bottom-0 inset-x-0 bg-[#000000]/70 text-[9px] font-label-sm text-center py-0.5 text-surface-dim">Taller</span>
+</button>
+<!-- Thumbnail 4 -->
+<button class="thumb-btn shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden relative shadow-sm opacity-60 transition-all hover:opacity-90" data-badge="Etiqueta SKU · 11 Oct 2026" data-index="3" type="button">
+<img alt="Etiqueta y código QR" class="w-full h-full object-cover" data-alt="Clear high contrast close up of inventory label sticker with printed QR code, readable barcode BX-042 and item description pasted on kraft brown box" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjq7Muvyj19VKcX9fhnDYBu1lhi7-7XVhciFcIRRlxRpOBJXUZIrEt1iRsuce5J7ufbIMInChF6iUFy6pJNCjj0MU7ar00Xmy6T7SmqCkYGE-yA0muuQN_IaF08YX3v4y3tLCSPQQ0xTuBEyYr063avdmbRGLbtra5pyquzsBrBy-JCSKi90RiLGqZU9eh-8CHg43iywQO2LnhZSzveWd5HPtfMyI4Qg-JqEwoNdmu"/>
+<span class="absolute bottom-0 inset-x-0 bg-[#000000]/70 text-[9px] font-label-sm text-center py-0.5 text-surface-dim">Etiqueta</span>
+</button>
+</div>
+</div>
+<!-- Quick Action Management Row -->
+<div class="grid grid-cols-3 gap-space-sm pt-space-xs">
+<!-- Replace Photo -->
+<button class="flex flex-col items-center justify-center gap-space-xs py-space-sm px-space-xs rounded-xl bg-[#141414] text-surface-dim hover:bg-inverse-surface/80 active:scale-95 transition-all" type="button">
+<div class="w-9 h-9 rounded-full bg-surface-container-highest/20 flex items-center justify-center text-primary-fixed-dim">
+<span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+</div>
+<span class="font-label-sm text-label-sm text-center font-medium leading-tight">Reemplazar</span>
+</button>
+<!-- Set as Cover -->
+<button class="flex flex-col items-center justify-center gap-space-xs py-space-sm px-space-xs rounded-xl bg-[#141414] text-surface-dim hover:bg-inverse-surface/80 active:scale-95 transition-all" id="set-cover-btn" type="button">
+<div class="w-9 h-9 rounded-full bg-primary/30 flex items-center justify-center text-primary-fixed-dim">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-label-sm text-label-sm text-center font-medium leading-tight">Portada</span>
+</button>
+<!-- Delete Photo -->
+<button class="flex flex-col items-center justify-center gap-space-xs py-space-sm px-space-xs rounded-xl bg-[#141414] text-tertiary-fixed hover:bg-tertiary-container/30 active:scale-95 transition-all" type="button">
+<div class="w-9 h-9 rounded-full bg-tertiary-container/40 flex items-center justify-center text-tertiary-fixed-dim">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</div>
+<span class="font-label-sm text-label-sm text-center font-medium leading-tight">Eliminar</span>
+</button>
+</div>
+<!-- Toast Feedback Indicator (Toggled via JS) -->
+<div class="hidden mx-auto flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-inverse-surface text-inverse-on-surface shadow-xl" id="toast-indicator">
+<span class="material-symbols-outlined text-tag-green text-[18px]">check_circle</span>
+<span class="font-label-sm text-label-sm">Foto establecida como portada principal</span>
+</div>
+</div>
+</div>
+<script>
+  (() => {
+    let currentIndex = 0;
+    const thumbs = document.querySelectorAll('.thumb-btn');
+    const counterEl = document.getElementById('gallery-counter');
+    const badgeEl = document.getElementById('badge-title');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const mainImg = document.getElementById('main-view-image');
+    const coverBtn = document.getElementById('set-cover-btn');
+    const toast = document.getElementById('toast-indicator');
+
+    const updateGallery = (newIdx) => {
+      currentIndex = (newIdx + thumbs.length) % thumbs.length;
+      counterEl.textContent = `${currentIndex + 1} de ${thumbs.length}`;
+
+      thumbs.forEach((t, i) => {
+        if (i === currentIndex) {
+          t.classList.add('scale-105');
+          t.classList.remove('opacity-60');
+          t.style.boxShadow = '0 0 0 2.5px #FFB77D';
+          const badgeText = t.getAttribute('data-badge');
+          if (badgeEl && badgeText) badgeEl.textContent = badgeText;
+          const thumbImg = t.querySelector('img');
+          if (thumbImg && mainImg) {
+            mainImg.src = thumbImg.src;
+            mainImg.setAttribute('data-alt', thumbImg.getAttribute('data-alt') || '');
+            mainImg.alt = thumbImg.alt;
+          }
+        } else {
+          t.classList.remove('scale-105');
+          t.classList.add('opacity-60');
+          t.style.boxShadow = 'none';
+        }
+      });
+    };
+
+    thumbs.forEach((t, i) => {
+      t.addEventListener('click', () => updateGallery(i));
+    });
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => updateGallery(currentIndex - 1));
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => updateGallery(currentIndex + 1));
+    }
+
+    if (coverBtn && toast) {
+      coverBtn.addEventListener('click', () => {
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2600);
+      });
+    }
+
+    // Touch Swipe simulation
+    let touchStartX = 0;
+    const viewer = document.getElementById('image-viewer-container');
+    if (viewer) {
+      viewer.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      viewer.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const diff = touchEndX - touchStartX;
+        if (Math.abs(diff) > 40) {
+          if (diff < 0) updateGallery(currentIndex + 1);
+          else updateGallery(currentIndex - 1);
+        }
+      }, { passive: true });
+    }
+  })();
+</script></main></body></html>
