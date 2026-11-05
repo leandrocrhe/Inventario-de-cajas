@@ -1,0 +1,424 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC@100..1000,96,468,79,750,-203,738,514,712&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#000000;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#F2EFE9", "inverse-on-surface": "#faefe7", "surface-container-lowest": "#ffffff", "tertiary-fixed-dim": "#ffb4a7", "on-secondary-fixed": "#271904", "primary-fixed-dim": "#ffb77d", "on-secondary-container": "#745f44", "on-secondary": "#ffffff", "secondary": "#6f5b40", "tag-green": "#10B981", "tertiary": "#6f3026", "on-primary-fixed": "#2f1500", "secondary-fixed": "#fadebc", "surface-tint": "#8f4d04", "background": "#000000", "primary-fixed": "#ffdcc3", "outline-variant": "#d9c2b3", "on-surface": "#ECE0DA", "tag-teal": "#14B8A6", "surface-bright": "#fff8f4", "tag-red": "#EF4444", "surface-container-highest": "#ebe1d9", "tertiary-container": "#8c473b", "tag-blue": "#3B82F6", "secondary-container": "#f7dbb9", "on-primary-container": "#ffc89d", "surface-dim": "#e3d8d0", "error-container": "#ffdad6", "on-primary": "#ffffff", "tag-slate": "#64748B", "primary-container": "#FFDCC1", "on-secondary-fixed-variant": "#56442a", "background-warm": "#FBF9F5", "on-surface-variant": "#A89F95", "inverse-primary": "#ffb77d", "on-tertiary-fixed-variant": "#733429", "on-surface-espresso": "#211A16", "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#6e3900", "secondary-fixed-dim": "#ddc2a1", "surface-container-low": "#fdf2e9", "tertiary-fixed": "#ffdad4", "on-error-container": "#93000a", "surface-container-high": "#f1e6de", "on-error": "#ffffff", "primary": "#FFB77C", "surface-container": "#f7ece4", "tag-amber": "#F59E0B", "inverse-surface": "#352f2a", "on-tertiary-container": "#ffc6bb", "error": "#ba1a1a", "tag-purple": "#8B5CF6", "surface": "#000000", "outline": "#867467", "on-background": "#ECE0DA", "on-tertiary-fixed": "#3b0904", "surface-clean": "#FFFFFF" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "0.75rem", "margin": "1rem", "gutter-tablet": "1rem", "space-xs": "0.25rem", "margin-tablet": "1.5rem", "space-xl": "1.5rem", "space-sm": "0.5rem", "gutter": "0.75rem", "space-lg": "1rem" }, fontFamily: { "headline-md": ["Roboto Flex"], "label-sm": ["Roboto Flex"], "title-lg": ["Roboto Flex"], "display-lg": ["Roboto Flex"], "title-md": ["Roboto Flex"], "body-md": ["Roboto Flex"], "body-lg": ["Roboto Flex"], "label-lg": ["Roboto Flex"] }, fontSize: { "headline-md": ["24px", { "lineHeight": "30px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }], "title-lg": ["20px", { "lineHeight": "26px", "fontWeight": "700" }], "display-lg": ["32px", { "lineHeight": "38px", "fontWeight": "700" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }] } } } };</script></head><body class="bg-black font-body-md text-body-md text-[#ECE0DA] flex flex-col antialiased selection:bg-[#FFB77C]/30 selection:text-white"><header class="fixed top-0 w-full z-50 pt-safe bg-black/90 backdrop-blur-xl border-b border-[#2C2622]/60 shadow-[0_1px_12px_rgba(0,0,0,0.8)]"><div class="px-margin py-2.5 flex flex-col gap-2"><div class="flex items-center gap-space-sm w-full"><div class="flex-1 flex items-center bg-[#181512] border border-[#FFB77C]/60 rounded-xl px-space-sm py-1.5 focus-within:border-[#FFB77C] focus-within:ring-1 focus-within:ring-[#FFB77C] transition-all shadow-sm"><span class="material-symbols-outlined text-[#FFB77C] text-[20px] mr-2 shrink-0">search</span><input class="bg-transparent text-[#FFFFFF] text-body-md font-body-md placeholder-[#A89F95] w-full outline-none border-none p-0 focus:ring-0 truncate" type="text" value="Taladro, cables o ropa..."><button aria-label="Limpiar búsqueda" class="w-6 h-6 flex items-center justify-center rounded-full text-[#A89F95] hover:text-[#FFFFFF] transition-colors ml-1 shrink-0"><span class="material-symbols-outlined text-[18px]">cancel</span></button></div><button aria-label="Filtros avanzados activos" class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-[#241B14] border border-[#FFB77C]/50 text-[#FFB77C] shrink-0 hover:bg-[#1E1915] transition-all shadow-sm"><span class="material-symbols-outlined text-[20px]">tune</span><span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#FFB77C] text-[#2F1500] font-label-sm text-[10px] font-bold">2</span></button></div><div class="flex items-center justify-between text-label-sm font-label-sm px-1"><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#FFB77C]"></span><span class="text-[#ECE0DA] font-medium">3 cajas encontradas</span><span class="text-[#A89F95]">en 2 zonas</span></div><button class="text-[#FFB77C] hover:text-[#FFDCC1] font-medium transition-colors text-[11px]">Limpiar filtros</button></div></div></header><main class="flex flex-col relative w-full pb-24 px-margin bg-black pt-24"><div class="flex flex-col w-full text-on-surface">
+<!-- Interactive Transition Control Toolbar (M3 State Controller) -->
+<section class="flex flex-col gap-space-sm mb-space-lg"><div class="flex items-center justify-between bg-[#181512] border border-[#2C2622]/60 p-space-sm rounded-xl backdrop-blur-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[#FFB77C] text-[18px]">animation</span>
+<span class="font-label-sm text-label-sm text-[#A89F95] font-medium">MD3 Motion Showcase</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-2.5 py-1 rounded-full text-label-sm font-label-sm transition-all bg-[#FFB77C] text-[#2F1500] font-bold shadow-sm" id="btn-phase-search" onclick="setPhase('search')">
+          1. Activa
+        </button>
+<button class="px-2.5 py-1 rounded-full text-label-sm font-label-sm transition-all bg-[#241B14] text-[#A89F95] border border-[#2C2622]/60" id="btn-phase-collapsing" onclick="setPhase('collapsing')">
+          2. Colapso
+        </button>
+<button class="px-2.5 py-1 rounded-full text-label-sm font-label-sm transition-all bg-[#241B14] text-[#A89F95] border border-[#2C2622]/60" id="btn-phase-home" onclick="setPhase('home')">
+          3. Normal
+        </button>
+</div>
+</div>
+<!-- Live Action Play Button -->
+<button class="w-full flex items-center justify-center gap-space-sm py-2.5 px-space-md rounded-xl bg-[#FFB77C] text-[#2F1500] font-label-lg text-label-lg font-bold shadow-md transition-all active:scale-[0.98]" onclick="toggleMotionCycle()">
+<span class="material-symbols-outlined text-[18px]" id="motion-btn-icon">arrow_downward</span>
+<span id="motion-btn-text" class="">Iniciar Colapso Hacia Vista Normal</span>
+</button></section>
+<!-- M3 Search Morphing Top Header Area -->
+<section class="flex flex-col mb-space-md">
+<!-- State A: Default Standard Home Header (Fades in when collapsed) -->
+<div class="flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.05,0.7,0.1,1)] opacity-0 h-0 overflow-hidden transform -translate-y-2" id="home-title-layer">
+<div class="flex flex-col">
+<h1 class="font-title-lg text-title-lg font-bold tracking-tight text-surface-clean">Inventario de Cajas</h1>
+<span class="font-label-sm text-label-sm text-on-surface-variant">5 cajas registradas · 12 objetos</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="w-9 h-9 rounded-xl flex items-center justify-center bg-surface-container text-primary transition-all active:scale-95 shadow-sm" onclick="setPhase('search')">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<div class="flex items-center bg-surface-container p-0.5 rounded-xl">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center bg-primary-container text-on-surface-espresso shadow-xs">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">view_list</span>
+</button>
+</div>
+</div>
+</div>
+<!-- State B: Active Search Bar Container (Morphs, shrinks, collapses) -->
+<div class="flex flex-col gap-space-xs transition-all duration-500 ease-[cubic-bezier(0.2,0,0,1)] opacity-100 scale-100" id="search-bar-shell">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-primary font-medium tracking-wide" id="collapse-status-pill">Filtros Activos: "Herramientas"</span>
+</div>
+<button class="font-label-sm text-label-sm text-primary font-medium underline flex items-center gap-0.5" onclick="quickClearFilters()">
+<span class="material-symbols-outlined text-[13px]">history</span>
+          Restablecer
+        </button>
+</div>
+<!-- Search Input Visual Envelope -->
+<div class="flex items-center justify-between bg-[#181512] border border-[#2C2622]/60 p-space-sm rounded-2xl shadow-sm transition-all duration-500 ease-[cubic-bezier(0.2,0,0,1)]" id="search-input-card"><div class="flex items-center gap-space-sm flex-1 min-w-0"><div class="w-8 h-8 rounded-xl flex items-center justify-center bg-[#FFB77C] text-[#2F1500] transition-all duration-300 shrink-0 font-bold" id="search-icon-badge"><span class="material-symbols-outlined text-[18px]">search</span></div><div class="flex flex-col min-w-0 flex-1"><span class="font-label-sm text-label-sm text-[#A89F95]">Búsqueda rápida</span><span class="font-body-md text-body-md text-[#FFFFFF] truncate font-medium" id="search-query-value">Taladro, cables o brocas</span></div></div><div class="flex items-center gap-space-xs shrink-0"><span class="px-2 py-0.5 rounded-full font-label-sm text-label-sm bg-[#241B14] border border-[#2C2622]/60 text-[#ECE0DA]">3 hallazgos</span><button class="w-7 h-7 rounded-full flex items-center justify-center bg-[#241B14] text-[#A89F95] hover:text-[#FFFFFF] transition-colors border border-[#2C2622]/60" onclick="setPhase('home')"><span class="material-symbols-outlined text-[16px]">close</span></button></div></div>
+</div>
+</section>
+<!-- Collapsible Criteria & Filter Drawer (Smooth Slide-Up + Fade-Out) -->
+<section class="flex flex-col gap-space-sm overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.3,0,0.8,0.15)] max-h-[300px] opacity-100 mb-space-md origin-top translate-y-0" id="advanced-filters-panel"><!-- Filter Status Tag -->
+<div class="flex items-center justify-between px-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-[#A89F95]">Filtros avanzados en repliegue</span>
+<span class="font-label-sm text-label-sm text-[#FFB77C] font-medium" id="filter-state-hint">Criterios de zona y etiquetas</span>
+</div>
+<!-- Category Chips Strip -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 no-scrollbar">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFB77C] text-[#2F1500] font-label-sm text-label-sm font-bold shadow-xs shrink-0">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span class="">Taller / Garaje</span>
+<span class="material-symbols-outlined text-[12px] opacity-70">close</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFB77C] text-[#2F1500] font-label-sm text-label-sm font-bold shadow-xs shrink-0">
+<span class="w-2 h-2 rounded-full bg-tag-amber"></span>
+<span class="">Herramientas Pro</span>
+<span class="material-symbols-outlined text-[12px] opacity-70">close</span>
+</div>
+<div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#181512] border border-[#2C2622]/60 text-[#ECE0DA] font-label-sm text-label-sm shrink-0 hover:bg-[#241B14] transition-colors">
+<span class="material-symbols-outlined text-[14px] text-[#A89F95]">label</span>
+<span class="">Cables USB</span>
+</div>
+<div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#181512] border border-[#2C2622]/60 text-[#ECE0DA] font-label-sm text-label-sm shrink-0 hover:bg-[#241B14] transition-colors">
+<span class="material-symbols-outlined text-[14px] text-[#A89F95]">calendar_today</span>
+<span class="">Actualizados 2024</span>
+</div>
+</div>
+<!-- Context Hint Banner -->
+<div class="flex items-center gap-space-sm p-space-sm rounded-xl bg-[#181512] border border-[#2C2622]/60 shadow-xs">
+<span class="material-symbols-outlined text-[#FFB77C] text-[20px] shrink-0">info</span>
+<p class="font-label-sm text-label-sm text-[#A89F95] flex-1">
+        Al replegar el panel, se restablecerá el total de <strong class="text-[#ECE0DA]">5 cajas maestras</strong> en tu espacio sin criterios restrictivos.
+      </p>
+</div></section>
+<!-- Section Divider with Real-time Count Transition Feedback -->
+<div class="flex items-center justify-between py-1 mb-space-sm transition-all duration-300" id="grid-meta-banner">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary" id="grid-count-dot"></span>
+<span class="font-label-sm text-label-sm font-bold text-surface-clean" id="grid-count-title">Mostrando 3 cajas coincidentes</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant" id="grid-layout-indicator">Modo filtrado activo</span>
+</div>
+<!-- Reorganizing Box Grid (Stagger and Smooth Restructure) -->
+<div class="flex flex-col gap-space-md transition-all duration-500 ease-[cubic-bezier(0.05,0.7,0.1,1)]" id="boxes-container"><!-- Card 1: Herramientas Pro (Result 1) -->
+<article class="box-card flex flex-col rounded-2xl bg-[#181512] border border-[#2C2622]/60 p-space-md shadow-sm transition-all duration-500 transform hover:-translate-y-0.5">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#241B14] flex items-center justify-center text-[#FFB77C] shrink-0 border border-[#2C2622]/60">
+<span class="material-symbols-outlined text-[24px]">home_repair_service</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-tag-amber shrink-0"></span>
+<h2 class="font-title-md text-title-md font-bold text-[#FFFFFF] truncate">Herramientas Pro</h2>
+</div>
+<span class="font-label-sm text-label-sm text-[#A89F95]">Estante A2 · Taller Principal</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#FFB77C] text-[#2F1500] font-label-sm text-label-sm font-bold shrink-0">
+          6 objetos
+        </span>
+</div>
+<!-- Preview Image -->
+<div class="relative w-full h-32 rounded-xl overflow-hidden mb-space-sm bg-black border border-[#2C2622]/60 shadow-inner">
+<img class="w-full h-full object-cover" data-alt="A curated collection of professional hand tools neatly organized" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDADzj7Z8TnjffdQTaukBeLvQ3c1ZdbYbm_vylqBeP4AArt5NWicIs7iwhajM0ETPaZ_FvkUXXDBXkb2qNDrCj57fghCxMVu7EkjceXu7jD5wU8UJRnLqGRuKO1K1ranoy_xFzQufBvp5JczTcKQLJPjsAJCsLujSEhIqA0DjtLcAHHOWGBCB8WNeodUMnAur5KmEHe-JgfLEVMleR0G0HaEcA2R3-0lI7_-EMrzxSD">
+<div class="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/90 border border-[#2C2622]/60 text-[#ECE0DA] font-label-sm text-label-sm font-medium backdrop-blur-md">
+<span class="material-symbols-outlined text-[13px] text-tag-green">check_circle</span>
+<span class="">Match exacto: Brocas, Taladro</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-[#A89F95]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">qr_code_2</span>
+          ID: BOX-TL-09
+        </span>
+<span class="text-[#FFB77C] font-medium">Revisado hace 2 días</span>
+</div>
+</article>
+<!-- Card 2: Periféricos & Audio (Result 2) -->
+<article class="box-card flex flex-col rounded-2xl bg-[#181512] border border-[#2C2622]/60 p-space-md shadow-sm transition-all duration-500 transform hover:-translate-y-0.5">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#241B14] flex items-center justify-center text-[#FFB77C] shrink-0 border border-[#2C2622]/60">
+<span class="material-symbols-outlined text-[24px]">headphones</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-tag-blue shrink-0"></span>
+<h2 class="font-title-md text-title-md font-bold text-[#FFFFFF] truncate">Periféricos &amp; Audio</h2>
+</div>
+<span class="font-label-sm text-label-sm text-[#A89F95]">Despacho · Armario B</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#241B14] text-[#ECE0DA] border border-[#2C2622]/60 font-label-sm text-label-sm font-medium shrink-0">
+          4 objetos
+        </span>
+</div>
+<div class="relative w-full h-28 rounded-xl overflow-hidden mb-space-sm bg-black border border-[#2C2622]/60 shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Studio headphones and rolled cables inside bin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYObWNAtCCfYV3tEGBQ1N6kvEqyT4NLAf_-exQStvrdwb-Qh45Mqln24UP4VkDjmTKKKtD6bVvTh7pm5u0xEmRqFg3vB_QGayG_dGuiHHLZX9ViNqzsPSp5FdSjhcqssrArnGfyKpevAuDZfdoYIMJkqlFzU8vz4n8W1JkKjN3kCC-lWulnJTq1BIbUSnG0G9R_S-7DzKvGNbDsVa5OkFYdvm95w8eTKPSPdtWaQ0j">
+<div class="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/90 border border-[#2C2622]/60 text-[#ECE0DA] font-label-sm text-label-sm font-medium backdrop-blur-md">
+<span class="material-symbols-outlined text-[13px] text-tag-green">check_circle</span>
+<span class="">Match: Cables USB-C y Jacks</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-[#A89F95]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">qr_code_2</span>
+          ID: BOX-AU-03
+        </span>
+<span class="text-[#FFB77C] font-medium">Ubicado en Garaje</span>
+</div>
+</article>
+<!-- Card 3: Acuarelas & Tintas (Result 3) -->
+<article class="box-card flex flex-col rounded-2xl bg-[#181512] border border-[#2C2622]/60 p-space-md shadow-sm transition-all duration-500 transform hover:-translate-y-0.5">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#241B14] flex items-center justify-center text-[#FFB77C] shrink-0 border border-[#2C2622]/60">
+<span class="material-symbols-outlined text-[24px]">palette</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-tag-purple shrink-0"></span>
+<h2 class="font-title-md text-title-md font-bold text-[#FFFFFF] truncate">Acuarelas &amp; Tintas</h2>
+</div>
+<span class="font-label-sm text-label-sm text-[#A89F95]">Estudio Creativo · Módulo 1</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#241B14] text-[#ECE0DA] border border-[#2C2622]/60 font-label-sm text-label-sm font-medium shrink-0">
+          2 objetos
+        </span>
+</div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-[#A89F95]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">qr_code_2</span>
+          ID: BOX-AR-14
+        </span>
+<span class="text-[#A89F95]">Sin préstamos</span>
+</div>
+</article>
+<!-- Card 4: Ropa de Invierno -->
+<article class="box-card flex flex-col rounded-2xl bg-[#181512] border border-[#2C2622]/60 p-space-md shadow-sm transition-all duration-500 transform opacity-40 translate-y-3 pointer-events-none" id="extra-card-winter">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#241B14] flex items-center justify-center text-[#FFB77C] shrink-0 border border-[#2C2622]/60">
+<span class="material-symbols-outlined text-[24px]">ac_unit</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-tag-teal shrink-0"></span>
+<h2 class="font-title-md text-title-md font-bold text-[#FFFFFF] truncate">Ropa de Invierno</h2>
+</div>
+<span class="font-label-sm text-label-sm text-[#A89F95]">Altillo · Caja Hermética 02</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#241B14] text-[#ECE0DA] border border-[#2C2622]/60 font-label-sm text-label-sm font-medium shrink-0">
+          8 prendas
+        </span>
+</div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-[#A89F95]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">qr_code_2</span>
+          ID: BOX-RP-02
+        </span>
+<span class="text-[#FFB77C] font-medium">Temporada Fría</span>
+</div>
+</article>
+<!-- Card 5: Documentos & Archivo -->
+<article class="box-card flex flex-col rounded-2xl bg-[#181512] border border-[#2C2622]/60 p-space-md shadow-sm transition-all duration-500 transform opacity-40 translate-y-3 pointer-events-none" id="extra-card-docs">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#241B14] flex items-center justify-center text-[#FFB77C] shrink-0 border border-[#2C2622]/60">
+<span class="material-symbols-outlined text-[24px]">folder_special</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-tag-slate shrink-0"></span>
+<h2 class="font-title-md text-title-md font-bold text-[#FFFFFF] truncate">Documentos &amp; Archivo</h2>
+</div>
+<span class="font-label-sm text-label-sm text-[#A89F95]">Despacho · Archivador Ignífugo</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#241B14] text-[#ECE0DA] border border-[#2C2622]/60 font-label-sm text-label-sm font-medium shrink-0">
+          14 carpetas
+        </span>
+</div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-[#A89F95]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">qr_code_2</span>
+          ID: BOX-DC-01
+        </span>
+<span class="text-[#A89F95]">Confidencial</span>
+</div>
+</article></div>
+<!-- Restored Floating Action Button (FAB) for Home View -->
+<div class="sticky bottom-4 right-0 self-end z-30 mt-space-md">
+<button class="flex items-center gap-space-xs px-space-md py-3 rounded-2xl bg-primary text-on-primary-fixed shadow-xl transition-all duration-500 transform scale-90 opacity-80 active:scale-95" id="home-fab">
+<span class="material-symbols-outlined text-[22px] font-bold">add</span>
+<span class="font-label-lg text-label-lg font-bold">Nueva Caja</span>
+</button>
+</div>
+</div>
+<script>
+  let currentPhase = 'search';
+
+  function updateButtonClasses(activeId) {
+    const ids = ['btn-phase-search', 'btn-phase-collapsing', 'btn-phase-home'];
+    ids.forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      if (id === activeId) {
+        btn.className = 'px-2.5 py-1 rounded-full text-label-sm font-label-sm transition-all bg-primary text-on-primary-fixed font-bold shadow-sm';
+      } else {
+        btn.className = 'px-2.5 py-1 rounded-full text-label-sm font-label-sm transition-all bg-surface-container-highest text-on-surface-variant';
+      }
+    });
+  }
+
+  function setPhase(phase) {
+    currentPhase = phase;
+    const filterPanel = document.getElementById('advanced-filters-panel');
+    const searchShell = document.getElementById('search-bar-shell');
+    const searchCard = document.getElementById('search-input-card');
+    const homeHeader = document.getElementById('home-title-layer');
+    const statusPill = document.getElementById('collapse-status-pill');
+    const filterHint = document.getElementById('filter-state-hint');
+    const gridTitle = document.getElementById('grid-count-title');
+    const gridLayoutInd = document.getElementById('grid-layout-indicator');
+    const gridDot = document.getElementById('grid-count-dot');
+    const cardWinter = document.getElementById('extra-card-winter');
+    const cardDocs = document.getElementById('extra-card-docs');
+    const homeFab = document.getElementById('home-fab');
+    const motionBtnText = document.getElementById('motion-btn-text');
+    const motionBtnIcon = document.getElementById('motion-btn-icon');
+
+    if (phase === 'search') {
+      updateButtonClasses('btn-phase-search');
+      motionBtnText.textContent = 'Iniciar Colapso Hacia Vista Normal';
+      motionBtnIcon.textContent = 'arrow_downward';
+
+      // 1. Expand Header
+      homeHeader.classList.add('opacity-0', '-translate-y-2', 'h-0');
+      homeHeader.classList.remove('opacity-100', 'translate-y-0', 'h-auto');
+
+      // 2. Expand Search Box
+      searchShell.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+      searchShell.classList.add('opacity-100', 'scale-100');
+      searchCard.classList.remove('scale-95', 'opacity-60');
+
+      // 3. Open Filter Drawer
+      filterPanel.classList.remove('max-h-0', 'opacity-0', '-translate-y-4');
+      filterPanel.classList.add('max-h-[300px]', 'opacity-100', 'translate-y-0');
+
+      // Feedback labels
+      statusPill.textContent = 'Filtros Activos: "Herramientas"';
+      filterHint.textContent = 'Criterios de zona y etiquetas';
+      gridTitle.textContent = 'Mostrando 3 cajas coincidentes';
+      gridLayoutInd.textContent = 'Modo filtrado activo';
+      gridDot.className = 'w-2 h-2 rounded-full bg-primary';
+
+      // Restructure Grid (Dim extra items)
+      cardWinter.classList.add('opacity-40', 'translate-y-3', 'pointer-events-none');
+      cardWinter.classList.remove('opacity-100', 'translate-y-0');
+      cardDocs.classList.add('opacity-40', 'translate-y-3', 'pointer-events-none');
+      cardDocs.classList.remove('opacity-100', 'translate-y-0');
+
+      // FAB behavior
+      homeFab.classList.add('scale-90', 'opacity-80');
+      homeFab.classList.remove('scale-100', 'opacity-100');
+    }
+
+    else if (phase === 'collapsing') {
+      updateButtonClasses('btn-phase-collapsing');
+      motionBtnText.textContent = 'Completar Retorno a Inventario';
+      motionBtnIcon.textContent = 'motion_photos_on';
+
+      // Intermediate collapsing animation
+      homeHeader.classList.add('opacity-40', 'h-auto');
+      homeHeader.classList.remove('opacity-0', '-translate-y-2', 'h-0');
+
+      searchShell.classList.add('scale-95', 'opacity-80');
+      searchCard.classList.add('opacity-60');
+
+      // Collapse filter drawer smoothly with M3 emphasized acceleration
+      filterPanel.classList.remove('max-h-[300px]', 'opacity-100');
+      filterPanel.classList.add('max-h-12', 'opacity-30', '-translate-y-2');
+
+      statusPill.textContent = 'Limpiando criterios y replegando panel...';
+      filterHint.textContent = 'Cerrando chips de búsqueda...';
+      gridTitle.textContent = 'Reorganizando espacio disponible...';
+      gridLayoutInd.textContent = 'M3 Emphasized Decelerate';
+      gridDot.className = 'w-2 h-2 rounded-full bg-tag-amber animate-ping';
+
+      // Prepare items entering
+      cardWinter.classList.remove('pointer-events-none');
+      cardWinter.classList.add('opacity-80', 'translate-y-1');
+      cardDocs.classList.remove('pointer-events-none');
+      cardDocs.classList.add('opacity-80', 'translate-y-1');
+    }
+
+    else if (phase === 'home') {
+      updateButtonClasses('btn-phase-home');
+      motionBtnText.textContent = 'Reactivar Búsqueda y Filtros';
+      motionBtnIcon.textContent = 'search';
+
+      // 1. Fully display Home Header
+      homeHeader.classList.remove('opacity-0', '-translate-y-2', 'h-0');
+      homeHeader.classList.add('opacity-100', 'translate-y-0', 'h-auto');
+
+      // 2. Collapse Search Bar completely into background
+      searchShell.classList.remove('opacity-100', 'scale-100');
+      searchShell.classList.add('opacity-0', 'pointer-events-none', 'h-0', 'overflow-hidden');
+
+      // 3. Zero-out filter drawer
+      filterPanel.classList.remove('max-h-[300px]', 'opacity-100', 'translate-y-0');
+      filterPanel.classList.add('max-h-0', 'opacity-0', '-translate-y-4');
+
+      // Feedback labels
+      gridTitle.textContent = 'Inventario Completo (5 Cajas)';
+      gridLayoutInd.textContent = 'Filtros colapsados · Cuadrícula expandida';
+      gridDot.className = 'w-2 h-2 rounded-full bg-tag-green';
+
+      // Stagger expansion of all cards
+      cardWinter.classList.remove('opacity-40', 'opacity-80', 'translate-y-3', 'translate-y-1', 'pointer-events-none');
+      cardWinter.classList.add('opacity-100', 'translate-y-0');
+      
+      cardDocs.classList.remove('opacity-40', 'opacity-80', 'translate-y-3', 'translate-y-1', 'pointer-events-none');
+      cardDocs.classList.add('opacity-100', 'translate-y-0');
+
+      // Full FAB elevation
+      homeFab.classList.remove('scale-90', 'opacity-80');
+      homeFab.classList.add('scale-100', 'opacity-100');
+    }
+  }
+
+  function toggleMotionCycle() {
+    if (currentPhase === 'search') {
+      setPhase('collapsing');
+      setTimeout(() => {
+        if (currentPhase === 'collapsing') setPhase('home');
+      }, 500);
+    } else if (currentPhase === 'collapsing') {
+      setPhase('home');
+    } else {
+      setPhase('search');
+    }
+  }
+
+  function quickClearFilters() {
+    setPhase('collapsing');
+    setTimeout(() => {
+      setPhase('home');
+    }, 450);
+  }
+
+  // Initial state setup
+  setPhase('search');
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-black/90 backdrop-blur-xl border-t border-[#2C2622]/60 shadow-[0_-1px_12px_rgba(0,0,0,0.8)]"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-[#A89F95] hover:text-[#ECE0DA] transition-colors" data-path="cajas" href="#"><span class="material-symbols-outlined text-[22px]">package_2</span><span class="font-label-sm text-label-sm mt-space-xs font-bold text-[#FFB77C]">Cajas</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-[#A89F95] hover:text-[#ECE0DA] transition-colors" data-path="zonas" href="#"><span class="material-symbols-outlined text-[22px]">grid_view</span><span class="font-label-sm text-label-sm mt-space-xs">Zonas</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-[#A89F95] hover:text-[#ECE0DA] transition-colors" data-path="prestamos" href="#"><span class="material-symbols-outlined text-[22px]">swap_horiz</span><span class="font-label-sm text-label-sm mt-space-xs">Préstamos</span></a><a class="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-[#A89F95] hover:text-[#ECE0DA] transition-colors" data-path="ajustes" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="font-label-sm text-label-sm mt-space-xs">Ajustes</span></a></div></nav>
+
+
+</body></html>
