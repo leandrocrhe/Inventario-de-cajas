@@ -1,88 +1,123 @@
 package com.example.presentation
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AssignmentInd
+import androidx.compose.material.icons.filled.AddBox
+import androidx.compose.material.icons.filled.AutoAwesomeMosaic
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.PieChart
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PostAdd
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Storage
-import androidx.compose.material.icons.filled.ViewList
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.SwapVert
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.data.local.dao.BoxWithCounts
+import com.example.data.local.entity.BoxEntity
+import com.example.data.local.entity.ItemEntity
 import com.example.presentation.components.BackupDialog
 import com.example.presentation.components.BoxCard
 import com.example.presentation.components.BoxGridCard
@@ -92,25 +127,44 @@ import com.example.presentation.components.EditBoxDialog
 import com.example.presentation.components.EditItemDialog
 import com.example.presentation.components.ItemCard
 import com.example.presentation.components.ItemGridCard
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import com.example.presentation.components.LoanDialog
 import com.example.presentation.components.LoansSheet
 import com.example.presentation.components.MoveBoxDialog
 import com.example.presentation.components.MoveItemDialog
-import com.example.presentation.components.SearchScreen
+import com.example.presentation.components.ObjectDetailSheet
+import com.example.presentation.components.SettingsView
 import com.example.presentation.components.StatsDashboardDialog
+import com.example.presentation.components.ZonesView
 import com.example.presentation.components.parseColorSafe
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+enum class AppBottomTab {
+    CAJAS,
+    ZONAS,
+    PRESTAMOS,
+    AJUSTES
+}
+
+enum class GroupingFilterMode {
+    POR_ZONAS,
+    CATEGORIAS,
+    RECIENTES
+}
+
+/**
+ * Main Inventory Screen matching 'inventario_cuadr_cula_por_zonas_foto_portada_1'
+ * from Google Stitch AI Design System
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainInventoryScreen(
     viewModel: InventoryViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val isGridView by viewModel.isGridView.collectAsState()
     val currentBoxId by viewModel.currentBoxId.collectAsState()
     val currentBox by viewModel.currentBox.collectAsState()
     val breadcrumbs by viewModel.breadcrumbs.collectAsState()
-    val boxesWithCounts by viewModel.currentBoxesWithCounts.collectAsState()
+    val rootBoxesWithCounts by viewModel.currentBoxesWithCounts.collectAsState()
     val itemsInBox by viewModel.currentItems.collectAsState()
     val allBoxes by viewModel.allBoxes.collectAsState()
     val categories by viewModel.allCategories.collectAsState()
@@ -120,6 +174,7 @@ fun MainInventoryScreen(
     val selectedCategoryFilter by viewModel.selectedCategoryFilter.collectAsState()
     val searchResultsItems by viewModel.searchResultsItems.collectAsState()
     val searchResultsBoxes by viewModel.searchResultsBoxes.collectAsState()
+    val recentSearches by viewModel.recentSearches.collectAsState()
 
     val totalBoxesCount by viewModel.totalBoxesCount.collectAsState()
     val totalItemsCount by viewModel.totalItemsCount.collectAsState()
@@ -145,12 +200,52 @@ fun MainInventoryScreen(
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    var currentBottomTab by remember { mutableStateOf(AppBottomTab.CAJAS) }
+    var groupingFilter by remember { mutableStateOf(GroupingFilterMode.POR_ZONAS) }
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Todo, 1: Subcajas, 2: Objetos
     var fabMenuExpanded by remember { mutableStateOf(false) }
+    var isSearchBarVisible by remember { mutableStateOf(false) }
+    var showCategoryFilterRow by remember { mutableStateOf(false) }
 
-    // Intercept back button for nested box navigation and search
-    BackHandler(enabled = isSearchActive || currentBoxId != null) {
-        viewModel.navigateBack()
+    // Map of collapsed state per zone id
+    val collapsedZones = remember { mutableStateMapOf<String, Boolean>() }
+    var allZonesCollapsed by remember { mutableStateOf(false) }
+
+    // Selected item for rich Object Detail Sheet (Stitch AI Modal 2)
+    var selectedItemForDetail by remember { mutableStateOf<ItemEntity?>(null) }
+
+    // Map to cache box paths for search results and item badges
+    val boxPaths = remember { mutableStateMapOf<String, String>() }
+    LaunchedEffect(searchResultsItems, itemsInBox) {
+        val allVisibleItemBoxes = (searchResultsItems.map { it.boxId } + itemsInBox.map { it.boxId }).distinct()
+        for (boxId in allVisibleItemBoxes) {
+            if (!boxPaths.containsKey(boxId)) {
+                boxPaths[boxId] = viewModel.getBoxBreadcrumbPath(boxId)
+            }
+        }
+    }
+
+    // Intercept back button for nested navigation, tabs, search, and detail modal
+    BackHandler(enabled = selectedItemForDetail != null || isSearchActive || searchQuery.isNotBlank() || isSearchBarVisible || currentBottomTab != AppBottomTab.CAJAS || currentBoxId != null) {
+        when {
+            selectedItemForDetail != null -> {
+                selectedItemForDetail = null
+            }
+            searchQuery.isNotBlank() -> {
+                viewModel.setSearchQuery("")
+                viewModel.setSearchActive(false)
+            }
+            isSearchBarVisible || isSearchActive -> {
+                isSearchBarVisible = false
+                viewModel.setSearchActive(false)
+            }
+            currentBottomTab != AppBottomTab.CAJAS -> {
+                currentBottomTab = AppBottomTab.CAJAS
+            }
+            else -> {
+                viewModel.navigateBack()
+            }
+        }
     }
 
     LaunchedEffect(snackbarMessage) {
@@ -160,206 +255,519 @@ fun MainInventoryScreen(
         }
     }
 
+    val isFiltering = searchQuery.isNotBlank() || isSearchActive
+
     Scaffold(
         topBar = {
-            if (!isSearchActive) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp,
-                    shadowElevation = 3.dp,
+            // =====================================================================
+            // STITCH AI EXACT HEADER (inventario_cuadr_cula_por_zonas_foto_portada_1)
+            // =====================================================================
+            Surface(
+                color = Color.Black.copy(alpha = 0.92f),
+                tonalElevation = 3.dp,
+                shadowElevation = 4.dp,
+                border = BorderStroke(1.dp, Color(0xFF2C2622).copy(alpha = 0.6f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("header_container")
+            ) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .testTag("header_container")
+                        .statusBarsPadding()
                 ) {
-                    Column(
+                    // Header Bar (h-16 in prototype)
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .statusBarsPadding()
+                            .height(64.dp)
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Fila principal: cabecera con flex-wrap: wrap y min-widths
-                        FlowRow(
+                        // Left Identity
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 6.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalArrangement = Arrangement.Center
+                                .weight(1f)
+                                .padding(end = 8.dp)
                         ) {
-                            // Elemento hijo: Bloque de identidad y título (flex-shrink: 0, min-width para evitar desbordes)
-                            Row(
-                                modifier = Modifier
-                                    .widthIn(min = 190.dp)
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                if (currentBoxId != null) {
-                                    IconButton(
-                                        onClick = { viewModel.navigateBack() },
-                                        modifier = Modifier.testTag("nav_back_button")
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = "Atrás",
-                                            tint = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                } else {
-                                    Image(
-                                        painter = painterResource(com.example.R.drawable.cajas_app_logo_1793724857669),
-                                        contentDescription = "Logo Inventario",
-                                        modifier = Modifier
-                                            .size(38.dp)
-                                            .clip(RoundedCornerShape(10.dp))
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                }
-
-                                Column(
-                                    modifier = Modifier.padding(end = 8.dp)
-                                ) {
-                                    Text(
-                                        text = currentBox?.name ?: "Inventario de Cajas",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Text(
-                                        text = if (currentBoxId == null) {
-                                            "$totalBoxesCount cajas · $totalItemsCount objetos (${totalItemUnitsCount ?: 0} uds)"
+                            if (currentBoxId != null || isFiltering || currentBottomTab != AppBottomTab.CAJAS) {
+                                IconButton(
+                                    onClick = {
+                                        if (isFiltering) {
+                                            viewModel.setSearchQuery("")
+                                            viewModel.setSearchActive(false)
+                                            isSearchBarVisible = false
+                                        } else if (currentBottomTab != AppBottomTab.CAJAS) {
+                                            currentBottomTab = AppBottomTab.CAJAS
                                         } else {
-                                            "${boxesWithCounts.size} subcajas · ${itemsInBox.size} objetos"
-                                        },
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                            viewModel.navigateBack()
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF181512))
+                                        .border(1.dp, Color(0xFF2C2622), CircleShape)
+                                        .testTag("nav_back_button")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Atrás",
+                                        tint = Color(0xFFECE0DA),
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(10.dp))
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0xFF241B14))
+                                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Inventory2,
+                                        contentDescription = "Logo",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
                             }
 
-                            // Elemento hijo: Bloque de botones de acción (flex-shrink: 0, min-width)
-                            Row(
-                                modifier = Modifier
-                                    .widthIn(min = 96.dp)
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                // Botón de Búsqueda rápida
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = when {
+                                        isFiltering -> "Búsqueda"
+                                        currentBottomTab == AppBottomTab.ZONAS -> "Administrar Zonas"
+                                        currentBottomTab == AppBottomTab.PRESTAMOS -> "Gestión de Préstamos"
+                                        currentBottomTab == AppBottomTab.AJUSTES -> "Configuración"
+                                        else -> currentBox?.name ?: "Inventario de Cajas"
+                                    },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = when {
+                                        isFiltering -> "${searchResultsBoxes.size} cajas · ${searchResultsItems.size} objetos"
+                                        currentBottomTab == AppBottomTab.ZONAS -> "${rootBoxesWithCounts.size} zonas · $totalBoxesCount cajas"
+                                        currentBottomTab == AppBottomTab.PRESTAMOS -> "$totalLoanedCount en préstamo"
+                                        currentBottomTab == AppBottomTab.AJUSTES -> "Preferencias y respaldos"
+                                        currentBoxId == null -> "Cajas"
+                                        else -> "${rootBoxesWithCounts.size} subcajas · ${itemsInBox.size} objetos"
+                                    },
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color(0xFFA89F95),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        // Right Action Controls matching prototype: View Switcher Pill + Search + Filter
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            if (currentBottomTab == AppBottomTab.CAJAS) {
+                                // View Switcher Capsule (Mosaico / Cuadrícula / Lista)
+                                Surface(
+                                    shape = RoundedCornerShape(9999.dp),
+                                    color = Color(0xFF181512),
+                                    border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                                    modifier = Modifier.padding(end = 4.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(2.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // Cuadrícula con portada (Active Amber in design)
+                                        IconButton(
+                                            onClick = { if (!isGridView) viewModel.toggleViewMode() },
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(if (isGridView) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                                .testTag("toggle_view_mode_button")
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.GridView,
+                                                contentDescription = "Cuadrícula con portada",
+                                                tint = if (isGridView) Color(0xFF2F1500) else Color(0xFFA89F95),
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+
+                                        // Lista compacta
+                                        IconButton(
+                                            onClick = { if (isGridView) viewModel.toggleViewMode() },
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(if (!isGridView) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ViewList,
+                                                contentDescription = "Lista compacta",
+                                                tint = if (!isGridView) Color(0xFF2F1500) else Color(0xFFA89F95),
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Search Button
                                 IconButton(
-                                    onClick = { viewModel.setSearchActive(true) },
-                                    modifier = Modifier.testTag("search_icon_button")
+                                    onClick = {
+                                        isSearchBarVisible = !isSearchBarVisible
+                                        if (isSearchBarVisible) viewModel.setSearchActive(true)
+                                    },
+                                    modifier = Modifier.size(36.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Search,
                                         contentDescription = "Buscar",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        tint = if (isSearchBarVisible || isSearchActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
 
-                                // Botón para alternar Vista Cuadrícula / Lista
+                                // Filter Button (Tune)
                                 IconButton(
-                                    onClick = { viewModel.toggleViewMode() },
-                                    modifier = Modifier.testTag("toggle_view_mode_button")
+                                    onClick = { showCategoryFilterRow = !showCategoryFilterRow },
+                                    modifier = Modifier.size(36.dp)
                                 ) {
                                     Icon(
-                                        imageVector = if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
-                                        contentDescription = if (isGridView) "Vista lista" else "Vista cuadrícula",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        imageVector = Icons.Default.Tune,
+                                        contentDescription = "Filtros",
+                                        tint = if (showCategoryFilterRow || selectedCategoryFilter != null) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
                         }
+                    }
 
-                        // Fila de herramientas y estado en chips interactivos organizados
+                    // Search input if open
+                    AnimatedVisibility(
+                        visible = isSearchBarVisible || isFiltering,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = {
+                                    viewModel.setSearchQuery(it)
+                                    if (it.isNotBlank()) {
+                                        viewModel.setSearchActive(true)
+                                    }
+                                },
+                                placeholder = {
+                                    Text(
+                                        text = if (currentBox != null) "Buscar en «${currentBox!!.name}»..." else "Buscar caja, objeto o etiqueta...",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFFA89F95),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
+                                singleLine = true,
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "Buscar",
+                                        tint = if (searchQuery.isNotBlank()) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (searchQuery.isNotEmpty()) {
+                                        IconButton(
+                                            onClick = {
+                                                viewModel.setSearchQuery("")
+                                                viewModel.setSearchActive(false)
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Clear,
+                                                contentDescription = "Limpiar",
+                                                tint = Color(0xFFA89F95),
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+                                },
+                                shape = RoundedCornerShape(14.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = Color(0xFF181512),
+                                    unfocusedContainerColor = Color(0xFF181512),
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = Color(0xFF2C2622)
+                                ),
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(
+                                    onSearch = {
+                                        if (searchQuery.isNotBlank()) {
+                                            viewModel.recordSearchQuery(searchQuery)
+                                        }
+                                    }
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .testTag("search_text_field")
+                            )
+                        }
+                    }
+
+                    // Optional Category Filters Row
+                    AnimatedVisibility(
+                        visible = showCategoryFilterRow || selectedCategoryFilter != null,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .horizontalScroll(rememberScrollState())
                                 .padding(horizontal = 16.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Chip de Préstamos con Badge reactivo
                             FilterChip(
-                                selected = totalLoanedCount > 0,
-                                onClick = { viewModel.openLoansSheet() },
-                                label = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text("Préstamos")
-                                        if (totalLoanedCount > 0) {
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Badge(
-                                                containerColor = MaterialTheme.colorScheme.primary,
-                                                contentColor = MaterialTheme.colorScheme.onPrimary
-                                            ) {
-                                                Text("$totalLoanedCount")
-                                            }
-                                        }
-                                    }
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.AssignmentInd,
-                                        contentDescription = "Préstamos",
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                },
-                                modifier = Modifier.testTag("loans_button")
+                                selected = selectedCategoryFilter == null,
+                                onClick = { viewModel.setCategoryFilter(null) },
+                                shape = RoundedCornerShape(9999.dp),
+                                label = { Text("Todas", style = MaterialTheme.typography.labelSmall) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = Color(0xFF2F1500)
+                                )
                             )
-
-                            // Chip de Estadísticas
-                            AssistChip(
-                                onClick = { viewModel.openStatsDialog() },
-                                label = { Text("Estadísticas") },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.PieChart,
-                                        contentDescription = "Estadísticas",
-                                        modifier = Modifier.size(18.dp)
+                            categories.forEach { cat ->
+                                val isSelected = selectedCategoryFilter == cat.id
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { viewModel.setCategoryFilter(if (isSelected) null else cat.id) },
+                                    shape = RoundedCornerShape(9999.dp),
+                                    label = { Text(cat.name, style = MaterialTheme.typography.labelSmall) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = Color(0xFF2F1500)
                                     )
-                                },
-                                modifier = Modifier.testTag("stats_button")
-                            )
-
-                            // Chip de Copias de seguridad
-                            AssistChip(
-                                onClick = { viewModel.openBackupDialog() },
-                                label = { Text("Copias de seguridad") },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Storage,
-                                        contentDescription = "Copias de seguridad",
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                },
-                                modifier = Modifier.testTag("backup_button")
-                            )
+                                )
+                            }
                         }
+                    }
+
+                    // Breadcrumb Bar if inside a subbox
+                    if (currentBoxId != null || breadcrumbs.isNotEmpty()) {
+                        BreadcrumbBar(
+                            breadcrumbs = breadcrumbs,
+                            onRootClick = {
+                                if (isFiltering) {
+                                    viewModel.setSearchQuery("")
+                                    viewModel.setSearchActive(false)
+                                }
+                                viewModel.navigateToRoot()
+                            },
+                            onCrumbClick = { box ->
+                                if (isFiltering) {
+                                    viewModel.setSearchQuery("")
+                                    viewModel.setSearchActive(false)
+                                }
+                                viewModel.openBox(box.id)
+                            }
+                        )
+                    }
+                }
+            }
+        },
+        bottomBar = {
+            // =====================================================================
+            // BOTTOM DOCK (Matching line 370 of inventario_cuadr_cula_por_zonas)
+            // =====================================================================
+            Surface(
+                color = Color.Black.copy(alpha = 0.92f),
+                border = BorderStroke(1.dp, Color(0xFF2C2622).copy(alpha = 0.6f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .height(64.dp)
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Tab 1: Cajas (active by default)
+                    val isCajasActive = currentBottomTab == AppBottomTab.CAJAS
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable {
+                                if (isFiltering) {
+                                    viewModel.setSearchQuery("")
+                                    viewModel.setSearchActive(false)
+                                    isSearchBarVisible = false
+                                }
+                                currentBottomTab = AppBottomTab.CAJAS
+                            }
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Inventory2,
+                            contentDescription = "Cajas",
+                            tint = if (isCajasActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Cajas",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (isCajasActive) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isCajasActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                            fontSize = 11.sp
+                        )
+                    }
+
+                    // Tab 2: Zonas
+                    val isZonasActive = currentBottomTab == AppBottomTab.ZONAS
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { currentBottomTab = AppBottomTab.ZONAS }
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.GridView,
+                            contentDescription = "Zonas",
+                            tint = if (isZonasActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Zonas",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (isZonasActive) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isZonasActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                            fontSize = 11.sp
+                        )
+                    }
+
+                    // Tab 3: Préstamos
+                    val isPrestamosActive = currentBottomTab == AppBottomTab.PRESTAMOS
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { currentBottomTab = AppBottomTab.PRESTAMOS }
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Box {
+                            Icon(
+                                imageVector = Icons.Default.SwapHoriz,
+                                contentDescription = "Préstamos",
+                                tint = if (isPrestamosActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                                modifier = Modifier.size(22.dp)
+                            )
+                            if (totalLoanedCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFF59E0B))
+                                        .align(Alignment.TopEnd)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Préstamos",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (isPrestamosActive) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isPrestamosActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                            fontSize = 11.sp
+                        )
+                    }
+
+                    // Tab 4: Ajustes
+                    val isAjustesActive = currentBottomTab == AppBottomTab.AJUSTES
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { currentBottomTab = AppBottomTab.AJUSTES }
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Ajustes",
+                            tint = if (isAjustesActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Ajustes",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (isAjustesActive) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isAjustesActive) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                            fontSize = 11.sp
+                        )
                     }
                 }
             }
         },
         floatingActionButton = {
-            if (!isSearchActive) {
+            if (currentBottomTab == AppBottomTab.CAJAS) {
                 Box {
-                    if (currentBoxId == null) {
-                        ExtendedFloatingActionButton(
+                    if (currentBoxId == null && !isFiltering) {
+                        Button(
                             onClick = { viewModel.openCreateBoxDialog() },
-                            icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                            text = { Text("Nueva Caja") },
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.testTag("add_root_box_fab")
-                        )
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color(0xFF2F1500)
+                            ),
+                            shape = RoundedCornerShape(18.dp),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
+                            modifier = Modifier
+                                .height(52.dp)
+                                .testTag("add_root_box_fab")
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(22.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Nueva Caja", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        }
                     } else {
                         FloatingActionButton(
                             onClick = { fabMenuExpanded = true },
                             containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.testTag("box_add_menu_fab")
+                            contentColor = Color(0xFF2F1500),
+                            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .testTag("box_add_menu_fab")
                         ) {
                             Icon(Icons.Default.Add, contentDescription = "Añadir a la caja")
                         }
@@ -394,277 +802,1021 @@ fun MainInventoryScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
-        if (isSearchActive) {
-            SearchScreen(
-                viewModel = viewModel,
-                searchQuery = searchQuery,
-                onQueryChange = { viewModel.setSearchQuery(it) },
-                selectedCategory = selectedCategoryFilter,
-                onCategorySelect = { viewModel.setCategoryFilter(it) },
-                searchResultsItems = searchResultsItems,
-                searchResultsBoxes = searchResultsBoxes,
-                categories = categories,
-                onBoxClick = { boxId -> viewModel.openBox(boxId) },
-                onItemClick = { item -> viewModel.openEditItemDialog(item) },
-                onCloseSearch = { viewModel.setSearchActive(false) },
-                modifier = Modifier.padding(innerPadding)
-            )
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                // Breadcrumbs header row
-                BreadcrumbBar(
-                    breadcrumbs = breadcrumbs,
-                    onRootClick = { viewModel.navigateToRoot() },
-                    onCrumbClick = { box -> viewModel.openBox(box.id) }
-                )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when (currentBottomTab) {
+                // =============================================================
+                // TAB 1: ZONAS
+                // =============================================================
+                AppBottomTab.ZONAS -> {
+                    ZonesView(
+                        rootBoxes = rootBoxesWithCounts,
+                        allBoxes = allBoxes,
+                        totalItemsCount = totalItemsCount,
+                        onZoneClick = { zoneId ->
+                            viewModel.openBox(zoneId)
+                            currentBottomTab = AppBottomTab.CAJAS
+                        },
+                        onEditZone = { zoneBox -> viewModel.openEditBoxDialog(zoneBox) },
+                        onCreateZone = { viewModel.openCreateBoxDialog() },
+                        onMoveBox = { box -> viewModel.openMoveBoxDialog(box) }
+                    )
+                }
 
-                // Active box banner + segment tabs
-                if (currentBox != null) {
-                    val activeBox = currentBox!!
-                    val accentColor = remember(activeBox.colorHex) { parseColorSafe(activeBox.colorHex) }
+                // =============================================================
+                // TAB 2: PRÉSTAMOS
+                // =============================================================
+                AppBottomTab.PRESTAMOS -> {
+                    LoansSheet(
+                        loanedItems = loanedItems,
+                        onReturnItem = { item -> viewModel.returnItem(item) },
+                        onDismiss = { currentBottomTab = AppBottomTab.CAJAS }
+                    )
+                }
 
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 6.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                // =============================================================
+                // TAB 3: AJUSTES
+                // =============================================================
+                AppBottomTab.AJUSTES -> {
+                    SettingsView(
+                        onOpenBackup = { viewModel.openBackupDialog() },
+                        onOpenStats = { viewModel.openStatsDialog() }
+                    )
+                }
+
+                // =============================================================
+                // TAB 0: CAJAS (MAIN CUADRÍCULA POR ZONAS CON FOTO PORTADA)
+                // =============================================================
+                AppBottomTab.CAJAS -> {
+                    if (isFiltering) {
+                        // Search / Filter Results
+                        if (searchQuery.isBlank() && selectedCategoryFilter == null) {
+                            if (recentSearches.isNotEmpty()) {
+                                LazyColumn(
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    item {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = Icons.Default.History,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = "Búsquedas recientes",
+                                                    style = MaterialTheme.typography.titleSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White
+                                                )
+                                            }
+                                            TextButton(onClick = { viewModel.clearSearchHistory() }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.DeleteSweep,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("Borrar historial", style = MaterialTheme.typography.labelSmall)
+                                            }
+                                        }
+                                    }
+
+                                    items(recentSearches, key = { it.query }) { item ->
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = Color(0xFF14110E),
+                                            border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    viewModel.setSearchQuery(item.query)
+                                                    viewModel.recordSearchQuery(item.query)
+                                                }
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.weight(1f),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.History,
+                                                        contentDescription = null,
+                                                        tint = Color(0xFFA89F95),
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(10.dp))
+                                                    Text(
+                                                        text = item.query,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        color = Color.White,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                }
+                                                IconButton(
+                                                    onClick = { viewModel.deleteRecentSearch(item.query) },
+                                                    modifier = Modifier.size(28.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Clear,
+                                                        contentDescription = "Eliminar de historial",
+                                                        tint = Color(0xFFA89F95),
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = Icons.Default.Search,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                            modifier = Modifier.size(56.dp)
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Text(
+                                            text = "Escribe para buscar cajas u objetos",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = Color(0xFFA89F95)
+                                        )
+                                    }
+                                }
+                            }
+                        } else if (searchResultsItems.isEmpty() && searchResultsBoxes.isEmpty()) {
                             Box(
                                 modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(accentColor.copy(alpha = 0.2f)),
+                                    .fillMaxSize()
+                                    .padding(32.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Inventory2,
-                                    contentDescription = null,
-                                    tint = accentColor,
-                                    modifier = Modifier.size(24.dp)
+                                Text(
+                                    text = "No se encontraron coincidencias para «$searchQuery»",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color(0xFFA89F95)
                                 )
                             }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = activeBox.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                if (!activeBox.description.isNullOrBlank()) {
-                                    Text(
-                                        text = activeBox.description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
+                        } else {
+                            LazyColumn(
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                // Cajas encontradas
+                                if (searchResultsBoxes.isNotEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "Cajas encontradas (${searchResultsBoxes.size})",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                                        )
+                                    }
+
+                                    items(searchResultsBoxes, key = { it.id }) { box ->
+                                        BoxGridCard(
+                                            boxWithCounts = BoxWithCounts(box, 0, 0),
+                                            onClick = {
+                                                if (searchQuery.isNotBlank()) viewModel.recordSearchQuery(searchQuery)
+                                                viewModel.setSearchQuery("")
+                                                viewModel.setSearchActive(false)
+                                                isSearchBarVisible = false
+                                                viewModel.openBox(box.id)
+                                            },
+                                            onMove = { viewModel.openMoveBoxDialog(box) },
+                                            onEdit = { viewModel.openEditBoxDialog(box) },
+                                            onDelete = { viewModel.requestDeleteBox(BoxWithCounts(box, 0, 0)) }
+                                        )
+                                    }
+                                }
+
+                                // Objetos encontrados
+                                if (searchResultsItems.isNotEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "Objetos encontrados (${searchResultsItems.size})",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                        )
+                                    }
+
+                                    items(searchResultsItems, key = { it.id }) { item ->
+                                        val cat = categories.find { it.id == item.categoryId }
+                                        val path = boxPaths[item.boxId] ?: "Cargando ubicación…"
+
+                                        Card(
+                                            shape = RoundedCornerShape(16.dp),
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xFF12100E)),
+                                            border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { selectedItemForDetail = item }
+                                        ) {
+                                            Column(modifier = Modifier.padding(14.dp)) {
+                                                ItemCard(
+                                                    item = item,
+                                                    category = cat,
+                                                    onQuantityChange = { delta -> viewModel.adjustItemQuantity(item, delta) },
+                                                    onMove = { viewModel.openMoveItemDialog(item) },
+                                                    onEdit = { viewModel.openEditItemDialog(item) },
+                                                    onDelete = { viewModel.requestDeleteItem(item) },
+                                                    onLoan = { viewModel.openLoanDialog(item) },
+                                                    onReturnLoan = { viewModel.returnItem(item) },
+                                                    onClick = { selectedItemForDetail = item }
+                                                )
+
+                                                Spacer(modifier = Modifier.height(8.dp))
+
+                                                Surface(
+                                                    shape = RoundedCornerShape(8.dp),
+                                                    color = Color(0xFF241B14),
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .clickable {
+                                                            viewModel.setSearchQuery("")
+                                                            viewModel.setSearchActive(false)
+                                                            isSearchBarVisible = false
+                                                            viewModel.openBox(item.boxId)
+                                                        }
+                                                        .testTag("jump_to_box_${item.boxId}")
+                                                ) {
+                                                    Row(
+                                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.LocationOn,
+                                                            contentDescription = null,
+                                                            tint = MaterialTheme.colorScheme.primary,
+                                                            modifier = Modifier.size(16.dp)
+                                                        )
+                                                        Spacer(modifier = Modifier.width(6.dp))
+                                                        Text(
+                                                            text = "Ubicación: $path",
+                                                            style = MaterialTheme.typography.labelMedium,
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            fontWeight = FontWeight.SemiBold
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (currentBoxId == null) {
+                        // =============================================================
+                        // VISTA PRINCIPAL RAÍZ: CUADRÍCULA POR ZONAS (Stitch AI Layout)
+                        // =============================================================
+                        LazyColumn(
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            // Fila 1: Filtros de Vista (Por Zonas / Categorías / Recientes) + Botón Colapsar Todo
+                            item {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .horizontalScroll(rememberScrollState())
+                                    ) {
+                                        // "Por Zonas" chip
+                                        Surface(
+                                            shape = RoundedCornerShape(9999.dp),
+                                            color = if (groupingFilter == GroupingFilterMode.POR_ZONAS) MaterialTheme.colorScheme.primary else Color(0xFF181512),
+                                            border = if (groupingFilter == GroupingFilterMode.POR_ZONAS) null else BorderStroke(1.dp, Color(0xFF2C2622)),
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(9999.dp))
+                                                .clickable { groupingFilter = GroupingFilterMode.POR_ZONAS }
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.PhotoLibrary,
+                                                    contentDescription = null,
+                                                    tint = if (groupingFilter == GroupingFilterMode.POR_ZONAS) Color(0xFF2F1500) else Color(0xFFA89F95),
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = "Por Zonas",
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (groupingFilter == GroupingFilterMode.POR_ZONAS) Color(0xFF2F1500) else Color(0xFFA89F95)
+                                                )
+                                            }
+                                        }
+
+                                        // "Categorías" chip
+                                        Surface(
+                                            shape = RoundedCornerShape(9999.dp),
+                                            color = if (groupingFilter == GroupingFilterMode.CATEGORIAS) MaterialTheme.colorScheme.primary else Color(0xFF181512),
+                                            border = if (groupingFilter == GroupingFilterMode.CATEGORIAS) null else BorderStroke(1.dp, Color(0xFF2C2622)),
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(9999.dp))
+                                                .clickable {
+                                                    groupingFilter = GroupingFilterMode.CATEGORIAS
+                                                    showCategoryFilterRow = true
+                                                }
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Category,
+                                                    contentDescription = null,
+                                                    tint = if (groupingFilter == GroupingFilterMode.CATEGORIAS) Color(0xFF2F1500) else Color(0xFFA89F95),
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = "Categorías",
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontWeight = if (groupingFilter == GroupingFilterMode.CATEGORIAS) FontWeight.Bold else FontWeight.Normal,
+                                                    color = if (groupingFilter == GroupingFilterMode.CATEGORIAS) Color(0xFF2F1500) else Color(0xFFA89F95)
+                                                )
+                                            }
+                                        }
+
+                                        // "Recientes" chip
+                                        Surface(
+                                            shape = RoundedCornerShape(9999.dp),
+                                            color = if (groupingFilter == GroupingFilterMode.RECIENTES) MaterialTheme.colorScheme.primary else Color(0xFF181512),
+                                            border = if (groupingFilter == GroupingFilterMode.RECIENTES) null else BorderStroke(1.dp, Color(0xFF2C2622)),
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(9999.dp))
+                                                .clickable { groupingFilter = GroupingFilterMode.RECIENTES }
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Schedule,
+                                                    contentDescription = null,
+                                                    tint = if (groupingFilter == GroupingFilterMode.RECIENTES) Color(0xFF2F1500) else Color(0xFFA89F95),
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = "Recientes",
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontWeight = if (groupingFilter == GroupingFilterMode.RECIENTES) FontWeight.Bold else FontWeight.Normal,
+                                                    color = if (groupingFilter == GroupingFilterMode.RECIENTES) Color(0xFF2F1500) else Color(0xFFA89F95)
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    // Botón Contraer / Expandir todas las zonas
+                                    IconButton(
+                                        onClick = {
+                                            allZonesCollapsed = !allZonesCollapsed
+                                            rootBoxesWithCounts.forEach {
+                                                collapsedZones[it.box.id] = allZonesCollapsed
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFF181512))
+                                            .border(1.dp, Color(0xFF2C2622), CircleShape)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (allZonesCollapsed) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                                            contentDescription = "Expandir o contraer todas las zonas",
+                                            tint = if (allZonesCollapsed) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Fila 2: Subtotal y Reordenar (Línea 24 del diseño: "5 Cajas · 3 Zonas activas · Reordenar")
+                            item {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "$totalBoxesCount Cajas",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "· ${rootBoxesWithCounts.size} Zonas activas",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color(0xFFA89F95)
+                                        )
+                                    }
+
+                                    Row(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable { currentBottomTab = AppBottomTab.ZONAS }
+                                            .padding(4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Reordenar",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.SwapVert,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Estado vacío si no hay cajas
+                            if (rootBoxesWithCounts.isEmpty()) {
+                                item {
+                                    Surface(
+                                        shape = RoundedCornerShape(20.dp),
+                                        color = Color(0xFF14110E),
+                                        border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(32.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Inventory2,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                                modifier = Modifier.size(56.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(14.dp))
+                                            Text(
+                                                text = "No tienes cajas todavía",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text(
+                                                text = "Pulsa «Nueva Caja» para empezar a organizar tu inventario por zonas.",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color(0xFFA89F95),
+                                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // =============================================================
+                            // ZONE ACCORDIONS: Cada zona agrupa sus cajas con portada (4:3)
+                            // =============================================================
+                            rootBoxesWithCounts.forEach { zoneBwc ->
+                                val zoneBox = zoneBwc.box
+
+                                // Obtener cajas contenidas en esta zona (o mostrar la propia caja si no tiene hijas)
+                                val childBoxes = allBoxes.filter { it.parentBoxId == zoneBox.id }
+                                val displayBoxes: List<BoxWithCounts> = if (childBoxes.isNotEmpty()) {
+                                    childBoxes.map { child ->
+                                        val grandChildrenCount = allBoxes.count { it.parentBoxId == child.id }
+                                        BoxWithCounts(child, grandChildrenCount, 0)
+                                    }
+                                } else {
+                                    listOf(zoneBwc)
+                                }
+
+                                item(key = "zone_${zoneBox.id}") {
+                                    val isCollapsed = collapsedZones[zoneBox.id] ?: false
+                                    val zoneTagColor = remember(zoneBox.colorHex) { parseColorSafe(zoneBox.colorHex) }
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        // Header de Zona Acordeón (Líneas 28-47 del prototipo)
+                                        Surface(
+                                            shape = RoundedCornerShape(14.dp),
+                                            color = Color.Transparent,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(14.dp))
+                                                .clickable {
+                                                    collapsedZones[zoneBox.id] = !isCollapsed
+                                                }
+                                                .padding(horizontal = 4.dp, vertical = 4.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier.weight(1f)
+                                                ) {
+                                                    // Badge de Zona
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(34.dp)
+                                                            .clip(CircleShape)
+                                                            .background(Color(0xFF1E1915))
+                                                            .border(1.dp, Color(0xFF2C2622), CircleShape),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.LocationOn,
+                                                            contentDescription = null,
+                                                            tint = zoneTagColor,
+                                                            modifier = Modifier.size(18.dp)
+                                                        )
+                                                    }
+                                                    Spacer(modifier = Modifier.width(10.dp))
+
+                                                    Column(modifier = Modifier.weight(1f)) {
+                                                        Row(
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                        ) {
+                                                            Text(
+                                                                text = zoneBox.name,
+                                                                style = MaterialTheme.typography.titleMedium,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = Color.White,
+                                                                maxLines = 1,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+                                                            Surface(
+                                                                shape = RoundedCornerShape(9999.dp),
+                                                                color = Color(0xFF1C1713),
+                                                                border = BorderStroke(1.dp, Color(0xFF2C2622))
+                                                            ) {
+                                                                Text(
+                                                                    text = "${displayBoxes.size} ${if (displayBoxes.size == 1) "caja" else "cajas"}",
+                                                                    style = MaterialTheme.typography.labelSmall,
+                                                                    color = Color(0xFFECE0DA),
+                                                                    fontSize = 10.sp,
+                                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                                )
+                                                            }
+                                                        }
+                                                        Text(
+                                                            text = zoneBox.description ?: "Zona de almacenamiento",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            color = Color(0xFFA89F95),
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
+                                                }
+
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    IconButton(
+                                                        onClick = { viewModel.openEditBoxDialog(zoneBox) },
+                                                        modifier = Modifier.size(32.dp)
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.MoreVert,
+                                                            contentDescription = "Gestionar zona",
+                                                            tint = Color(0xFFA89F95),
+                                                            modifier = Modifier.size(18.dp)
+                                                        )
+                                                    }
+
+                                                    val rotation by animateFloatAsState(targetValue = if (isCollapsed) -90f else 0f)
+                                                    Icon(
+                                                        imageVector = Icons.Default.ExpandMore,
+                                                        contentDescription = if (isCollapsed) "Expandir" else "Contraer",
+                                                        tint = Color(0xFFA89F95),
+                                                        modifier = Modifier
+                                                            .size(20.dp)
+                                                            .rotate(rotation)
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        // Contenido Expandido: Cuadrícula de 2 columnas de cajas con foto portada
+                                        AnimatedVisibility(
+                                            visible = !isCollapsed,
+                                            enter = fadeIn(),
+                                            exit = fadeOut()
+                                        ) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                                // Grilla en filas de 2 elementos
+                                                val chunkedBoxes = displayBoxes.chunked(2)
+                                                chunkedBoxes.forEach { rowBoxes ->
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                                    ) {
+                                                        rowBoxes.forEach { bwc ->
+                                                            Box(modifier = Modifier.weight(1f)) {
+                                                                BoxGridCard(
+                                                                    boxWithCounts = bwc,
+                                                                    onClick = { viewModel.openBox(bwc.box.id) },
+                                                                    onMove = { viewModel.openMoveBoxDialog(bwc.box) },
+                                                                    onEdit = { viewModel.openEditBoxDialog(bwc.box) },
+                                                                    onDelete = { viewModel.requestDeleteBox(bwc) }
+                                                                )
+                                                            }
+                                                        }
+                                                        // Si es fila impar, dejamos el espacio proporcional o añadimos la tarjeta de asignar caja
+                                                        if (rowBoxes.size == 1) {
+                                                            // Tarjeta interactiva "+ Asignar Caja"
+                                                            Surface(
+                                                                shape = RoundedCornerShape(16.dp),
+                                                                color = Color(0xFF12100E),
+                                                                border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                                                                modifier = Modifier
+                                                                    .weight(1f)
+                                                                    .clip(RoundedCornerShape(16.dp))
+                                                                    .clickable {
+                                                                        viewModel.openCreateBoxDialog()
+                                                                    }
+                                                            ) {
+                                                                Column(
+                                                                    modifier = Modifier
+                                                                        .fillMaxWidth()
+                                                                        .padding(16.dp),
+                                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                                    verticalArrangement = Arrangement.Center
+                                                                ) {
+                                                                    Box(
+                                                                        modifier = Modifier
+                                                                            .size(46.dp)
+                                                                            .clip(CircleShape)
+                                                                            .background(Color(0xFF1E1915))
+                                                                            .border(1.dp, Color(0xFF2C2622), CircleShape),
+                                                                        contentAlignment = Alignment.Center
+                                                                    ) {
+                                                                        Icon(
+                                                                            imageVector = Icons.Default.Add,
+                                                                            contentDescription = "Asignar",
+                                                                            tint = MaterialTheme.colorScheme.primary,
+                                                                            modifier = Modifier.size(24.dp)
+                                                                        )
+                                                                    }
+                                                                    Spacer(modifier = Modifier.height(8.dp))
+                                                                    Text(
+                                                                        text = "Asignar Caja",
+                                                                        style = MaterialTheme.typography.titleSmall,
+                                                                        fontWeight = FontWeight.Bold,
+                                                                        color = Color.White
+                                                                    )
+                                                                    Text(
+                                                                        text = "Añadir a ${zoneBox.name}",
+                                                                        style = MaterialTheme.typography.labelSmall,
+                                                                        color = Color(0xFFA89F95),
+                                                                        fontSize = 10.sp,
+                                                                        maxLines = 1,
+                                                                        overflow = TextOverflow.Ellipsis
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // =============================================================
+                        // VISTA DENTRO DE UNA CAJA (Navegación con subcajas / objetos)
+                        // =============================================================
+                        val activeBox = currentBox!!
+                        val accentColor = remember(activeBox.colorHex) { parseColorSafe(activeBox.colorHex) }
+
+                        LazyColumn(
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            // Banner de caja activa
+                            item {
+                                Card(
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF14110E)),
+                                    border = BorderStroke(1.dp, Color(0xFF28211B)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(14.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(46.dp)
+                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .background(accentColor.copy(alpha = 0.2f)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Inventory2,
+                                                    contentDescription = null,
+                                                    tint = accentColor,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = activeBox.name,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                                if (!activeBox.description.isNullOrBlank()) {
+                                                    Text(
+                                                        text = activeBox.description,
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = Color(0xFFA89F95),
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                }
+                                            }
+
+                                            IconButton(onClick = { viewModel.openEditBoxDialog(activeBox) }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Edit,
+                                                    contentDescription = "Editar detalles",
+                                                    tint = Color(0xFFA89F95)
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(10.dp))
+
+                                        // Quick Action Bar
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Button(
+                                                onClick = { viewModel.openMoveBoxDialog(activeBox) },
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = Color(0xFF201811),
+                                                    contentColor = MaterialTheme.colorScheme.primary
+                                                ),
+                                                border = BorderStroke(1.dp, Color(0xFF3E2C1E)),
+                                                shape = RoundedCornerShape(12.dp),
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .height(40.dp)
+                                            ) {
+                                                Icon(Icons.AutoMirrored.Filled.DriveFileMove, contentDescription = null, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text("Mover de Zona", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                            }
+
+                                            IconButton(
+                                                onClick = {
+                                                    val shareIntent = Intent().apply {
+                                                        action = Intent.ACTION_SEND
+                                                        type = "text/plain"
+                                                        putExtra(Intent.EXTRA_TEXT, "Caja: ${activeBox.name}\n${activeBox.description ?: ""}\nContenido: ${itemsInBox.size} objetos")
+                                                    }
+                                                    context.startActivity(Intent.createChooser(shareIntent, "Compartir caja"))
+                                                },
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .background(Color(0xFF201811))
+                                                    .border(1.dp, Color(0xFF3E2C1E), RoundedCornerShape(12.dp))
+                                            ) {
+                                                Icon(Icons.Default.Share, contentDescription = "Compartir", tint = Color(0xFFECE0DA), modifier = Modifier.size(18.dp))
+                                            }
+
+                                            Button(
+                                                onClick = { viewModel.openCreateItemDialog() },
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primary,
+                                                    contentColor = Color(0xFF2F1500)
+                                                ),
+                                                shape = RoundedCornerShape(12.dp),
+                                                modifier = Modifier.height(40.dp)
+                                            ) {
+                                                Icon(Icons.Default.AddBox, contentDescription = null, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("+ Objeto", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Primary Tab Row (Todo / Subcajas / Objetos)
+                            item {
+                                PrimaryTabRow(
+                                    selectedTabIndex = selectedTab,
+                                    containerColor = Color.Black,
+                                    contentColor = MaterialTheme.colorScheme.primary
+                                ) {
+                                    Tab(
+                                        selected = selectedTab == 0,
+                                        onClick = { selectedTab = 0 },
+                                        text = { Text("Todo (${rootBoxesWithCounts.size + itemsInBox.size})", fontWeight = FontWeight.SemiBold) }
+                                    )
+                                    Tab(
+                                        selected = selectedTab == 1,
+                                        onClick = { selectedTab = 1 },
+                                        text = { Text("Subcajas (${rootBoxesWithCounts.size})", fontWeight = FontWeight.SemiBold) }
+                                    )
+                                    Tab(
+                                        selected = selectedTab == 2,
+                                        onClick = { selectedTab = 2 },
+                                        text = { Text("Objetos (${itemsInBox.size})", fontWeight = FontWeight.SemiBold) }
                                     )
                                 }
                             }
-                            IconButton(onClick = { viewModel.openEditBoxDialog(activeBox) }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Editar detalles")
+
+                            val showBoxes = selectedTab == 0 || selectedTab == 1
+                            val showItems = selectedTab == 0 || selectedTab == 2
+
+                            // Subcajas de esta caja
+                            if (showBoxes && rootBoxesWithCounts.isNotEmpty()) {
+                                item {
+                                    Text(
+                                        text = "Subcajas (${rootBoxesWithCounts.size})",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+
+                                val chunkedSubBoxes = rootBoxesWithCounts.chunked(2)
+                                chunkedSubBoxes.forEach { rowBoxes ->
+                                    item {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            rowBoxes.forEach { bwc ->
+                                                Box(modifier = Modifier.weight(1f)) {
+                                                    BoxGridCard(
+                                                        boxWithCounts = bwc,
+                                                        onClick = { viewModel.openBox(bwc.box.id) },
+                                                        onMove = { viewModel.openMoveBoxDialog(bwc.box) },
+                                                        onEdit = { viewModel.openEditBoxDialog(bwc.box) },
+                                                        onDelete = { viewModel.requestDeleteBox(bwc) }
+                                                    )
+                                                }
+                                            }
+                                            if (rowBoxes.size == 1) {
+                                                Spacer(modifier = Modifier.weight(1f))
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        }
-                    }
 
-                    // Content Tabs (Todo / Subcajas / Objetos)
-                    PrimaryTabRow(
-                        selectedTabIndex = selectedTab,
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ) {
-                        Tab(
-                            selected = selectedTab == 0,
-                            onClick = { selectedTab = 0 },
-                            text = { Text("Todo (${boxesWithCounts.size + itemsInBox.size})") }
-                        )
-                        Tab(
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 },
-                            text = { Text("Subcajas (${boxesWithCounts.size})") }
-                        )
-                        Tab(
-                            selected = selectedTab == 2,
-                            onClick = { selectedTab = 2 },
-                            text = { Text("Objetos (${itemsInBox.size})") }
-                        )
-                    }
-                }
+                            // Objetos contenidos en esta caja
+                            if (showItems && itemsInBox.isNotEmpty()) {
+                                item {
+                                    Text(
+                                        text = "Objetos en esta caja (${itemsInBox.size})",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
 
-                val showBoxes = selectedTab == 0 || selectedTab == 1 || currentBoxId == null
-                val showItems = currentBoxId != null && (selectedTab == 0 || selectedTab == 2)
-
-                if (boxesWithCounts.isEmpty() && (!showItems || itemsInBox.isEmpty())) {
-                    // Empty state
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            if (currentBoxId == null) {
-                                Image(
-                                    painter = painterResource(com.example.R.drawable.cajas_app_logo_1793724857669),
-                                    contentDescription = "Logo",
-                                    modifier = Modifier
-                                        .size(80.dp)
-                                        .clip(RoundedCornerShape(20.dp))
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.Inventory2,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(72.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = if (currentBoxId == null) "No tienes cajas todavía" else "Esta caja está vacía",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = if (currentBoxId == null) {
-                                    "Pulsa «Nueva Caja» para empezar a organizar tu inventario."
+                                if (isGridView) {
+                                    val chunkedItems = itemsInBox.chunked(2)
+                                    chunkedItems.forEach { rowItems ->
+                                        item {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            ) {
+                                                rowItems.forEach { item ->
+                                                    val category = categories.find { it.id == item.categoryId }
+                                                    Box(modifier = Modifier.weight(1f)) {
+                                                        ItemGridCard(
+                                                            item = item,
+                                                            category = category,
+                                                            onQuantityChange = { delta -> viewModel.adjustItemQuantity(item, delta) },
+                                                            onMove = { viewModel.openMoveItemDialog(item) },
+                                                            onEdit = { viewModel.openEditItemDialog(item) },
+                                                            onDelete = { viewModel.requestDeleteItem(item) },
+                                                            onLoan = { viewModel.openLoanDialog(item) },
+                                                            onReturnLoan = { viewModel.returnItem(item) },
+                                                            onClick = { selectedItemForDetail = item }
+                                                        )
+                                                    }
+                                                }
+                                                if (rowItems.size == 1) {
+                                                    Spacer(modifier = Modifier.weight(1f))
+                                                }
+                                            }
+                                        }
+                                    }
                                 } else {
-                                    "Añade objetos o subcajas usando el botón «+»."
-                                },
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                } else if (isGridView) {
-                    // -------------------------------------------------------------
-                    // GRID VIEW (2 COLUMNS)
-                    // -------------------------------------------------------------
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 88.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        // Section: Subcajas
-                        if (showBoxes && boxesWithCounts.isNotEmpty()) {
-                            item(span = { GridItemSpan(2) }) {
-                                Text(
-                                    text = if (currentBoxId == null) "Mis Cajas (${boxesWithCounts.size})" else "Subcajas (${boxesWithCounts.size})",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
-                                )
+                                    items(itemsInBox, key = { it.id }) { item ->
+                                        val category = categories.find { it.id == item.categoryId }
+                                        ItemCard(
+                                            item = item,
+                                            category = category,
+                                            onQuantityChange = { delta -> viewModel.adjustItemQuantity(item, delta) },
+                                            onMove = { viewModel.openMoveItemDialog(item) },
+                                            onEdit = { viewModel.openEditItemDialog(item) },
+                                            onDelete = { viewModel.requestDeleteItem(item) },
+                                            onLoan = { viewModel.openLoanDialog(item) },
+                                            onReturnLoan = { viewModel.returnItem(item) },
+                                            onClick = { selectedItemForDetail = item }
+                                        )
+                                    }
+                                }
                             }
 
-                            items(boxesWithCounts, key = { it.box.id }) { bwc ->
-                                BoxGridCard(
-                                    boxWithCounts = bwc,
-                                    onClick = { viewModel.openBox(bwc.box.id) },
-                                    onMove = { viewModel.openMoveBoxDialog(bwc.box) },
-                                    onEdit = { viewModel.openEditBoxDialog(bwc.box) },
-                                    onDelete = { viewModel.requestDeleteBox(bwc) }
-                                )
-                            }
-                        }
-
-                        // Section: Objetos
-                        if (showItems && itemsInBox.isNotEmpty()) {
-                            item(span = { GridItemSpan(2) }) {
-                                Text(
-                                    text = "Objetos contenidos (${itemsInBox.size})",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(top = 10.dp, bottom = 2.dp)
-                                )
-                            }
-
-                            items(itemsInBox, key = { it.id }) { item ->
-                                val category = categories.find { it.id == item.categoryId }
-                                ItemGridCard(
-                                    item = item,
-                                    category = category,
-                                    onQuantityChange = { delta -> viewModel.adjustItemQuantity(item, delta) },
-                                    onMove = { viewModel.openMoveItemDialog(item) },
-                                    onEdit = { viewModel.openEditItemDialog(item) },
-                                    onDelete = { viewModel.requestDeleteItem(item) },
-                                    onLoan = { viewModel.openLoanDialog(item) },
-                                    onReturnLoan = { viewModel.returnItem(item) }
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    // -------------------------------------------------------------
-                    // LIST VIEW
-                    // -------------------------------------------------------------
-                    LazyColumn(
-                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 88.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        // Section: Subcajas
-                        if (showBoxes && boxesWithCounts.isNotEmpty()) {
-                            item {
-                                Text(
-                                    text = if (currentBoxId == null) "Mis Cajas (${boxesWithCounts.size})" else "Subcajas (${boxesWithCounts.size})",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(bottom = 2.dp)
-                                )
-                            }
-
-                            items(boxesWithCounts, key = { it.box.id }) { bwc ->
-                                BoxCard(
-                                    boxWithCounts = bwc,
-                                    onClick = { viewModel.openBox(bwc.box.id) },
-                                    onMove = { viewModel.openMoveBoxDialog(bwc.box) },
-                                    onEdit = { viewModel.openEditBoxDialog(bwc.box) },
-                                    onDelete = { viewModel.requestDeleteBox(bwc) }
-                                )
-                            }
-                        }
-
-                        // Section: Objetos
-                        if (showItems && itemsInBox.isNotEmpty()) {
-                            item {
-                                Text(
-                                    text = "Objetos contenidos (${itemsInBox.size})",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
-                                )
-                            }
-
-                            items(itemsInBox, key = { it.id }) { item ->
-                                val category = categories.find { it.id == item.categoryId }
-                                ItemCard(
-                                    item = item,
-                                    category = category,
-                                    onQuantityChange = { delta -> viewModel.adjustItemQuantity(item, delta) },
-                                    onMove = { viewModel.openMoveItemDialog(item) },
-                                    onEdit = { viewModel.openEditItemDialog(item) },
-                                    onDelete = { viewModel.requestDeleteItem(item) },
-                                    onLoan = { viewModel.openLoanDialog(item) },
-                                    onReturnLoan = { viewModel.returnItem(item) }
-                                )
+                            if (rootBoxesWithCounts.isEmpty() && itemsInBox.isEmpty()) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(32.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Icon(
+                                                imageVector = Icons.Default.Inventory2,
+                                                contentDescription = null,
+                                                tint = Color(0xFFA89F95),
+                                                modifier = Modifier.size(48.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(10.dp))
+                                            Text(
+                                                text = "Esta caja está vacía",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = "Añade objetos o subcajas usando el botón «+».",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = Color(0xFFA89F95)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -673,7 +1825,25 @@ fun MainInventoryScreen(
         }
     }
 
-    // Dialogs
+    // Modal 2: Ficha Detallada de Objeto (Stitch AI Modal)
+    selectedItemForDetail?.let { item ->
+        val cat = categories.find { it.id == item.categoryId }
+        val locationPath = boxPaths[item.boxId] ?: currentBox?.name ?: "Inventario"
+        ObjectDetailSheet(
+            item = item,
+            category = cat,
+            boxLocationPath = locationPath,
+            onQuantityChange = { delta -> viewModel.adjustItemQuantity(item, delta) },
+            onMove = { viewModel.openMoveItemDialog(item) },
+            onEdit = { viewModel.openEditItemDialog(item) },
+            onDelete = { viewModel.requestDeleteItem(item) },
+            onLoan = { viewModel.openLoanDialog(item) },
+            onReturnLoan = { viewModel.returnItem(item) },
+            onDismiss = { selectedItemForDetail = null }
+        )
+    }
+
+    // Diálogos y Modales CRUD
     if (isBoxDialogOpen) {
         EditBoxDialog(
             boxToEdit = boxToEdit,

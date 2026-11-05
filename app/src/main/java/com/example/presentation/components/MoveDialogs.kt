@@ -1,14 +1,12 @@
 package com.example.presentation.components
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,11 +20,11 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,7 +57,8 @@ fun MoveBoxDialog(
                 Text(
                     text = "Mover caja",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Selecciona el nuevo destino para «${boxToMove.name}»",
@@ -73,7 +71,9 @@ fun MoveBoxDialog(
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Destinos disponibles:",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -93,8 +93,12 @@ fun MoveBoxDialog(
                                 containerColor = if (isSelected) {
                                     MaterialTheme.colorScheme.primaryContainer
                                 } else {
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                    MaterialTheme.colorScheme.surfaceVariant
                                 }
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -118,7 +122,8 @@ fun MoveBoxDialog(
                                     Text(
                                         text = "Raíz (Mis Cajas)",
                                         style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.SemiBold
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                     )
                                     if (isCurrent) {
                                         Text(
@@ -151,7 +156,15 @@ fun MoveBoxDialog(
                                 containerColor = when {
                                     !isValid -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f)
                                     isSelected -> MaterialTheme.colorScheme.primaryContainer
-                                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                    else -> MaterialTheme.colorScheme.surfaceVariant
+                                }
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                when {
+                                    !isValid -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                                    isSelected -> MaterialTheme.colorScheme.primary
+                                    else -> MaterialTheme.colorScheme.outlineVariant
                                 }
                             ),
                             modifier = Modifier
@@ -186,7 +199,8 @@ fun MoveBoxDialog(
                                     Text(
                                         text = targetBox.name,
                                         style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.SemiBold
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                     )
                                     if (isCurrent) {
                                         Text(
@@ -216,12 +230,13 @@ fun MoveBoxDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = { onConfirm(selectedParentId) },
                 enabled = selectedParentId != boxToMove.parentBoxId,
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.testTag("confirm_move_box_button")
             ) {
-                Text("Mover Aquí")
+                Text("Mover Aquí", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -248,7 +263,8 @@ fun MoveItemDialog(
                 Text(
                     text = "Mover objeto",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Elige la caja donde guardar «${itemToMove.name}»",
@@ -275,8 +291,12 @@ fun MoveItemDialog(
                                 containerColor = if (isSelected) {
                                     MaterialTheme.colorScheme.primaryContainer
                                 } else {
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                    MaterialTheme.colorScheme.surfaceVariant
                                 }
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -300,7 +320,8 @@ fun MoveItemDialog(
                                     Text(
                                         text = box.name,
                                         style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.SemiBold
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                     )
                                     if (isCurrent) {
                                         Text(
@@ -330,12 +351,13 @@ fun MoveItemDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = { onConfirm(selectedBoxId) },
                 enabled = selectedBoxId != itemToMove.boxId,
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.testTag("confirm_move_item_button")
             ) {
-                Text("Reubicar")
+                Text("Reubicar", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {

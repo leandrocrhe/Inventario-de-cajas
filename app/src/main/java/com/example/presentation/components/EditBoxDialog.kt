@@ -7,15 +7,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -35,14 +41,14 @@ import androidx.compose.ui.unit.dp
 import com.example.data.local.entity.BoxEntity
 
 val PRESET_BOX_COLORS = listOf(
-    "#F59E0B", // Amber
-    "#3B82F6", // Blue
-    "#10B981", // Emerald
-    "#8B5CF6", // Purple
-    "#EF4444", // Red
-    "#EC4899", // Pink
-    "#14B8A6", // Teal
-    "#64748B"  // Slate
+    "#F59E0B", // Amber (General / Tools)
+    "#3B82F6", // Blue (Tech / Audio)
+    "#10B981", // Emerald (Home / Garden)
+    "#A855F7", // Purple (Documents / Studio)
+    "#EF4444", // Red (Fragile / Winter)
+    "#C26343", // Terracotta (Workshop)
+    "#14B8A6", // Teal (Clothes / Seasonal)
+    "#64748B"  // Slate (Warehouse)
 )
 
 @Composable
@@ -60,18 +66,36 @@ fun EditBoxDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Column {
-                Text(
-                    text = if (boxToEdit == null) "Nueva Caja" else "Editar Caja",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                if (boxToEdit == null && currentParentBox != null) {
-                    Text(
-                        text = "Dentro de: ${currentParentBox.name}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(parseColorSafe(selectedColor).copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Inventory2,
+                        contentDescription = null,
+                        tint = parseColorSafe(selectedColor),
+                        modifier = Modifier.size(22.dp)
                     )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = if (boxToEdit == null) "Nueva Caja" else "Editar Caja",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (boxToEdit == null && currentParentBox != null) {
+                        Text(
+                            text = "Dentro de: ${currentParentBox.name}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         },
@@ -98,7 +122,7 @@ fun EditBoxDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descripción o ubicación (ej. Balda 2)") },
+                    label = { Text("Descripción o ubicación (ej. Trastero / Balda 2)") },
                     minLines = 2,
                     maxLines = 3,
                     shape = RoundedCornerShape(12.dp),
@@ -110,10 +134,11 @@ fun EditBoxDialog(
                 // Color picker
                 Column {
                     Text(
-                        text = "Color identificativo",
+                        text = "Etiqueta semántica de color",
                         style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 6.dp)
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -165,7 +190,10 @@ fun EditBoxDialog(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.testTag("save_box_button")
             ) {
-                Text(if (boxToEdit == null) "Crear Caja" else "Guardar Cambios")
+                Text(
+                    text = if (boxToEdit == null) "Crear Caja" else "Guardar Cambios",
+                    fontWeight = FontWeight.Bold
+                )
             }
         },
         dismissButton = {
