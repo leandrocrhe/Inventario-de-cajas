@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'surface-container-high': '#f1e6de', 'surface-variant': '#F2EFE9', 'tertiary': '#6f3026', 'on-surface-variant': '#534438', 'on-tertiary': '#ffffff', 'on-secondary-fixed': '#271904', 'on-tertiary-fixed': '#3b0904', 'secondary-fixed-dim': '#ddc2a1', 'secondary-fixed': '#fadebc', 'tertiary-container': '#8c473b', 'primary-fixed': '#ffdcc3', 'tag-slate': '#64748B', 'secondary': '#6f5b40', 'on-secondary': '#ffffff', 'primary': '#693600', 'on-primary': '#ffffff', 'on-primary-container': '#2E1500', 'tertiary-fixed': '#ffdad4', 'tag-amber': '#F59E0B', 'primary-fixed-dim': '#ffb77d', 'surface-bright': '#fff8f4', 'surface': '#000000', 'surface-container': '#14110E', 'on-secondary-container': '#745f44', 'inverse-on-surface': '#faefe7', 'outline': '#867467', 'tertiary-fixed-dim': '#ffb4a7', 'on-secondary-fixed-variant': '#56442a', 'primary-container': '#FFDCC1', 'error-container': '#ffdad6', 'surface-container-lowest': '#ffffff', 'on-surface': '#FFFFFF', 'secondary-container': '#FBE0BD', 'outline-variant': '#d9c2b3', 'on-tertiary-fixed-variant': '#733429', 'inverse-primary': '#ffb77d', 'on-error': '#ffffff', 'on-error-container': '#93000a', 'surface-clean': '#FFFFFF', 'background': '#000000', 'error': '#ba1a1a', 'surface-container-low': '#fdf2e9', 'background-warm': '#000000', 'on-primary-fixed-variant': '#6e3900', 'surface-tint': '#8f4d04', 'on-tertiary-container': '#ffc6bb', 'on-primary-fixed': '#2f1500', 'inverse-surface': '#352f2a', 'on-background': '#FFFFFF', 'tag-red': '#EF4444', 'surface-container-highest': '#ebe1d9', 'surface-dim': '#e3d8d0', 'tag-blue': '#3B82F6', 'on-surface-espresso': '#211A16', 'tag-purple': '#8B5CF6', 'tag-green': '#10B981', 'tag-teal': '#14B8A6' }, borderRadius: { 'DEFAULT': '0.25rem', 'lg': '0.5rem', 'xl': '0.75rem', 'full': '9999px' }, spacing: { 'gutter-tablet': '1rem', 'space-xs': '0.25rem', 'space-lg': '1rem', 'space-xl': '1.5rem', 'space-md': '0.75rem', 'margin': '1rem', 'gutter': '0.75rem', 'margin-tablet': '1.5rem', 'space-sm': '0.5rem' }, fontFamily: { 'display-lg': ['Roboto Flex'], 'headline-md': ['Roboto Flex'], 'title-md': ['Roboto Flex'], 'label-sm': ['Roboto Flex'], 'title-lg': ['Roboto Flex'], 'body-lg': ['Roboto Flex'], 'label-lg': ['Roboto Flex'], 'body-md': ['Roboto Flex'] }, fontSize: { 'display-lg': ['32px', { lineHeight: '38px', fontWeight: '700' }], 'headline-md': ['24px', { lineHeight: '30px', fontWeight: '600' }], 'title-md': ['16px', { lineHeight: '22px', fontWeight: '500' }], 'label-sm': ['11px', { lineHeight: '16px', letterSpacing: '0.5px', fontWeight: '500' }], 'title-lg': ['20px', { lineHeight: '26px', fontWeight: '700' }], 'body-lg': ['16px', { lineHeight: '24px', fontWeight: '400' }], 'label-lg': ['14px', { lineHeight: '20px', fontWeight: '500' }], 'body-md': ['14px', { lineHeight: '20px', fontWeight: '400' }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#000000;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-black text-[#FFFFFF] font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-black/90 backdrop-blur-xl border-b border-[#2C2622]/60"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-11 h-11 rounded-xl bg-[#231B15] border border-[#2C2622] text-[#FFB77C] flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">inventory_2</span></div><h1 class="font-title-lg text-title-lg text-[#FFFFFF] tracking-normal">Ajustes</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Buscar" class="w-11 h-11 flex items-center justify-center rounded-full text-[#A89F95] hover:text-[#FFFFFF] hover:bg-[#181512] transition-colors"><span class="material-symbols-outlined text-[22px]">search</span></button><div class="w-9 h-9 rounded-full bg-[#231B15] border border-[#2C2622] flex items-center justify-center"><span class="material-symbols-outlined text-[#FFB77C] text-[20px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-black px-margin"><div class="flex flex-col w-full pb-8">
+<div class="w-full bg-[#14110E] rounded-2xl p-space-lg shadow-md mb-space-lg relative overflow-hidden border border-[#2C2622]">
+<div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-[#8B4A00]/20 blur-2xl pointer-events-none"></div>
+<div class="flex items-start justify-between gap-space-sm mb-space-md">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-12 h-12 rounded-xl bg-[#231B15] text-[#FFB77C] border border-[#2C2622] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[26px]">inventory_2</span>
+</div>
+<div class="min-w-0">
+<h2 class="font-title-lg text-title-lg text-[#FFFFFF] truncate">Inventario Local</h2>
+<p class="font-body-md text-body-md text-[#A89F95] truncate">Espacio personal en este dispositivo</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#10B981]/15 text-[#10B981] font-label-sm text-label-sm shrink-0 border border-[#10B981]/30">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+        Activo
+      </span>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-space-xs">
+<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1C1814] text-[#ECE0DA] font-label-sm text-label-sm border border-[#2C2622]">
+<span class="material-symbols-outlined text-[15px] text-[#FFB77C]">grid_view</span>
+<span>6 cajas</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1C1814] text-[#ECE0DA] font-label-sm text-label-sm border border-[#2C2622]">
+<span class="material-symbols-outlined text-[15px] text-[#FFB77C]">category</span>
+<span>7 objetos (11 uds)</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1C1814] text-[#ECE0DA] font-label-sm text-label-sm border border-[#2C2622]">
+<span class="material-symbols-outlined text-[15px] text-[#FFB77C]">data_usage</span>
+<span>1.4 MB</span>
+</div>
+</div>
+</div>
+<section class="mb-space-lg">
+<div class="flex items-center gap-2 px-1 mb-space-sm">
+<span class="material-symbols-outlined text-[18px] text-[#FFB77C]">palette</span>
+<h3 class="font-title-md text-title-md text-[#ECE0DA] font-medium">Apariencia y Visualización</h3>
+</div>
+<div class="bg-[#14110E] rounded-2xl overflow-hidden shadow-sm flex flex-col gap-px bg-[#2C2622] border border-[#2C2622]">
+<div class="bg-[#14110E] p-space-md flex items-center justify-between min-h-[56px]">
+<div class="min-w-0 pr-space-md">
+<p class="font-title-md text-title-md text-[#FFFFFF] truncate">Tema visual</p>
+<p class="font-body-md text-body-md text-[#A89F95] line-clamp-1">Máximo contraste y ahorro de batería</p>
+</div>
+<div class="flex items-center gap-2 shrink-0 px-3 py-1.5 rounded-full bg-[#181512] border border-[#2C2622]">
+<span class="w-3 h-3 rounded-full bg-[#000000] shadow-[0_0_0_1.5px_#FFB77C]"></span>
+<span class="font-label-sm text-label-sm text-[#FFB77C] font-semibold">AMOLED</span>
+</div>
+</div>
+<div class="bg-[#14110E] p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<p class="font-title-md text-title-md text-[#FFFFFF]">Vista predeterminada de cajas</p>
+<span class="font-label-sm text-label-sm text-[#FFB77C]">Portadas</span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs" id="view-mode-group">
+<button class="view-chip flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-[#8B4A00] text-[#FFFFFF] font-label-sm text-label-sm transition-all" data-value="portadas" type="button">
+<span class="material-symbols-outlined text-[16px]">photo_library</span>
+<span>Portadas</span>
+</button>
+<button class="view-chip flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-[#1C1814] text-[#A89F95] hover:text-[#ECE0DA] font-label-sm text-label-sm transition-all border border-[#2C2622]" data-value="mosaico" type="button">
+<span class="material-symbols-outlined text-[16px]">grid_on</span>
+<span>Mosaico</span>
+</button>
+<button class="view-chip flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-[#1C1814] text-[#A89F95] hover:text-[#ECE0DA] font-label-sm text-label-sm transition-all border border-[#2C2622]" data-value="densa" type="button">
+<span class="material-symbols-outlined text-[16px]">view_list</span>
+<span>Densa</span>
+</button>
+</div>
+</div>
+<div class="bg-[#14110E] p-space-md flex items-center justify-between min-h-[56px]">
+<div class="min-w-0 pr-space-md">
+<p class="font-title-md text-title-md text-[#FFFFFF]">Densidad de cuadrícula</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Distribución en pantalla móvil</p>
+</div>
+<div class="flex items-center rounded-xl bg-[#1C1814] p-1 shrink-0 border border-[#2C2622]" id="cols-selector">
+<button class="col-chip px-3 py-1 rounded-lg bg-[#8B4A00] text-[#FFFFFF] font-label-sm text-label-sm transition-all" data-col="2" type="button">2 cols</button>
+<button class="col-chip px-3 py-1 rounded-lg text-[#A89F95] hover:text-[#ECE0DA] font-label-sm text-label-sm transition-all" data-col="3" type="button">3 cols</button>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-space-lg">
+<div class="flex items-center gap-2 px-1 mb-space-sm">
+<span class="material-symbols-outlined text-[18px] text-[#FFB77C]">backup</span>
+<h3 class="font-title-md text-title-md text-[#ECE0DA] font-medium">Gestión de Datos y Respaldos</h3>
+</div>
+<div class="bg-[#14110E] rounded-2xl overflow-hidden shadow-sm flex flex-col gap-px bg-[#2C2622] border border-[#2C2622]">
+<button class="w-full text-left bg-[#14110E] p-space-md flex items-center justify-between min-h-[64px] hover:bg-[#181512] transition-colors group" type="button">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#231B15] text-[#FFB77C] border border-[#2C2622] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">cloud_download</span>
+</div>
+<div class="min-w-0">
+<p class="font-title-md text-title-md text-[#FFFFFF] group-hover:text-[#FFB77C] transition-colors">Crear copia de respaldo</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Última copia: Hoy a las 09:30 (.json)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-[#A89F95] group-hover:text-[#FFB77C] transition-colors">arrow_forward</span>
+</button>
+<button class="w-full text-left bg-[#14110E] p-space-md flex items-center justify-between min-h-[60px] hover:bg-[#181512] transition-colors group" type="button">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#231B15] text-[#FFB77C] border border-[#2C2622] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">settings_backup_restore</span>
+</div>
+<div class="min-w-0">
+<p class="font-title-md text-title-md text-[#FFFFFF] group-hover:text-[#FFB77C] transition-colors">Restaurar copia de seguridad</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Cargar archivo externo o zip</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-[#A89F95] group-hover:text-[#FFB77C] transition-colors">file_upload</span>
+</button>
+<div class="bg-[#14110E] p-space-md flex items-center justify-between min-h-[56px]">
+<div class="min-w-0 pr-space-md">
+<p class="font-title-md text-title-md text-[#FFFFFF]">Exportar inventario</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Formatos listos para compartir o imprimir</p>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<button class="px-3 py-1.5 rounded-xl bg-[#1C1814] text-[#ECE0DA] hover:text-[#FFFFFF] hover:bg-[#231B15] border border-[#2C2622] font-label-sm text-label-sm transition-all flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[15px] text-[#FFB77C]">table_chart</span>
+            CSV
+          </button>
+<button class="px-3 py-1.5 rounded-xl bg-[#1C1814] text-[#ECE0DA] hover:text-[#FFFFFF] hover:bg-[#231B15] border border-[#2C2622] font-label-sm text-label-sm transition-all flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[15px] text-[#FFB77C]">picture_as_pdf</span>
+            PDF
+          </button>
+</div>
+</div>
+<div class="bg-[#14110E] p-space-md flex items-center justify-between gap-space-md min-h-[64px]">
+<div class="min-w-0">
+<div class="flex items-center gap-2">
+<p class="font-title-md text-title-md text-[#FFFFFF]">Optimizar imágenes</p>
+<span class="px-2 py-0.5 rounded-full bg-[#8B4A00]/25 text-[#FFB77C] border border-[#8B4A00]/40 font-label-sm text-label-sm">-65%</span>
+</div>
+<p class="font-body-md text-body-md text-[#A89F95]">Comprime fotos locales sin perder nitidez</p>
+</div>
+<button class="shrink-0 px-3.5 py-2 rounded-xl bg-[#231B15] hover:bg-[#8B4A00] text-[#FFB77C] hover:text-[#FFFFFF] border border-[#2C2622] font-label-sm text-label-sm transition-colors flex items-center gap-1.5" id="btn-optimize" type="button">
+<span class="material-symbols-outlined text-[16px]">auto_fix_high</span>
+<span>Optimizar</span>
+</button>
+</div>
+</div>
+</section>
+<section class="mb-space-lg">
+<div class="flex items-center gap-2 px-1 mb-space-sm">
+<span class="material-symbols-outlined text-[18px] text-[#FFB77C]">swap_horizontal_circle</span>
+<h3 class="font-title-md text-title-md text-[#ECE0DA] font-medium">Préstamos y Recordatorios</h3>
+</div>
+<div class="bg-[#14110E] rounded-2xl overflow-hidden shadow-sm flex flex-col gap-px bg-[#2C2622] border border-[#2C2622]">
+<div class="bg-[#14110E] p-space-md flex items-center justify-between min-h-[56px]">
+<div class="min-w-0 pr-space-md">
+<p class="font-title-md text-title-md text-[#FFFFFF]">Recordatorios de devolución</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Notificar 24h antes del vencimiento</p>
+</div>
+<button aria-checked="true" class="toggle-btn w-12 h-7 rounded-full bg-[#8B4A00] p-1 flex items-center justify-end transition-colors shrink-0" role="switch" type="button">
+<span class="w-5 h-5 rounded-full bg-[#FFFFFF] shadow-sm transform transition-transform"></span>
+</button>
+</div>
+<div class="bg-[#14110E] p-space-md flex items-center justify-between min-h-[56px]">
+<div class="min-w-0 pr-space-md">
+<p class="font-title-md text-title-md text-[#FFFFFF]">Integración con WhatsApp</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Plantilla de mensaje rápido con 1 toque</p>
+</div>
+<button aria-checked="true" class="toggle-btn w-12 h-7 rounded-full bg-[#8B4A00] p-1 flex items-center justify-end transition-colors shrink-0" role="switch" type="button">
+<span class="w-5 h-5 rounded-full bg-[#FFFFFF] shadow-sm transform transition-transform"></span>
+</button>
+</div>
+<div class="bg-[#14110E] p-space-md flex items-center justify-between min-h-[56px]">
+<div class="min-w-0 pr-space-md">
+<p class="font-title-md text-title-md text-[#FFFFFF]">Plazo por defecto</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Duración estándar de cada préstamo</p>
+</div>
+<div class="flex items-center gap-1.5 shrink-0" id="loan-days-group">
+<button class="loan-chip px-2.5 py-1.5 rounded-xl bg-[#1C1814] text-[#A89F95] font-label-sm text-label-sm border border-[#2C2622]" data-days="7" type="button">7d</button>
+<button class="loan-chip px-2.5 py-1.5 rounded-xl bg-[#8B4A00] text-[#FFFFFF] font-label-sm text-label-sm" data-days="14" type="button">14d</button>
+<button class="loan-chip px-2.5 py-1.5 rounded-xl bg-[#1C1814] text-[#A89F95] font-label-sm text-label-sm border border-[#2C2622]" data-days="30" type="button">30d</button>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-space-lg">
+<div class="flex items-center gap-2 px-1 mb-space-sm">
+<span class="material-symbols-outlined text-[18px] text-[#FFB77C]">account_tree</span>
+<h3 class="font-title-md text-title-md text-[#ECE0DA] font-medium">Organización y Zonas</h3>
+</div>
+<div class="bg-[#14110E] rounded-2xl overflow-hidden shadow-sm flex flex-col gap-px bg-[#2C2622] border border-[#2C2622]">
+<button class="w-full text-left bg-[#14110E] p-space-md flex items-center justify-between min-h-[56px] hover:bg-[#181512] transition-colors group" type="button">
+<div class="min-w-0 pr-space-md">
+<p class="font-title-md text-title-md text-[#FFFFFF] group-hover:text-[#FFB77C] transition-colors">Administrar Zonas</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Configurar estanterías, habitaciones y trasteros</p>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<span class="px-2.5 py-1 rounded-full bg-[#1C1814] text-[#FFB77C] border border-[#2C2622] font-label-sm text-label-sm">4 zonas</span>
+<span class="material-symbols-outlined text-[#A89F95] group-hover:text-[#FFB77C] transition-colors">chevron_right</span>
+</div>
+</button>
+<div class="bg-[#14110E] p-space-md flex items-center justify-between min-h-[56px]">
+<div class="min-w-0 pr-space-md">
+<p class="font-title-md text-title-md text-[#FFFFFF]">Permitir subcajas ilimitadas</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Anidar cajas dentro de otras sin límite</p>
+</div>
+<button aria-checked="true" class="toggle-btn w-12 h-7 rounded-full bg-[#8B4A00] p-1 flex items-center justify-end transition-colors shrink-0" role="switch" type="button">
+<span class="w-5 h-5 rounded-full bg-[#FFFFFF] shadow-sm transform transition-transform"></span>
+</button>
+</div>
+</div>
+</section>
+<section class="mb-space-md">
+<div class="flex items-center gap-2 px-1 mb-space-sm">
+<span class="material-symbols-outlined text-[18px] text-[#FFB77C]">info</span>
+<h3 class="font-title-md text-title-md text-[#ECE0DA] font-medium">Acerca de la Aplicación</h3>
+</div>
+<div class="bg-[#14110E] rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md border border-[#2C2622]">
+<div class="flex items-center justify-between">
+<div>
+<p class="font-title-md text-title-md text-[#FFFFFF]">Inventario de Cajas</p>
+<p class="font-body-md text-body-md text-[#A89F95]">Versión 1.4.2 (Build 2026)</p>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#10B981]/15 text-[#10B981] font-label-sm text-label-sm border border-[#10B981]/30">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+          100% Offline
+        </div>
+</div>
+<div class="p-3 rounded-xl bg-[#181512] flex items-start gap-space-sm border border-[#2C2622]">
+<span class="material-symbols-outlined text-[#FFB77C] text-[20px] shrink-0 mt-0.5">lock</span>
+<p class="font-label-sm text-label-sm text-[#ECE0DA]">
+          Tus datos, fotos y notas se almacenan exclusivamente en el almacenamiento protegido de este dispositivo. No hay rastreadores ni servidores externos.
+        </p>
+</div>
+<div class="pt-space-xs flex items-center justify-between">
+<button class="text-left font-label-lg text-label-lg text-[#EF4444] hover:underline flex items-center gap-1 py-1" id="btn-clear-cache" type="button">
+<span class="material-symbols-outlined text-[18px]">delete_sweep</span>
+<span>Vaciar caché temporal</span>
+</button>
+<span class="font-label-sm text-label-sm text-[#A89F95]">240 KB</span>
+</div>
+</div>
+</section>
+</div>
+<script>
+  (function() {
+    const toggles = document.querySelectorAll('.toggle-btn');
+    toggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const isChecked = toggle.getAttribute('aria-checked') === 'true';
+        toggle.setAttribute('aria-checked', !isChecked);
+        if (!isChecked) {
+          toggle.classList.remove('bg-[#2C2622]', 'justify-start');
+          toggle.classList.add('bg-[#8B4A00]', 'justify-end');
+        } else {
+          toggle.classList.remove('bg-[#8B4A00]', 'justify-end');
+          toggle.classList.add('bg-[#2C2622]', 'justify-start');
+        }
+      });
+    });
+
+    const viewChips = document.querySelectorAll('.view-chip');
+    viewChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        viewChips.forEach(c => {
+          c.classList.remove('bg-[#8B4A00]', 'text-[#FFFFFF]');
+          c.classList.add('bg-[#1C1814]', 'text-[#A89F95]');
+        });
+        chip.classList.add('bg-[#8B4A00]', 'text-[#FFFFFF]');
+        chip.classList.remove('bg-[#1C1814]', 'text-[#A89F95]');
+      });
+    });
+
+    const colChips = document.querySelectorAll('.col-chip');
+    colChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        colChips.forEach(c => {
+          c.classList.remove('bg-[#8B4A00]', 'text-[#FFFFFF]');
+          c.classList.add('text-[#A89F95]');
+        });
+        chip.classList.add('bg-[#8B4A00]', 'text-[#FFFFFF]');
+        chip.classList.remove('text-[#A89F95]');
+      });
+    });
+
+    const loanChips = document.querySelectorAll('.loan-chip');
+    loanChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        loanChips.forEach(c => {
+          c.classList.remove('bg-[#8B4A00]', 'text-[#FFFFFF]');
+          c.classList.add('bg-[#1C1814]', 'text-[#A89F95]');
+        });
+        chip.classList.add('bg-[#8B4A00]', 'text-[#FFFFFF]');
+        chip.classList.remove('bg-[#1C1814]', 'text-[#A89F95]');
+      });
+    });
+
+    const optimizeBtn = document.getElementById('btn-optimize');
+    if (optimizeBtn) {
+      optimizeBtn.addEventListener('click', () => {
+        optimizeBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span><span>Optimizando...</span>';
+        setTimeout(() => {
+          optimizeBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-[#10B981]">check</span><span>Completado</span>';
+        }, 900);
+      });
+    }
+
+    const clearCacheBtn = document.getElementById('btn-clear-cache');
+    if (clearCacheBtn) {
+      clearCacheBtn.addEventListener('click', () => {
+        clearCacheBtn.textContent = 'Caché liberada con éxito';
+        clearCacheBtn.classList.remove('text-[#EF4444]');
+        clearCacheBtn.classList.add('text-[#10B981]');
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-black/95 backdrop-blur-xl border-t border-[#2C2622]"><div class="h-20 px-space-sm flex items-center justify-around"><a class="flex flex-col items-center justify-center gap-space-xs min-w-[64px] min-h-[44px] text-[#A89F95] hover:text-[#ECE0DA] transition-colors group" data-path="cajas" href="#"><div class="nav-indicator w-14 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-[#1C1814]"><span class="material-symbols-outlined text-[24px]">inventory_2</span></div><span class="font-label-sm text-label-sm text-center tracking-normal">Cajas</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[64px] min-h-[44px] text-[#A89F95] hover:text-[#ECE0DA] transition-colors group" data-path="zonas" href="#"><div class="nav-indicator w-14 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-[#1C1814]"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm text-center tracking-normal">Zonas</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[64px] min-h-[44px] text-[#A89F95] hover:text-[#ECE0DA] transition-colors group" data-path="prestamos" href="#"><div class="nav-indicator w-14 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-[#1C1814]"><span class="material-symbols-outlined text-[24px]">swap_horiz</span></div><span class="font-label-sm text-label-sm text-center tracking-normal">Préstamos</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs min-w-[64px] min-h-[44px] text-[#FFB77C] font-semibold transition-colors group" data-path="ajustes" href="#"><div class="nav-indicator w-14 h-8 rounded-full flex items-center justify-center bg-[#FFB77C] text-[#4D2700] transition-colors shadow-sm"><span class="material-symbols-outlined text-[24px]">settings</span></div><span class="font-label-sm text-label-sm text-center tracking-normal text-[#FFB77C]">Ajustes</span></a></div></nav></body></html>
