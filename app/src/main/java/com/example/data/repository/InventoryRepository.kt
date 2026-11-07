@@ -8,6 +8,7 @@ import com.example.data.local.entity.BoxEntity
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
 import com.example.data.local.entity.SearchHistoryEntity
+import com.example.data.local.entity.ZoneEntity
 import com.example.domain.usecase.MoveBoxResult
 import com.example.domain.usecase.MoveBoxUseCase
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,7 @@ class InventoryRepository(private val database: AppDatabase) {
     private val boxDao = database.boxDao()
     private val itemDao = database.itemDao()
     private val categoryDao = database.categoryDao()
+    private val zoneDao = database.zoneDao()
     private val searchHistoryDao = database.searchHistoryDao()
     private val moveBoxUseCase = MoveBoxUseCase(boxDao)
     private val backupManager = BackupManager(database)
@@ -132,6 +134,27 @@ class InventoryRepository(private val database: AppDatabase) {
     }
 
     fun getAllZones(): Flow<List<String>> = boxDao.getAllZones()
+    fun getAllZoneEntities(): Flow<List<ZoneEntity>> = zoneDao.getAllZones()
+
+    suspend fun createZone(name: String, colorHex: String = "#F59E0B") = withContext(Dispatchers.IO) {
+        val trimmed = name.trim()
+        if (trimmed.isNotBlank()) {
+            zoneDao.insertZone(ZoneEntity(name = trimmed, colorHex = colorHex))
+        }
+    }
+
+    suspend fun renameZone(oldName: String, newName: String) = withContext(Dispatchers.IO) {
+        val trimmed = newName.trim()
+        if (trimmed.isNotBlank() && trimmed != oldName) {
+            zoneDao.renameZone(oldName, trimmed)
+            boxDao.renameZoneInBoxes(oldName, trimmed)
+        }
+    }
+
+    suspend fun deleteZone(name: String) = withContext(Dispatchers.IO) {
+        zoneDao.deleteZone(name)
+        boxDao.clearZoneInBoxes(name)
+    }
 
     // CRUD Box
     suspend fun createBox(
@@ -143,6 +166,7 @@ class InventoryRepository(private val database: AppDatabase) {
         zone: String? = null
     ): String = withContext(Dispatchers.IO) {
         val id = UUID.randomUUID().toString()
+        val trimmedZone = zone?.takeIf { it.isNotBlank() }?.trim()
         val box = BoxEntity(
             id = id,
             name = name.trim(),
@@ -150,14 +174,20 @@ class InventoryRepository(private val database: AppDatabase) {
             parentBoxId = parentBoxId,
             primaryPhotoUri = primaryPhotoUri,
             colorHex = colorHex,
-            zone = zone?.takeIf { it.isNotBlank() }?.trim()
+            zone = trimmedZone
         )
         boxDao.insertBox(box)
+        trimmedZone?.let { z ->
+            zoneDao.insertZone(ZoneEntity(name = z, colorHex = colorHex))
+        }
         id
     }
 
     suspend fun updateBox(box: BoxEntity) = withContext(Dispatchers.IO) {
         boxDao.updateBox(box)
+        box.zone?.takeIf { it.isNotBlank() }?.trim()?.let { z ->
+            zoneDao.insertZone(ZoneEntity(name = z, colorHex = box.colorHex))
+        }
     }
 
     suspend fun deleteBox(boxId: String) = withContext(Dispatchers.IO) {
@@ -252,6 +282,14 @@ class InventoryRepository(private val database: AppDatabase) {
         val catCables = CategoryEntity("cat_cables", "Cables y Conexiones", "cable", "#06B6D4")
 
         categoryDao.insertCategories(listOf(catElec, catHerr, catRopa, catDocs, catHogar, catCables))
+
+        val defaultZones = listOf(
+            ZoneEntity("Trastero", "#F59E0B"),
+            ZoneEntity("Taller", "#EF4444"),
+            ZoneEntity("Estudio", "#8B5CF6"),
+            ZoneEntity("Dormitorio", "#EC4899")
+        )
+        zoneDao.insertZones(defaultZones)
 
         val boxTrastero = BoxEntity(
             id = "box_trastero",

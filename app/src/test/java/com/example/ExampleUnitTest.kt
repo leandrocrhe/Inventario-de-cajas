@@ -33,6 +33,20 @@ class ExampleUnitTest {
         override fun getTotalBoxesCount(): Flow<Int> = flowOf(boxes.size)
         override fun searchBoxes(query: String): Flow<List<BoxEntity>> = flowOf(boxes)
         override fun getAllZones(): Flow<List<String>> = flowOf(boxes.mapNotNull { it.zone }.distinct())
+        override suspend fun renameZoneInBoxes(oldName: String, newName: String) {
+            boxes.indices.forEach { i ->
+                if (boxes[i].zone == oldName) {
+                    boxes[i] = boxes[i].copy(zone = newName)
+                }
+            }
+        }
+        override suspend fun clearZoneInBoxes(name: String) {
+            boxes.indices.forEach { i ->
+                if (boxes[i].zone == name) {
+                    boxes[i] = boxes[i].copy(zone = null)
+                }
+            }
+        }
     }
 
     @Test
@@ -113,5 +127,22 @@ class ExampleUnitTest {
         assertTrue(zones.contains("Taller"))
         assertTrue(zones.contains("Desván"))
         assertFalse(zones.contains("Varios"))
+    }
+
+    @Test
+    fun testZoneRenameAndClear() = runBlocking {
+        val box1 = BoxEntity(id = "1", name = "Tornillos", zone = "Taller")
+        val box2 = BoxEntity(id = "2", name = "Cables", zone = "Taller")
+        val fakeDao = FakeBoxDao(mutableListOf(box1, box2))
+
+        fakeDao.renameZoneInBoxes("Taller", "Garaje")
+        val box1Updated = fakeDao.getBoxById("1")
+        val box2Updated = fakeDao.getBoxById("2")
+        assertEquals("Garaje", box1Updated?.zone)
+        assertEquals("Garaje", box2Updated?.zone)
+
+        fakeDao.clearZoneInBoxes("Garaje")
+        val box1Cleared = fakeDao.getBoxById("1")
+        assertEquals(null, box1Cleared?.zone)
     }
 }

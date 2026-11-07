@@ -69,8 +69,20 @@ interface BoxDao {
     @Query("SELECT COUNT(*) FROM boxes")
     fun getTotalBoxesCount(): Flow<Int>
 
-    @Query("SELECT DISTINCT zone FROM boxes WHERE zone IS NOT NULL AND TRIM(zone) != '' ORDER BY zone ASC")
+    @Query("""
+        SELECT DISTINCT zone_name FROM (
+            SELECT name AS zone_name FROM zones WHERE TRIM(name) != ''
+            UNION
+            SELECT zone AS zone_name FROM boxes WHERE zone IS NOT NULL AND TRIM(zone) != ''
+        ) ORDER BY zone_name ASC
+    """)
     fun getAllZones(): Flow<List<String>>
+
+    @Query("UPDATE boxes SET zone = :newName WHERE zone = :oldName")
+    suspend fun renameZoneInBoxes(oldName: String, newName: String)
+
+    @Query("UPDATE boxes SET zone = NULL WHERE zone = :name")
+    suspend fun clearZoneInBoxes(name: String)
 
     @Query("SELECT * FROM boxes WHERE name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%' OR zone LIKE '%' || :query || '%'")
     fun searchBoxes(query: String): Flow<List<BoxEntity>>

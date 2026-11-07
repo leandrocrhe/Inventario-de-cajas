@@ -363,6 +363,27 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    fun createZone(name: String, colorHex: String = "#F59E0B") {
+        viewModelScope.launch {
+            repository.createZone(name, colorHex)
+            _snackbarMessage.value = "Zona creada: $name"
+        }
+    }
+
+    fun renameZone(oldName: String, newName: String) {
+        viewModelScope.launch {
+            repository.renameZone(oldName, newName)
+            _snackbarMessage.value = "Zona renombrada a: $newName"
+        }
+    }
+
+    fun deleteZone(name: String) {
+        viewModelScope.launch {
+            repository.deleteZone(name)
+            _snackbarMessage.value = "Zona eliminada: $name"
+        }
+    }
+
     fun saveItem(
         name: String,
         description: String?,

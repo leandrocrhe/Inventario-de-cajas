@@ -373,7 +373,7 @@ fun MainInventoryScreen(
                                 Text(
                                     text = when {
                                         isFiltering -> "${searchResultsBoxes.size} cajas · ${searchResultsItems.size} objetos"
-                                        currentBottomTab == AppBottomTab.ZONAS -> "${rootBoxesWithCounts.size} zonas · $totalBoxesCount cajas"
+                                        currentBottomTab == AppBottomTab.ZONAS -> "${allZones.size} zonas · $totalBoxesCount cajas"
                                         currentBottomTab == AppBottomTab.PRESTAMOS -> "$totalLoanedCount en préstamo"
                                         currentBottomTab == AppBottomTab.AJUSTES -> "Preferencias y respaldos"
                                         currentBoxId == null -> "Cajas"
@@ -600,7 +600,7 @@ fun MainInventoryScreen(
                                 )
 
                                 // Date filter chips
-                                DateFilterMode.values().forEach { dateMode ->
+                                DateFilterMode.entries.forEach { dateMode ->
                                     val isSelected = selectedDateFilter == dateMode
                                     val scale by animateFloatAsState(
                                         targetValue = if (isSelected) 1.05f else 1.0f,
@@ -922,16 +922,27 @@ fun MainInventoryScreen(
                 // =============================================================
                 AppBottomTab.ZONAS -> {
                     ZonesView(
-                        rootBoxes = rootBoxesWithCounts,
+                        zones = allZones,
                         allBoxes = allBoxes,
                         totalItemsCount = totalItemsCount,
-                        onZoneClick = { zoneId ->
-                            viewModel.openBox(zoneId)
+                        onZoneClick = { zoneName ->
+                            viewModel.setSearchQuery(zoneName)
+                            viewModel.setSearchActive(true)
                             currentBottomTab = AppBottomTab.CAJAS
                         },
-                        onEditZone = { zoneBox -> viewModel.openEditBoxDialog(zoneBox) },
-                        onCreateZone = { viewModel.openCreateBoxDialog() },
-                        onMoveBox = { box -> viewModel.openMoveBoxDialog(box) }
+                        onBoxClick = { boxId ->
+                            viewModel.openBox(boxId)
+                            currentBottomTab = AppBottomTab.CAJAS
+                        },
+                        onCreateZone = { name, colorHex ->
+                            viewModel.createZone(name, colorHex)
+                        },
+                        onRenameZone = { oldName, newName ->
+                            viewModel.renameZone(oldName, newName)
+                        },
+                        onDeleteZone = { name ->
+                            viewModel.deleteZone(name)
+                        }
                     )
                 }
 
