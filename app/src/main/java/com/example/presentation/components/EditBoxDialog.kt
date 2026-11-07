@@ -38,6 +38,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.IconButton
 import com.example.data.local.entity.BoxEntity
 
 val PRESET_BOX_COLORS = listOf(
@@ -55,11 +60,13 @@ val PRESET_BOX_COLORS = listOf(
 fun EditBoxDialog(
     boxToEdit: BoxEntity?,
     currentParentBox: BoxEntity?,
-    onSave: (name: String, description: String?, colorHex: String, photoUri: String?) -> Unit,
+    existingZones: List<String> = emptyList(),
+    onSave: (name: String, description: String?, colorHex: String, photoUri: String?, zone: String?) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf(boxToEdit?.name ?: "") }
     var description by remember { mutableStateOf(boxToEdit?.description ?: "") }
+    var zone by remember { mutableStateOf(boxToEdit?.zone ?: "") }
     var selectedColor by remember { mutableStateOf(boxToEdit?.colorHex ?: "#F59E0B") }
     var photoUri by remember { mutableStateOf(boxToEdit?.primaryPhotoUri) }
 
@@ -131,6 +138,78 @@ fun EditBoxDialog(
                         .testTag("box_desc_input")
                 )
 
+                // Zona / Ubicación (asignar existente o crear nueva)
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Zona o Estancia",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (zone.isNotBlank()) {
+                            TextButton(onClick = { zone = "" }) {
+                                Text("Quitar zona", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
+
+                    // Chips de zonas existentes
+                    if (existingZones.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            existingZones.forEach { z ->
+                                val isSelected = zone.equals(z, ignoreCase = true)
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { zone = if (isSelected) "" else z },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Place,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    },
+                                    label = { Text(z) },
+                                    modifier = Modifier.testTag("zone_chip_$z")
+                                )
+                            }
+                        }
+                    }
+
+                    // Campo para seleccionar o escribir una nueva zona
+                    OutlinedTextField(
+                        value = zone,
+                        onValueChange = { zone = it },
+                        label = { Text("Asignar o crear nueva zona") },
+                        placeholder = { Text("ej. Garaje, Trastero, Taller, Desván…") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Place, contentDescription = null)
+                        },
+                        trailingIcon = {
+                            if (zone.isNotBlank()) {
+                                IconButton(onClick = { zone = "" }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Limpiar")
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("box_zone_input")
+                    )
+                }
+
                 // Color picker
                 Column {
                     Text(
@@ -185,7 +264,7 @@ fun EditBoxDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onSave(name, description, selectedColor, photoUri) },
+                onClick = { onSave(name, description, selectedColor, photoUri, zone.takeIf { it.isNotBlank() }) },
                 enabled = name.isNotBlank(),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.testTag("save_box_button")

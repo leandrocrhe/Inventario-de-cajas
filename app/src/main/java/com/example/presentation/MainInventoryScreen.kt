@@ -3,7 +3,9 @@ package com.example.presentation
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -106,6 +108,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -150,6 +153,13 @@ enum class GroupingFilterMode {
     RECIENTES
 }
 
+enum class DateFilterMode(val label: String) {
+    RECENT("Recientes"),
+    LAST_7_DAYS("7 días"),
+    LAST_30_DAYS("30 días"),
+    TODAY("Hoy")
+}
+
 /**
  * Main Inventory Screen matching 'inventario_cuadr_cula_por_zonas_foto_portada_1'
  * from Google Stitch AI Design System
@@ -168,6 +178,7 @@ fun MainInventoryScreen(
     val itemsInBox by viewModel.currentItems.collectAsState()
     val allBoxes by viewModel.allBoxes.collectAsState()
     val categories by viewModel.allCategories.collectAsState()
+    val allZones by viewModel.allZones.collectAsState()
 
     val isSearchActive by viewModel.isSearchActive.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -206,6 +217,7 @@ fun MainInventoryScreen(
     var fabMenuExpanded by remember { mutableStateOf(false) }
     var isSearchBarVisible by remember { mutableStateOf(false) }
     var showCategoryFilterRow by remember { mutableStateOf(false) }
+    var selectedDateFilter by remember { mutableStateOf<DateFilterMode?>(null) }
 
     // Map of collapsed state per zone id
     val collapsedZones = remember { mutableStateMapOf<String, Boolean>() }
@@ -226,10 +238,14 @@ fun MainInventoryScreen(
     }
 
     // Intercept back button for nested navigation, tabs, search, and detail modal
-    BackHandler(enabled = selectedItemForDetail != null || isSearchActive || searchQuery.isNotBlank() || isSearchBarVisible || currentBottomTab != AppBottomTab.CAJAS || currentBoxId != null) {
+    BackHandler(enabled = selectedItemForDetail != null || isSearchActive || searchQuery.isNotBlank() || isSearchBarVisible || selectedCategoryFilter != null || selectedDateFilter != null || currentBottomTab != AppBottomTab.CAJAS || currentBoxId != null) {
         when {
             selectedItemForDetail != null -> {
                 selectedItemForDetail = null
+            }
+            selectedDateFilter != null || selectedCategoryFilter != null -> {
+                selectedDateFilter = null
+                viewModel.setCategoryFilter(null)
             }
             searchQuery.isNotBlank() -> {
                 viewModel.setSearchQuery("")
@@ -255,7 +271,7 @@ fun MainInventoryScreen(
         }
     }
 
-    val isFiltering = searchQuery.isNotBlank() || isSearchActive
+    val isFiltering = searchQuery.isNotBlank() || isSearchActive || selectedCategoryFilter != null || selectedDateFilter != null
 
     Scaffold(
         topBar = {
@@ -455,120 +471,213 @@ fun MainInventoryScreen(
                         }
                     }
 
-                    // Search input if open
+                    // Search input & Filter Chips below it
                     AnimatedVisibility(
-                        visible = isSearchBarVisible || isFiltering,
+                        visible = isSearchBarVisible || isFiltering || showCategoryFilterRow,
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
-                        Row(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(bottom = 6.dp)
                         ) {
-                            OutlinedTextField(
-                                value = searchQuery,
-                                onValueChange = {
-                                    viewModel.setSearchQuery(it)
-                                    if (it.isNotBlank()) {
-                                        viewModel.setSearchActive(true)
-                                    }
-                                },
-                                placeholder = {
-                                    Text(
-                                        text = if (currentBox != null) "Buscar en «${currentBox!!.name}»..." else "Buscar caja, objeto o etiqueta...",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFFA89F95),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
-                                singleLine = true,
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Search,
-                                        contentDescription = "Buscar",
-                                        tint = if (searchQuery.isNotBlank()) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (searchQuery.isNotEmpty()) {
-                                        IconButton(
-                                            onClick = {
-                                                viewModel.setSearchQuery("")
-                                                viewModel.setSearchActive(false)
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Clear,
-                                                contentDescription = "Limpiar",
-                                                tint = Color(0xFFA89F95),
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
-                                },
-                                shape = RoundedCornerShape(14.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = Color(0xFF181512),
-                                    unfocusedContainerColor = Color(0xFF181512),
-                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedBorderColor = Color(0xFF2C2622)
-                                ),
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                                keyboardActions = KeyboardActions(
-                                    onSearch = {
-                                        if (searchQuery.isNotBlank()) {
-                                            viewModel.recordSearchQuery(searchQuery)
-                                        }
-                                    }
-                                ),
+                            // Search input field with subtle border-radius and background-color
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp)
-                                    .testTag("search_text_field")
-                            )
-                        }
-                    }
-
-                    // Optional Category Filters Row
-                    AnimatedVisibility(
-                        visible = showCategoryFilterRow || selectedCategoryFilter != null,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState())
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            FilterChip(
-                                selected = selectedCategoryFilter == null,
-                                onClick = { viewModel.setCategoryFilter(null) },
-                                shape = RoundedCornerShape(9999.dp),
-                                label = { Text("Todas", style = MaterialTheme.typography.labelSmall) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = Color(0xFF2F1500)
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedTextField(
+                                    value = searchQuery,
+                                    onValueChange = {
+                                        viewModel.setSearchQuery(it)
+                                        if (it.isNotBlank()) {
+                                            viewModel.setSearchActive(true)
+                                        }
+                                    },
+                                    placeholder = {
+                                        Text(
+                                            text = if (currentBox != null) "Buscar en «${currentBox!!.name}»..." else "Buscar caja, objeto o etiqueta...",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color(0xFFA89F95),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    },
+                                    singleLine = true,
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Search,
+                                            contentDescription = "Buscar",
+                                            tint = if (searchQuery.isNotBlank()) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        if (searchQuery.isNotEmpty()) {
+                                            IconButton(
+                                                onClick = {
+                                                    viewModel.setSearchQuery("")
+                                                    viewModel.setSearchActive(false)
+                                                }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Clear,
+                                                    contentDescription = "Limpiar",
+                                                    tint = Color(0xFFA89F95),
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
+                                        }
+                                    },
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedContainerColor = Color(0xFF241E19),
+                                        unfocusedContainerColor = Color(0xFF1E1814),
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                        unfocusedBorderColor = Color(0xFF382E26),
+                                        focusedTextColor = Color(0xFFFBF8F5),
+                                        unfocusedTextColor = Color(0xFFECE0DA),
+                                        cursorColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                    keyboardActions = KeyboardActions(
+                                        onSearch = {
+                                            if (searchQuery.isNotBlank()) {
+                                                viewModel.recordSearchQuery(searchQuery)
+                                            }
+                                        }
+                                    ),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp)
+                                        .testTag("search_text_field")
                                 )
-                            )
-                            categories.forEach { cat ->
-                                val isSelected = selectedCategoryFilter == cat.id
+                            }
+
+                            // Row of filter chips below search input with scale and ripple animation
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState())
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                                    .testTag("header_filter_chips_row"),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Filter: "Todas"
+                                val isAllSelected = selectedCategoryFilter == null && selectedDateFilter == null
+                                val allScale by animateFloatAsState(
+                                    targetValue = if (isAllSelected) 1.05f else 1.0f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMedium
+                                    ),
+                                    label = "scale_all"
+                                )
                                 FilterChip(
-                                    selected = isSelected,
-                                    onClick = { viewModel.setCategoryFilter(if (isSelected) null else cat.id) },
+                                    selected = isAllSelected,
+                                    onClick = {
+                                        viewModel.setCategoryFilter(null)
+                                        selectedDateFilter = null
+                                    },
                                     shape = RoundedCornerShape(9999.dp),
-                                    label = { Text(cat.name, style = MaterialTheme.typography.labelSmall) },
+                                    label = { Text("Todas", style = MaterialTheme.typography.labelSmall) },
                                     colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = Color(0xFF1E1814),
+                                        labelColor = Color(0xFFECE0DA),
                                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                                         selectedLabelColor = Color(0xFF2F1500)
-                                    )
+                                    ),
+                                    modifier = Modifier
+                                        .graphicsLayer {
+                                            scaleX = allScale
+                                            scaleY = allScale
+                                        }
+                                        .testTag("filter_chip_all")
                                 )
+
+                                // Date filter chips
+                                DateFilterMode.values().forEach { dateMode ->
+                                    val isSelected = selectedDateFilter == dateMode
+                                    val scale by animateFloatAsState(
+                                        targetValue = if (isSelected) 1.05f else 1.0f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        ),
+                                        label = "scale_date_${dateMode.name}"
+                                    )
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = {
+                                            selectedDateFilter = if (isSelected) null else dateMode
+                                        },
+                                        shape = RoundedCornerShape(9999.dp),
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Schedule,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        },
+                                        label = { Text(dateMode.label, style = MaterialTheme.typography.labelSmall) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            containerColor = Color(0xFF1E1814),
+                                            labelColor = Color(0xFFECE0DA),
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = Color(0xFF2F1500)
+                                        ),
+                                        modifier = Modifier
+                                            .graphicsLayer {
+                                                scaleX = scale
+                                                scaleY = scale
+                                            }
+                                            .testTag("filter_chip_date_${dateMode.name}")
+                                    )
+                                }
+
+                                // Category filter chips
+                                categories.forEach { cat ->
+                                    val isSelected = selectedCategoryFilter == cat.id
+                                    val scale by animateFloatAsState(
+                                        targetValue = if (isSelected) 1.05f else 1.0f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        ),
+                                        label = "scale_cat_${cat.id}"
+                                    )
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = {
+                                            viewModel.setCategoryFilter(if (isSelected) null else cat.id)
+                                        },
+                                        shape = RoundedCornerShape(9999.dp),
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Category,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        },
+                                        label = { Text(cat.name, style = MaterialTheme.typography.labelSmall) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            containerColor = Color(0xFF1E1814),
+                                            labelColor = Color(0xFFECE0DA),
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = Color(0xFF2F1500)
+                                        ),
+                                        modifier = Modifier
+                                            .graphicsLayer {
+                                                scaleX = scale
+                                                scaleY = scale
+                                            }
+                                            .testTag("filter_chip_cat_${cat.id}")
+                                    )
+                                }
                             }
                         }
                     }
@@ -852,8 +961,29 @@ fun MainInventoryScreen(
                 // =============================================================
                 AppBottomTab.CAJAS -> {
                     if (isFiltering) {
+                        val now = System.currentTimeMillis()
+                        val dayMs = 24L * 60 * 60 * 1000
+                        val displayedBoxes = remember(searchResultsBoxes, selectedDateFilter) {
+                            when (selectedDateFilter) {
+                                DateFilterMode.TODAY -> searchResultsBoxes.filter { now - it.createdAt < dayMs }
+                                DateFilterMode.LAST_7_DAYS -> searchResultsBoxes.filter { now - it.createdAt < 7 * dayMs }
+                                DateFilterMode.LAST_30_DAYS -> searchResultsBoxes.filter { now - it.createdAt < 30 * dayMs }
+                                DateFilterMode.RECENT -> searchResultsBoxes.sortedByDescending { it.createdAt }
+                                null -> searchResultsBoxes
+                            }
+                        }
+                        val displayedItems = remember(searchResultsItems, selectedDateFilter) {
+                            when (selectedDateFilter) {
+                                DateFilterMode.TODAY -> searchResultsItems.filter { now - it.createdAt < dayMs }
+                                DateFilterMode.LAST_7_DAYS -> searchResultsItems.filter { now - it.createdAt < 7 * dayMs }
+                                DateFilterMode.LAST_30_DAYS -> searchResultsItems.filter { now - it.createdAt < 30 * dayMs }
+                                DateFilterMode.RECENT -> searchResultsItems.sortedByDescending { it.createdAt }
+                                null -> searchResultsItems
+                            }
+                        }
+
                         // Search / Filter Results
-                        if (searchQuery.isBlank() && selectedCategoryFilter == null) {
+                        if (searchQuery.isBlank() && selectedCategoryFilter == null && selectedDateFilter == null) {
                             if (recentSearches.isNotEmpty()) {
                                 LazyColumn(
                                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -971,7 +1101,7 @@ fun MainInventoryScreen(
                                     }
                                 }
                             }
-                        } else if (searchResultsItems.isEmpty() && searchResultsBoxes.isEmpty()) {
+                        } else if (displayedItems.isEmpty() && displayedBoxes.isEmpty()) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -979,7 +1109,7 @@ fun MainInventoryScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "No se encontraron coincidencias para «$searchQuery»",
+                                    text = if (searchQuery.isNotBlank()) "No se encontraron coincidencias para «$searchQuery»" else "No se encontraron elementos con los filtros seleccionados",
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = Color(0xFFA89F95)
                                 )
@@ -991,10 +1121,10 @@ fun MainInventoryScreen(
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 // Cajas encontradas
-                                if (searchResultsBoxes.isNotEmpty()) {
+                                if (displayedBoxes.isNotEmpty()) {
                                     item {
                                         Text(
-                                            text = "Cajas encontradas (${searchResultsBoxes.size})",
+                                            text = "Cajas encontradas (${displayedBoxes.size})",
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary,
@@ -1002,7 +1132,7 @@ fun MainInventoryScreen(
                                         )
                                     }
 
-                                    items(searchResultsBoxes, key = { it.id }) { box ->
+                                    items(displayedBoxes, key = { it.id }) { box ->
                                         BoxGridCard(
                                             boxWithCounts = BoxWithCounts(box, 0, 0),
                                             onClick = {
@@ -1020,10 +1150,10 @@ fun MainInventoryScreen(
                                 }
 
                                 // Objetos encontrados
-                                if (searchResultsItems.isNotEmpty()) {
+                                if (displayedItems.isNotEmpty()) {
                                     item {
                                         Text(
-                                            text = "Objetos encontrados (${searchResultsItems.size})",
+                                            text = "Objetos encontrados (${displayedItems.size})",
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary,
@@ -1031,7 +1161,7 @@ fun MainInventoryScreen(
                                         )
                                     }
 
-                                    items(searchResultsItems, key = { it.id }) { item ->
+                                    items(displayedItems, key = { it.id }) { item ->
                                         val cat = categories.find { it.id == item.categoryId }
                                         val path = boxPaths[item.boxId] ?: "Cargando ubicación…"
 
@@ -1848,8 +1978,9 @@ fun MainInventoryScreen(
         EditBoxDialog(
             boxToEdit = boxToEdit,
             currentParentBox = currentBox,
-            onSave = { name, desc, color, photo ->
-                viewModel.saveBox(name, desc, color, photo)
+            existingZones = allZones,
+            onSave = { name, desc, color, photo, zone ->
+                viewModel.saveBox(name, desc, color, photo, zone)
             },
             onDismiss = { viewModel.dismissBoxDialog() }
         )

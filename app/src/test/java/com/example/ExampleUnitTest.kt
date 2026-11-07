@@ -32,6 +32,7 @@ class ExampleUnitTest {
         override suspend fun deleteBoxById(boxId: String) { boxes.removeIf { it.id == boxId } }
         override fun getTotalBoxesCount(): Flow<Int> = flowOf(boxes.size)
         override fun searchBoxes(query: String): Flow<List<BoxEntity>> = flowOf(boxes)
+        override fun getAllZones(): Flow<List<String>> = flowOf(boxes.mapNotNull { it.zone }.distinct())
     }
 
     @Test
@@ -96,5 +97,21 @@ class ExampleUnitTest {
 
         history.clear()
         assertTrue(history.isEmpty())
+    }
+
+    @Test
+    fun testBoxZoneAssignment() = runBlocking {
+        val boxWithExistingZone = BoxEntity(id = "1", name = "Tornillos", zone = "Taller")
+        val boxWithNewZone = BoxEntity(id = "2", name = "Navidad", zone = "Desván")
+        val boxWithoutZone = BoxEntity(id = "3", name = "Varios", zone = null)
+
+        val fakeDao = FakeBoxDao(mutableListOf(boxWithExistingZone, boxWithNewZone, boxWithoutZone))
+        val zones = mutableListOf<String>()
+        fakeDao.getAllZones().collect { zones.addAll(it) }
+
+        assertEquals(2, zones.size)
+        assertTrue(zones.contains("Taller"))
+        assertTrue(zones.contains("Desván"))
+        assertFalse(zones.contains("Varios"))
     }
 }

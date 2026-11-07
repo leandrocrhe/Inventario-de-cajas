@@ -69,6 +69,9 @@ interface BoxDao {
     @Query("SELECT COUNT(*) FROM boxes")
     fun getTotalBoxesCount(): Flow<Int>
 
-    @Query("SELECT * FROM boxes WHERE name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%'")
+    @Query("SELECT DISTINCT zone FROM boxes WHERE zone IS NOT NULL AND TRIM(zone) != '' ORDER BY zone ASC")
+    fun getAllZones(): Flow<List<String>>
+
+    @Query("SELECT * FROM boxes WHERE name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%' OR zone LIKE '%' || :query || '%'")
     fun searchBoxes(query: String): Flow<List<BoxEntity>>
 }

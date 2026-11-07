@@ -146,6 +146,9 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     val recentSearches: StateFlow<List<SearchHistoryEntity>> = repository.getRecentSearches()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val allZones: StateFlow<List<String>> = repository.getAllZones()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         viewModelScope.launch {
             repository.seedInitialDataIfNeeded()
@@ -327,7 +330,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     // CRUD actions
-    fun saveBox(name: String, description: String?, colorHex: String, photoUri: String?) {
+    fun saveBox(name: String, description: String?, colorHex: String, photoUri: String?, zone: String? = null) {
         viewModelScope.launch {
             val editing = _boxToEdit.value
             if (editing != null) {
@@ -336,7 +339,8 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                         name = name.trim(),
                         description = description?.takeIf { it.isNotBlank() }?.trim(),
                         colorHex = colorHex,
-                        primaryPhotoUri = photoUri ?: editing.primaryPhotoUri
+                        primaryPhotoUri = photoUri ?: editing.primaryPhotoUri,
+                        zone = zone?.takeIf { it.isNotBlank() }?.trim()
                     )
                 )
                 _snackbarMessage.value = "Caja actualizada: $name"
@@ -349,7 +353,8 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                     description = description,
                     parentBoxId = _currentBoxId.value,
                     primaryPhotoUri = photoUri,
-                    colorHex = colorHex
+                    colorHex = colorHex,
+                    zone = zone?.takeIf { it.isNotBlank() }?.trim()
                 )
                 _snackbarMessage.value = "Caja creada: $name"
             }

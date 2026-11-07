@@ -57,6 +57,7 @@ class BackupManager(private val database: AppDatabase) {
                     put("parentBoxId", box.parentBoxId ?: JSONObject.NULL)
                     put("colorHex", box.colorHex)
                     put("primaryPhotoUri", box.primaryPhotoUri ?: JSONObject.NULL)
+                    put("zone", box.zone ?: JSONObject.NULL)
                     put("sortOrder", box.sortOrder)
                     put("createdAt", box.createdAt)
                 })
@@ -178,6 +179,7 @@ class BackupManager(private val database: AppDatabase) {
                             parentBoxId = parentId,
                             colorHex = obj.optString("colorHex", "#F59E0B"),
                             primaryPhotoUri = if (obj.isNull("primaryPhotoUri")) null else obj.optString("primaryPhotoUri").takeIf { it.isNotBlank() },
+                            zone = if (obj.isNull("zone")) null else obj.optString("zone").takeIf { it.isNotBlank() },
                             sortOrder = obj.optInt("sortOrder", 0),
                             createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                         )

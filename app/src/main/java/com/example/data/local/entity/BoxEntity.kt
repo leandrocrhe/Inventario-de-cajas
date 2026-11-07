@@ -18,7 +18,8 @@ import androidx.room.PrimaryKey
     ],
     indices = [
         Index("parent_box_id"),
-        Index("name")
+        Index("name"),
+        Index("zone")
     ]
 )
 data class BoxEntity(
@@ -32,6 +33,8 @@ data class BoxEntity(
     val primaryPhotoUri: String? = null,
     @ColumnInfo(name = "color_hex")
     val colorHex: String = "#F59E0B",
+    @ColumnInfo(name = "zone")
+    val zone: String? = null,
     @ColumnInfo(name = "sort_order")
     val sortOrder: Int = 0,
     @ColumnInfo(name = "created_at")

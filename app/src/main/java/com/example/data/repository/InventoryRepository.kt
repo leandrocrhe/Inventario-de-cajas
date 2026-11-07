@@ -131,13 +131,16 @@ class InventoryRepository(private val database: AppDatabase) {
         stats.sortedByDescending { it.unitsCount }
     }
 
+    fun getAllZones(): Flow<List<String>> = boxDao.getAllZones()
+
     // CRUD Box
     suspend fun createBox(
         name: String,
         description: String?,
         parentBoxId: String?,
         primaryPhotoUri: String?,
-        colorHex: String
+        colorHex: String,
+        zone: String? = null
     ): String = withContext(Dispatchers.IO) {
         val id = UUID.randomUUID().toString()
         val box = BoxEntity(
@@ -146,7 +149,8 @@ class InventoryRepository(private val database: AppDatabase) {
             description = description?.takeIf { it.isNotBlank() }?.trim(),
             parentBoxId = parentBoxId,
             primaryPhotoUri = primaryPhotoUri,
-            colorHex = colorHex
+            colorHex = colorHex,
+            zone = zone?.takeIf { it.isNotBlank() }?.trim()
         )
         boxDao.insertBox(box)
         id
@@ -254,42 +258,48 @@ class InventoryRepository(private val database: AppDatabase) {
             name = "Trastero Principal",
             description = "Estantería metálica del fondo, balda 2",
             parentBoxId = null,
-            colorHex = "#F59E0B"
+            colorHex = "#F59E0B",
+            zone = "Trastero"
         )
         val boxHerramientas = BoxEntity(
             id = "box_herramientas",
             name = "Herramientas Taller",
             description = "Maletín de llaves, tornillería y taladro",
             parentBoxId = "box_trastero",
-            colorHex = "#EF4444"
+            colorHex = "#EF4444",
+            zone = "Taller"
         )
         val boxCables = BoxEntity(
             id = "box_cables",
             name = "Cables & Conexiones",
             description = "HDMI, USB-C, adaptadores y regletas",
             parentBoxId = "box_trastero",
-            colorHex = "#3B82F6"
+            colorHex = "#3B82F6",
+            zone = "Taller"
         )
         val boxArmario = BoxEntity(
             id = "box_armario",
             name = "Armario Estudio",
             description = "Cajonera blanca junto al escritorio",
             parentBoxId = null,
-            colorHex = "#8B5CF6"
+            colorHex = "#8B5CF6",
+            zone = "Estudio"
         )
         val boxArchivo = BoxEntity(
             id = "box_archivo",
             name = "Archivo Fiscal & Facturas",
             description = "Carpetas 2024-2026 ordenadas alfabéticamente",
             parentBoxId = "box_armario",
-            colorHex = "#10B981"
+            colorHex = "#10B981",
+            zone = "Estudio"
         )
         val boxRopa = BoxEntity(
             id = "box_ropa",
             name = "Ropa Temporada Invierno",
             description = "Abrigos de montaña, guantes y bufandas al vacío",
             parentBoxId = null,
-            colorHex = "#EC4899"
+            colorHex = "#EC4899",
+            zone = "Dormitorio"
         )
 
         boxDao.insertBoxes(listOf(boxTrastero, boxHerramientas, boxCables, boxArmario, boxArchivo, boxRopa))
