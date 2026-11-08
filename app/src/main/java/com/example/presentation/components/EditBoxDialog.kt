@@ -61,12 +61,13 @@ fun EditBoxDialog(
     boxToEdit: BoxEntity?,
     currentParentBox: BoxEntity?,
     existingZones: List<String> = emptyList(),
+    initialZone: String? = null,
     onSave: (name: String, description: String?, colorHex: String, photoUri: String?, zone: String?) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf(boxToEdit?.name ?: "") }
     var description by remember { mutableStateOf(boxToEdit?.description ?: "") }
-    var zone by remember { mutableStateOf(boxToEdit?.zone ?: "") }
+    var zone by remember { mutableStateOf(boxToEdit?.zone ?: initialZone ?: "") }
     var selectedColor by remember { mutableStateOf(boxToEdit?.colorHex ?: "#F59E0B") }
     var photoUri by remember { mutableStateOf(boxToEdit?.primaryPhotoUri) }
 

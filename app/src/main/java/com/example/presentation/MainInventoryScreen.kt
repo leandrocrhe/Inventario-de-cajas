@@ -219,9 +219,10 @@ fun MainInventoryScreen(
     var showCategoryFilterRow by remember { mutableStateOf(false) }
     var selectedDateFilter by remember { mutableStateOf<DateFilterMode?>(null) }
 
-    // Map of collapsed state per zone id
+    // Map of collapsed state per zone name
     val collapsedZones = remember { mutableStateMapOf<String, Boolean>() }
     var allZonesCollapsed by remember { mutableStateOf(false) }
+    var createBoxInitialZone by remember { mutableStateOf<String?>(null) }
 
     // Selected item for rich Object Detail Sheet (Stitch AI Modal 2)
     var selectedItemForDetail by remember { mutableStateOf<ItemEntity?>(null) }
@@ -1241,6 +1242,51 @@ fun MainInventoryScreen(
                         // =============================================================
                         // VISTA PRINCIPAL RAÍZ: CUADRÍCULA POR ZONAS (Stitch AI Layout)
                         // =============================================================
+                        val zonePalette = remember {
+                            listOf(
+                                Color(0xFFF59E0B), // Amber
+                                Color(0xFF3B82F6), // Blue
+                                Color(0xFF10B981), // Emerald
+                                Color(0xFFA855F7), // Purple
+                                Color(0xFFEF4444), // Red
+                                Color(0xFF14B8A6), // Teal
+                                Color(0xFFC26343), // Terracotta
+                                Color(0xFFEAB308), // Yellow
+                                Color(0xFF6366F1)  // Indigo
+                            )
+                        }
+
+                        val zoneGroups = remember(rootBoxesWithCounts, allBoxes, allZones) {
+                            val assignedZones = rootBoxesWithCounts.mapNotNull { it.box.zone?.trim()?.takeIf { z -> z.isNotEmpty() } }.distinct()
+                            val allKnownZones = (allZones + assignedZones).distinct().sorted()
+
+                            val map = linkedMapOf<String, MutableList<BoxWithCounts>>()
+                            allKnownZones.forEach { z -> map[z] = mutableListOf() }
+                            val unassigned = mutableListOf<BoxWithCounts>()
+
+                            rootBoxesWithCounts.forEach { bwc ->
+                                val z = bwc.box.zone?.trim()
+                                if (!z.isNullOrBlank()) {
+                                    map.getOrPut(z) { mutableListOf() }.add(bwc)
+                                } else {
+                                    unassigned.add(bwc)
+                                }
+                            }
+
+                            val result = mutableListOf<Pair<String, List<BoxWithCounts>>>()
+                            for ((zName, boxes) in map) {
+                                if (boxes.isNotEmpty() || allZones.contains(zName)) {
+                                    result.add(zName to boxes)
+                                }
+                            }
+                            if (unassigned.isNotEmpty()) {
+                                result.add("Sin estancia asignada" to unassigned)
+                            }
+                            result
+                        }
+
+                        val activeZonesCount = remember(zoneGroups) { zoneGroups.count { it.second.isNotEmpty() } }
+
                         LazyColumn(
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -1357,8 +1403,8 @@ fun MainInventoryScreen(
                                     IconButton(
                                         onClick = {
                                             allZonesCollapsed = !allZonesCollapsed
-                                            rootBoxesWithCounts.forEach {
-                                                collapsedZones[it.box.id] = allZonesCollapsed
+                                            zoneGroups.forEach { (zoneName, _) ->
+                                                collapsedZones[zoneName] = allZonesCollapsed
                                             }
                                         },
                                         modifier = Modifier
@@ -1377,7 +1423,7 @@ fun MainInventoryScreen(
                                 }
                             }
 
-                            // Fila 2: Subtotal y Reordenar (Línea 24 del diseño: "5 Cajas · 3 Zonas activas · Reordenar")
+                            // Fila 2: Subtotal y Reordenar
                             item {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -1393,7 +1439,7 @@ fun MainInventoryScreen(
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = "· ${rootBoxesWithCounts.size} Zonas activas",
+                                            text = "· $activeZonesCount ${if (activeZonesCount == 1) "Zona activa" else "Zonas activas"}",
                                             style = MaterialTheme.typography.labelSmall,
                                             color = Color(0xFFA89F95)
                                         )
@@ -1407,7 +1453,7 @@ fun MainInventoryScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Reordenar",
+                                            text = "Gestionar",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary
@@ -1462,30 +1508,19 @@ fun MainInventoryScreen(
                             }
 
                             // =============================================================
-                            // ZONE ACCORDIONS: Cada zona agrupa sus cajas con portada (4:3)
+                            // ZONE ACCORDIONS: Cada zona agrupa sus cajas
                             // =============================================================
-                            rootBoxesWithCounts.forEach { zoneBwc ->
-                                val zoneBox = zoneBwc.box
+                            zoneGroups.forEach { (zoneName, displayBoxes) ->
+                                item(key = "zone_$zoneName") {
+                                    val isCollapsed = collapsedZones[zoneName] ?: false
+                                    val zoneColorIndex = (Math.abs(zoneName.hashCode()) % zonePalette.size)
+                                    val zoneTagColor = zonePalette[zoneColorIndex]
 
-                                // Obtener cajas contenidas en esta zona (o mostrar la propia caja si no tiene hijas)
-                                val childBoxes = allBoxes.filter { it.parentBoxId == zoneBox.id }
-                                val displayBoxes: List<BoxWithCounts> = if (childBoxes.isNotEmpty()) {
-                                    childBoxes.map { child ->
-                                        val grandChildrenCount = allBoxes.count { it.parentBoxId == child.id }
-                                        BoxWithCounts(child, grandChildrenCount, 0)
-                                    }
-                                } else {
-                                    listOf(zoneBwc)
-                                }
-
-                                item(key = "zone_${zoneBox.id}") {
-                                    val isCollapsed = collapsedZones[zoneBox.id] ?: false
-                                    val zoneTagColor = remember(zoneBox.colorHex) { parseColorSafe(zoneBox.colorHex) }
                                     Column(
                                         modifier = Modifier.fillMaxWidth(),
                                         verticalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
-                                        // Header de Zona Acordeón (Líneas 28-47 del prototipo)
+                                        // Header de Zona Acordeón (Nombre de la Zona/Estancia)
                                         Surface(
                                             shape = RoundedCornerShape(14.dp),
                                             color = Color.Transparent,
@@ -1493,7 +1528,7 @@ fun MainInventoryScreen(
                                                 .fillMaxWidth()
                                                 .clip(RoundedCornerShape(14.dp))
                                                 .clickable {
-                                                    collapsedZones[zoneBox.id] = !isCollapsed
+                                                    collapsedZones[zoneName] = !isCollapsed
                                                 }
                                                 .padding(horizontal = 4.dp, vertical = 4.dp)
                                         ) {
@@ -1530,7 +1565,7 @@ fun MainInventoryScreen(
                                                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                                                         ) {
                                                             Text(
-                                                                text = zoneBox.name,
+                                                                text = zoneName,
                                                                 style = MaterialTheme.typography.titleMedium,
                                                                 fontWeight = FontWeight.Bold,
                                                                 color = Color.White,
@@ -1552,7 +1587,7 @@ fun MainInventoryScreen(
                                                             }
                                                         }
                                                         Text(
-                                                            text = zoneBox.description ?: "Zona de almacenamiento",
+                                                            text = if (displayBoxes.isEmpty()) "Sin cajas asignadas todavía" else "${displayBoxes.size} ${if (displayBoxes.size == 1) "caja en esta estancia" else "cajas en esta estancia"}",
                                                             style = MaterialTheme.typography.labelSmall,
                                                             color = Color(0xFFA89F95),
                                                             maxLines = 1,
@@ -1562,18 +1597,6 @@ fun MainInventoryScreen(
                                                 }
 
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    IconButton(
-                                                        onClick = { viewModel.openEditBoxDialog(zoneBox) },
-                                                        modifier = Modifier.size(32.dp)
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.MoreVert,
-                                                            contentDescription = "Gestionar zona",
-                                                            tint = Color(0xFFA89F95),
-                                                            modifier = Modifier.size(18.dp)
-                                                        )
-                                                    }
-
                                                     val rotation by animateFloatAsState(targetValue = if (isCollapsed) -90f else 0f)
                                                     Icon(
                                                         imageVector = Icons.Default.ExpandMore,
@@ -1612,9 +1635,8 @@ fun MainInventoryScreen(
                                                                 )
                                                             }
                                                         }
-                                                        // Si es fila impar, dejamos el espacio proporcional o añadimos la tarjeta de asignar caja
+                                                        // Si es fila impar, dejamos la tarjeta de asignar caja en el segundo hueco
                                                         if (rowBoxes.size == 1) {
-                                                            // Tarjeta interactiva "+ Asignar Caja"
                                                             Surface(
                                                                 shape = RoundedCornerShape(16.dp),
                                                                 color = Color(0xFF12100E),
@@ -1623,6 +1645,7 @@ fun MainInventoryScreen(
                                                                     .weight(1f)
                                                                     .clip(RoundedCornerShape(16.dp))
                                                                     .clickable {
+                                                                        createBoxInitialZone = if (zoneName == "Sin estancia asignada") null else zoneName
                                                                         viewModel.openCreateBoxDialog()
                                                                     }
                                                             ) {
@@ -1656,7 +1679,7 @@ fun MainInventoryScreen(
                                                                         color = Color.White
                                                                     )
                                                                     Text(
-                                                                        text = "Añadir a ${zoneBox.name}",
+                                                                        text = "Añadir a $zoneName",
                                                                         style = MaterialTheme.typography.labelSmall,
                                                                         color = Color(0xFFA89F95),
                                                                         fontSize = 10.sp,
@@ -1665,6 +1688,43 @@ fun MainInventoryScreen(
                                                                     )
                                                                 }
                                                             }
+                                                        }
+                                                    }
+                                                }
+                                                // Si el número de cajas es par (por ejemplo 0 o 2 o 4), añadimos una fila con botón "+ Añadir caja a esta zona"
+                                                if (displayBoxes.size % 2 == 0) {
+                                                    Surface(
+                                                        shape = RoundedCornerShape(14.dp),
+                                                        color = Color(0xFF12100E),
+                                                        border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .clip(RoundedCornerShape(14.dp))
+                                                            .clickable {
+                                                                createBoxInitialZone = if (zoneName == "Sin estancia asignada") null else zoneName
+                                                                viewModel.openCreateBoxDialog()
+                                                            }
+                                                    ) {
+                                                        Row(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                                            horizontalArrangement = Arrangement.Center,
+                                                            verticalAlignment = Alignment.CenterVertically
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Add,
+                                                                contentDescription = null,
+                                                                tint = MaterialTheme.colorScheme.primary,
+                                                                modifier = Modifier.size(18.dp)
+                                                            )
+                                                            Spacer(modifier = Modifier.width(8.dp))
+                                                            Text(
+                                                                text = "Añadir caja a $zoneName",
+                                                                style = MaterialTheme.typography.labelMedium,
+                                                                fontWeight = FontWeight.SemiBold,
+                                                                color = Color.White
+                                                            )
                                                         }
                                                     }
                                                 }
@@ -1678,10 +1738,20 @@ fun MainInventoryScreen(
                         // =============================================================
                         // VISTA DENTRO DE UNA CAJA (Navegación con subcajas / objetos)
                         // =============================================================
-                        val activeBox = currentBox!!
-                        val accentColor = remember(activeBox.colorHex) { parseColorSafe(activeBox.colorHex) }
+                        val activeBox = currentBox
+                        if (activeBox == null) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                androidx.compose.material3.CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            }
+                        } else {
+                            val accentColor = remember(activeBox.colorHex) { parseColorSafe(activeBox.colorHex) }
 
-                        LazyColumn(
+                            LazyColumn(
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxSize()
@@ -1962,6 +2032,7 @@ fun MainInventoryScreen(
                         }
                     }
                 }
+                }
             }
         }
     }
@@ -1990,10 +2061,15 @@ fun MainInventoryScreen(
             boxToEdit = boxToEdit,
             currentParentBox = currentBox,
             existingZones = allZones,
+            initialZone = createBoxInitialZone,
             onSave = { name, desc, color, photo, zone ->
                 viewModel.saveBox(name, desc, color, photo, zone)
+                createBoxInitialZone = null
             },
-            onDismiss = { viewModel.dismissBoxDialog() }
+            onDismiss = {
+                createBoxInitialZone = null
+                viewModel.dismissBoxDialog()
+            }
         )
     }
 
