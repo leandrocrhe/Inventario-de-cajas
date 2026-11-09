@@ -135,6 +135,7 @@ import com.example.presentation.components.LoansSheet
 import com.example.presentation.components.MoveBoxDialog
 import com.example.presentation.components.MoveItemDialog
 import com.example.presentation.components.ObjectDetailSheet
+import com.example.presentation.components.SettingsScreen
 import com.example.presentation.components.SettingsView
 import com.example.presentation.components.StatsDashboardDialog
 import com.example.presentation.components.ZonesView
@@ -206,6 +207,10 @@ fun MainInventoryScreen(
     val isStatsDialogOpen by viewModel.isStatsDialogOpen.collectAsState()
     val isLoansSheetOpen by viewModel.isLoansSheetOpen.collectAsState()
     val isBackupDialogOpen by viewModel.isBackupDialogOpen.collectAsState()
+    val backupProgressState by viewModel.backupProgressState.collectAsState()
+    val boxViewMode by viewModel.boxViewMode.collectAsState()
+    val gridColumns by viewModel.gridColumns.collectAsState()
+    val storageUsageMb by viewModel.storageUsageMb.collectAsState()
 
     val deleteTarget by viewModel.deleteTarget.collectAsState()
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
@@ -362,7 +367,7 @@ fun MainInventoryScreen(
                                         isFiltering -> "Búsqueda"
                                         currentBottomTab == AppBottomTab.ZONAS -> "Administrar Zonas"
                                         currentBottomTab == AppBottomTab.PRESTAMOS -> "Gestión de Préstamos"
-                                        currentBottomTab == AppBottomTab.AJUSTES -> "Configuración"
+                                        currentBottomTab == AppBottomTab.AJUSTES -> "Ajustes"
                                         else -> currentBox?.name ?: "Inventario de Cajas"
                                     },
                                     style = MaterialTheme.typography.titleMedium,
@@ -962,9 +967,20 @@ fun MainInventoryScreen(
                 // TAB 3: AJUSTES
                 // =============================================================
                 AppBottomTab.AJUSTES -> {
-                    SettingsView(
+                    SettingsScreen(
+                        totalBoxesCount = totalBoxesCount,
+                        totalItemsCount = totalItemsCount,
+                        totalItemUnitsCount = totalItemUnitsCount ?: 0,
+                        storageUsageMb = storageUsageMb,
+                        onRefreshStorageStats = { viewModel.refreshStorageStats() },
+                        boxViewMode = boxViewMode,
+                        gridColumns = gridColumns,
+                        onViewModeChange = { viewModel.setBoxViewMode(it) },
+                        onGridColumnsChange = { viewModel.setGridColumns(it) },
                         onOpenBackup = { viewModel.openBackupDialog() },
-                        onOpenStats = { viewModel.openStatsDialog() }
+                        onExportCsvToFile = { uri -> viewModel.exportCsvToUri(uri, context) },
+                        onExportPdfToFile = { uri -> viewModel.exportPdfToUri(uri, context) },
+                        onImportJsonFromFile = { uri -> viewModel.importJsonFromUri(uri, context) }
                     )
                 }
 
@@ -2134,9 +2150,11 @@ fun MainInventoryScreen(
 
     if (isBackupDialogOpen) {
         BackupDialog(
-            onExportJson = { viewModel.getExportJsonString() },
-            onExportCsv = { viewModel.getExportCsvString() },
-            onImportJson = { json -> viewModel.importBackup(json) },
+            progressState = backupProgressState,
+            onExportJsonToFile = { uri -> viewModel.exportJsonToUri(uri, context) },
+            onExportCsvToFile = { uri -> viewModel.exportCsvToUri(uri, context) },
+            onImportJsonFromFile = { uri -> viewModel.importJsonFromUri(uri, context) },
+            onResetProgress = { viewModel.resetBackupProgress() },
             onDismiss = { viewModel.dismissBackupDialog() }
         )
     }

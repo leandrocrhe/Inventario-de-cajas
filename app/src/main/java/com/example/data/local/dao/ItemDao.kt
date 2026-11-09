@@ -5,8 +5,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.example.data.local.entity.ItemEntity
+import com.example.data.local.relation.ItemWithBox
 import kotlinx.coroutines.flow.Flow
 
 data class CategoryCount(
@@ -28,6 +30,18 @@ interface ItemDao {
 
     @Query("SELECT * FROM items")
     suspend fun getAllItemsSync(): List<ItemEntity>
+
+    // --- Relational Queries ---
+
+    @Transaction
+    @Query("SELECT * FROM items WHERE id = :itemId LIMIT 1")
+    fun getItemWithBox(itemId: String): Flow<ItemWithBox?>
+
+    @Transaction
+    @Query("SELECT * FROM items ORDER BY name ASC")
+    fun getAllItemsWithBox(): Flow<List<ItemWithBox>>
+
+    // --- Searches & Filters ---
 
     @Query("""
         SELECT * FROM items 
@@ -51,6 +65,8 @@ interface ItemDao {
 
     @Query("SELECT COUNT(*) FROM items WHERE is_loaned = 1")
     fun getTotalLoanedCount(): Flow<Int>
+
+    // --- Mutators ---
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItem(item: ItemEntity)

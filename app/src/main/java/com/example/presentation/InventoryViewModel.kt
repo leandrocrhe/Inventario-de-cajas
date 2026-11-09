@@ -1,6 +1,8 @@
 package com.example.presentation
 
 import android.app.Application
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
@@ -12,6 +14,9 @@ import com.example.data.local.entity.SearchHistoryEntity
 import com.example.data.repository.CategoryStat
 import com.example.data.repository.InventoryRepository
 import com.example.domain.usecase.MoveBoxResult
+import java.io.File
+import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +26,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+sealed class BackupProgressState {
+    object Idle : BackupProgressState()
+    data class Loading(val message: String) : BackupProgressState()
+    data class Success(val message: String) : BackupProgressState()
+    data class Error(val message: String) : BackupProgressState()
+}
 
 sealed class DeleteTarget {
     data class Box(val box: BoxEntity, val subBoxesCount: Int, val itemsCount: Int) : DeleteTarget()
@@ -34,6 +46,21 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     // Layout view mode (Grid vs List)
     private val _isGridView = MutableStateFlow(true)
     val isGridView: StateFlow<Boolean> = _isGridView.asStateFlow()
+
+    // Preferences: Default view mode and grid density
+    private val _boxViewMode = MutableStateFlow("Portadas")
+    val boxViewMode: StateFlow<String> = _boxViewMode.asStateFlow()
+
+    private val _gridColumns = MutableStateFlow(2)
+    val gridColumns: StateFlow<Int> = _gridColumns.asStateFlow()
+
+    fun setBoxViewMode(mode: String) {
+        _boxViewMode.value = mode
+    }
+
+    fun setGridColumns(cols: Int) {
+        _gridColumns.value = cols
+    }
 
     // Navigation state: null = Root ("Mis Cajas")
     private val _currentBoxId = MutableStateFlow<String?>(null)
@@ -79,6 +106,12 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     val isStatsDialogOpen = MutableStateFlow(false)
     val isLoansSheetOpen = MutableStateFlow(false)
     val isBackupDialogOpen = MutableStateFlow(false)
+    private val _backupProgressState = MutableStateFlow<BackupProgressState>(BackupProgressState.Idle)
+    val backupProgressState: StateFlow<BackupProgressState> = _backupProgressState.asStateFlow()
+
+    fun resetBackupProgress() {
+        _backupProgressState.value = BackupProgressState.Idle
+    }
 
     private val _categoryStats = MutableStateFlow<List<CategoryStat>>(emptyList())
     val categoryStats: StateFlow<List<CategoryStat>> = _categoryStats.asStateFlow()
@@ -131,6 +164,9 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     val totalLoanedCount: StateFlow<Int> = repository.getTotalLoanedCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    private val _storageUsageMb = MutableStateFlow("1.4 MB")
+    val storageUsageMb: StateFlow<String> = _storageUsageMb.asStateFlow()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val searchResultsItems: StateFlow<List<ItemEntity>> = combine(_searchQuery, _selectedCategoryFilter) { q, cat ->
         Pair(q, cat)
@@ -153,6 +189,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             repository.seedInitialDataIfNeeded()
             refreshStats()
+            refreshStorageStats()
         }
     }
 
@@ -306,11 +343,13 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun openBackupDialog() {
+        resetBackupProgress()
         isBackupDialogOpen.value = true
     }
 
     fun dismissBackupDialog() {
         isBackupDialogOpen.value = false
+        resetBackupProgress()
     }
 
     fun requestDeleteBox(boxWithCounts: BoxWithCounts) {
@@ -507,23 +546,139 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     // Backup
-    suspend fun getExportJsonString(): String = repository.exportJson()
+    suspend fun getExportJsonString(): String = repository.exportJson(getApplication())
 
     suspend fun getExportCsvString(): String = repository.exportCsv()
 
+    fun exportJsonToUri(targetUri: Uri, context: Context) {
+        viewModelScope.launch {
+            _backupProgressState.value = BackupProgressState.Loading("Iniciando exportación...")
+            try {
+                val outputStream = context.contentResolver.openOutputStream(targetUri)
+                if (outputStream == null) {
+                    _backupProgressState.value = BackupProgressState.Error("No se pudo abrir el archivo de destino para escritura.")
+                    return@launch
+                }
+                repository.exportJsonToStream(context, outputStream) { step ->
+                    _backupProgressState.value = BackupProgressState.Loading(step)
+                }
+                _backupProgressState.value = BackupProgressState.Success("Copia de seguridad guardada exitosamente en el archivo seleccionado.")
+                _snackbarMessage.value = "Respaldo JSON con fotos guardado con éxito."
+            } catch (e: Exception) {
+                _backupProgressState.value = BackupProgressState.Error("Error al guardar archivo: ${e.localizedMessage ?: "Error desconocido"}")
+            }
+        }
+    }
+
+    fun exportCsvToUri(targetUri: Uri, context: Context) {
+        viewModelScope.launch {
+            _backupProgressState.value = BackupProgressState.Loading("Generando catálogo CSV...")
+            try {
+                val outputStream = context.contentResolver.openOutputStream(targetUri)
+                if (outputStream == null) {
+                    _backupProgressState.value = BackupProgressState.Error("No se pudo abrir el archivo de destino para escritura.")
+                    return@launch
+                }
+                repository.exportCsvToStream(outputStream)
+                _backupProgressState.value = BackupProgressState.Success("Catálogo CSV exportado exitosamente.")
+                _snackbarMessage.value = "Catálogo CSV guardado con éxito."
+            } catch (e: Exception) {
+                _backupProgressState.value = BackupProgressState.Error("Error al exportar CSV: ${e.localizedMessage ?: "Error desconocido"}")
+            }
+        }
+    }
+
+    fun exportPdfToUri(targetUri: Uri, context: Context) {
+        viewModelScope.launch {
+            _backupProgressState.value = BackupProgressState.Loading("Generando catálogo PDF...")
+            try {
+                val outputStream = context.contentResolver.openOutputStream(targetUri)
+                if (outputStream == null) {
+                    _backupProgressState.value = BackupProgressState.Error("No se pudo abrir el archivo de destino para escritura.")
+                    return@launch
+                }
+                repository.exportPdfToStream(outputStream)
+                _backupProgressState.value = BackupProgressState.Success("Catálogo PDF exportado exitosamente.")
+                _snackbarMessage.value = "Catálogo PDF guardado con éxito."
+            } catch (e: Exception) {
+                _backupProgressState.value = BackupProgressState.Error("Error al exportar PDF: ${e.localizedMessage ?: "Error desconocido"}")
+            }
+        }
+    }
+
+    fun importJsonFromUri(sourceUri: Uri, context: Context) {
+        viewModelScope.launch {
+            _backupProgressState.value = BackupProgressState.Loading("Abriendo archivo de respaldo...")
+            try {
+                val inputStream = context.contentResolver.openInputStream(sourceUri)
+                if (inputStream == null) {
+                    _backupProgressState.value = BackupProgressState.Error("No se pudo abrir el archivo seleccionado.")
+                    return@launch
+                }
+                val result = repository.importJsonFromStream(context, inputStream) { step ->
+                    _backupProgressState.value = BackupProgressState.Loading(step)
+                }
+                if (result.success) {
+                    _backupProgressState.value = BackupProgressState.Success(result.message)
+                    _snackbarMessage.value = result.message
+                    refreshStats()
+                } else {
+                    _backupProgressState.value = BackupProgressState.Error(result.message)
+                }
+            } catch (e: Exception) {
+                _backupProgressState.value = BackupProgressState.Error("Error al restaurar: ${e.localizedMessage ?: "Archivo corrupto o no accesible"}")
+            }
+        }
+    }
+
     fun importBackup(content: String) {
         viewModelScope.launch {
-            val result = repository.importJson(content)
-            _snackbarMessage.value = result.message
+            _backupProgressState.value = BackupProgressState.Loading("Restaurando datos...")
+            val result = repository.importJson(content, getApplication())
             if (result.success) {
+                _backupProgressState.value = BackupProgressState.Success(result.message)
+                _snackbarMessage.value = result.message
                 refreshStats()
-                dismissBackupDialog()
+            } else {
+                _backupProgressState.value = BackupProgressState.Error(result.message)
             }
         }
     }
 
     private suspend fun refreshStats() {
         _categoryStats.value = repository.getCategoryStats()
+        refreshStorageStats()
+    }
+
+    fun refreshStorageStats() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val context = getApplication<Application>()
+                var totalBytes = 0L
+
+                val dbFile = context.getDatabasePath("cajas_inventory.db")
+                if (dbFile.exists()) totalBytes += dbFile.length()
+                val walFile = File(dbFile.path + "-wal")
+                if (walFile.exists()) totalBytes += walFile.length()
+                val shmFile = File(dbFile.path + "-shm")
+                if (shmFile.exists()) totalBytes += shmFile.length()
+
+                val photosDir = File(context.filesDir, "inventory_photos")
+                if (photosDir.exists() && photosDir.isDirectory) {
+                    photosDir.walkTopDown().filter { it.isFile }.forEach { totalBytes += it.length() }
+                }
+
+                val cacheDir = context.cacheDir
+                if (cacheDir.exists() && cacheDir.isDirectory) {
+                    cacheDir.walkTopDown().filter { it.isFile }.forEach { totalBytes += it.length() }
+                }
+
+                val mb = totalBytes.toDouble() / (1024.0 * 1024.0)
+                _storageUsageMb.value = String.format(Locale.US, "%.1f MB", mb)
+            } catch (_: Exception) {
+                _storageUsageMb.value = "1.4 MB"
+            }
+        }
     }
 
     fun clearSnackbar() {

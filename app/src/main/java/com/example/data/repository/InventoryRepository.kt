@@ -1,7 +1,10 @@
 package com.example.data.repository
 
+import android.content.Context
 import com.example.data.backup.BackupManager
 import com.example.data.backup.ImportResult
+import java.io.InputStream
+import java.io.OutputStream
 import com.example.data.local.AppDatabase
 import com.example.data.local.dao.BoxWithCounts
 import com.example.data.local.entity.BoxEntity
@@ -9,6 +12,10 @@ import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
 import com.example.data.local.entity.SearchHistoryEntity
 import com.example.data.local.entity.ZoneEntity
+import com.example.data.local.relation.BoxHierarchy
+import com.example.data.local.relation.BoxWithChildren
+import com.example.data.local.relation.BoxWithItems
+import com.example.data.local.relation.ItemWithBox
 import com.example.domain.usecase.MoveBoxResult
 import com.example.domain.usecase.MoveBoxUseCase
 import kotlinx.coroutines.Dispatchers
@@ -32,12 +39,25 @@ class InventoryRepository(private val database: AppDatabase) {
     private val searchHistoryDao = database.searchHistoryDao()
     private val moveBoxUseCase = MoveBoxUseCase(boxDao)
     private val backupManager = BackupManager(database)
+    private val pdfExportHelper = com.example.data.backup.PdfExportHelper(database)
 
     // Flow queries
     fun getRootBoxesWithCounts(): Flow<List<BoxWithCounts>> = boxDao.getRootBoxesWithCounts()
 
     fun getChildBoxesWithCounts(parentId: String): Flow<List<BoxWithCounts>> =
         boxDao.getChildBoxesWithCounts(parentId)
+
+    fun getBoxHierarchy(boxId: String): Flow<BoxHierarchy?> = boxDao.getBoxHierarchy(boxId)
+
+    fun getBoxWithItems(boxId: String): Flow<BoxWithItems?> = boxDao.getBoxWithItems(boxId)
+
+    fun getBoxWithChildren(boxId: String): Flow<BoxWithChildren?> = boxDao.getBoxWithChildren(boxId)
+
+    fun getRootBoxesHierarchy(): Flow<List<BoxHierarchy>> = boxDao.getRootBoxesHierarchy()
+
+    fun getItemWithBox(itemId: String): Flow<ItemWithBox?> = itemDao.getItemWithBox(itemId)
+
+    fun getAllItemsWithBox(): Flow<List<ItemWithBox>> = itemDao.getAllItemsWithBox()
 
     fun getBoxFlowById(id: String): Flow<BoxEntity?> = boxDao.getBoxFlowById(id)
 
@@ -262,11 +282,34 @@ class InventoryRepository(private val database: AppDatabase) {
     }
 
     // Backup & Export
-    suspend fun exportJson(): String = backupManager.exportJson()
+    suspend fun exportJson(context: Context? = null, onProgress: ((String) -> Unit)? = null): String =
+        backupManager.exportJson(context, onProgress)
+
+    suspend fun exportJsonToStream(
+        context: Context,
+        outputStream: OutputStream,
+        onProgress: ((String) -> Unit)? = null
+    ) = backupManager.exportJsonToStream(context, outputStream, onProgress)
 
     suspend fun exportCsv(): String = backupManager.exportCsv()
 
-    suspend fun importJson(content: String): ImportResult = backupManager.importJson(content)
+    suspend fun exportCsvToStream(outputStream: OutputStream) =
+        backupManager.exportCsvToStream(outputStream)
+
+    suspend fun exportPdfToStream(outputStream: OutputStream) =
+        pdfExportHelper.generatePdf(outputStream)
+
+    suspend fun importJson(
+        content: String,
+        context: Context? = null,
+        onProgress: ((String) -> Unit)? = null
+    ): ImportResult = backupManager.importJson(content, context, onProgress)
+
+    suspend fun importJsonFromStream(
+        context: Context,
+        inputStream: InputStream,
+        onProgress: ((String) -> Unit)? = null
+    ): ImportResult = backupManager.importJsonFromStream(context, inputStream, onProgress)
 
     // Initial seeding
     suspend fun seedInitialDataIfNeeded() = withContext(Dispatchers.IO) {

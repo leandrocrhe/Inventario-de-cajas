@@ -3,6 +3,9 @@ package com.example
 import com.example.data.local.dao.BoxDao
 import com.example.data.local.dao.BoxWithCounts
 import com.example.data.local.entity.BoxEntity
+import com.example.data.local.relation.BoxHierarchy
+import com.example.data.local.relation.BoxWithChildren
+import com.example.data.local.relation.BoxWithItems
 import com.example.domain.usecase.MoveBoxResult
 import com.example.domain.usecase.MoveBoxUseCase
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +21,34 @@ class ExampleUnitTest {
     private class FakeBoxDao(private val boxes: MutableList<BoxEntity>) : BoxDao {
         override fun getRootBoxesWithCounts(): Flow<List<BoxWithCounts>> = flowOf(emptyList())
         override fun getChildBoxesWithCounts(parentId: String): Flow<List<BoxWithCounts>> = flowOf(emptyList())
+        override fun getBoxHierarchy(boxId: String): Flow<BoxHierarchy?> = flowOf(
+            boxes.find { it.id == boxId }?.let { b ->
+                BoxHierarchy(
+                    box = b,
+                    childBoxes = boxes.filter { it.parentBoxId == boxId },
+                    items = emptyList()
+                )
+            }
+        )
+        override fun getBoxWithItems(boxId: String): Flow<BoxWithItems?> = flowOf(
+            boxes.find { it.id == boxId }?.let { b ->
+                BoxWithItems(box = b, items = emptyList())
+            }
+        )
+        override fun getBoxWithChildren(boxId: String): Flow<BoxWithChildren?> = flowOf(
+            boxes.find { it.id == boxId }?.let { b ->
+                BoxWithChildren(box = b, childBoxes = boxes.filter { it.parentBoxId == boxId })
+            }
+        )
+        override fun getRootBoxesHierarchy(): Flow<List<BoxHierarchy>> = flowOf(
+            boxes.filter { it.parentBoxId == null }.map { b ->
+                BoxHierarchy(
+                    box = b,
+                    childBoxes = boxes.filter { it.parentBoxId == b.id },
+                    items = emptyList()
+                )
+            }
+        )
         override suspend fun getBoxById(id: String): BoxEntity? = boxes.find { it.id == id }
         override fun getBoxFlowById(id: String): Flow<BoxEntity?> = flowOf(boxes.find { it.id == id })
         override fun getAllBoxes(): Flow<List<BoxEntity>> = flowOf(boxes)

@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.data.local.converter.Converters
 import com.example.data.local.dao.BoxDao
 import com.example.data.local.dao.CategoryDao
 import com.example.data.local.dao.ItemDao
@@ -26,6 +28,7 @@ import com.example.data.local.entity.ZoneEntity
     version = 5,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun boxDao(): BoxDao

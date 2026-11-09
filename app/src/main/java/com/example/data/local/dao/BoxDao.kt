@@ -6,8 +6,12 @@ import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.example.data.local.entity.BoxEntity
+import com.example.data.local.relation.BoxHierarchy
+import com.example.data.local.relation.BoxWithChildren
+import com.example.data.local.relation.BoxWithItems
 import kotlinx.coroutines.flow.Flow
 
 data class BoxWithCounts(
@@ -50,6 +54,26 @@ interface BoxDao {
 
     @Query("SELECT * FROM boxes")
     suspend fun getAllBoxesSync(): List<BoxEntity>
+
+    // --- Hierarchical Relations Queries ---
+
+    @Transaction
+    @Query("SELECT * FROM boxes WHERE id = :boxId LIMIT 1")
+    fun getBoxHierarchy(boxId: String): Flow<BoxHierarchy?>
+
+    @Transaction
+    @Query("SELECT * FROM boxes WHERE id = :boxId LIMIT 1")
+    fun getBoxWithItems(boxId: String): Flow<BoxWithItems?>
+
+    @Transaction
+    @Query("SELECT * FROM boxes WHERE id = :boxId LIMIT 1")
+    fun getBoxWithChildren(boxId: String): Flow<BoxWithChildren?>
+
+    @Transaction
+    @Query("SELECT * FROM boxes WHERE parent_box_id IS NULL ORDER BY sort_order ASC, name ASC")
+    fun getRootBoxesHierarchy(): Flow<List<BoxHierarchy>>
+
+    // --- Mutators ---
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBox(box: BoxEntity)
