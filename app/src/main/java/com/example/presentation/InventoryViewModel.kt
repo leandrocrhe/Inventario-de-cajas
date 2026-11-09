@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -151,6 +152,13 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
 
     val loanedItems: StateFlow<List<ItemEntity>> = repository.getLoanedItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val boxItemPhotos: StateFlow<Map<String, List<String>>> = repository.getAllItemsWithPhotos()
+        .map { items ->
+            items.filter { !it.primaryPhotoUri.isNullOrBlank() }
+                .groupBy({ it.boxId }, { it.primaryPhotoUri!! })
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     val totalBoxesCount: StateFlow<Int> = repository.getTotalBoxesCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)

@@ -95,7 +95,8 @@ fun BoxGridCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
     categoryName: String? = null,
-    categoryColorHex: String? = null
+    categoryColorHex: String? = null,
+    itemPhotos: List<String> = emptyList()
 ) {
     val box = boxWithCounts.box
     val tagColor = remember(box.colorHex) { parseColorSafe(box.colorHex) }
@@ -287,49 +288,65 @@ fun BoxGridCard(
                     }
                 }
 
-                // Bottom-Right Mini Objects Preview Capsule
-                if (boxWithCounts.itemsCount > 0) {
+                // Bottom-Right Mini Objects Preview Capsule (Real Coil Photos from Room)
+                val validItemPhotos = remember(itemPhotos) {
+                    itemPhotos.filter { it.isNotBlank() }
+                }
+
+                if (validItemPhotos.isNotEmpty()) {
+                    val displayedPhotos = remember(validItemPhotos) {
+                        validItemPhotos.take(3)
+                    }
+                    val remainingCount = remember(validItemPhotos) {
+                        if (validItemPhotos.size > 3) validItemPhotos.size - 3 else 0
+                    }
+
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Color.Black.copy(alpha = 0.8f),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
+                        color = Color(0xFF14110E).copy(alpha = 0.85f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2C2622)),
+                        shadowElevation = 2.dp,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(8.dp)
+                            .testTag("box_miniatures_${box.id}")
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                            modifier = Modifier.padding(3.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            horizontalArrangement = Arrangement.spacedBy((-6).dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(Color(0xFF241B14)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckBox,
-                                    contentDescription = null,
-                                    tint = tagColor,
-                                    modifier = Modifier.size(11.dp)
-                                )
-                            }
-                            if (boxWithCounts.itemsCount > 1) {
+                            displayedPhotos.forEachIndexed { index, photoUri ->
                                 Box(
                                     modifier = Modifier
-                                        .size(18.dp)
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(Color(0xFF241B14)),
+                                        .size(22.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color.Black)
+                                        .border(1.dp, Color.Black, RoundedCornerShape(6.dp))
+                                ) {
+                                    AsyncImage(
+                                        model = photoUri.toUri(),
+                                        contentDescription = "Miniatura objeto ${index + 1}",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            }
+                            if (remainingCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color(0xFF241B14))
+                                        .border(1.dp, Color.Black, RoundedCornerShape(6.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "+${boxWithCounts.itemsCount - 1}",
+                                        text = "+$remainingCount",
                                         style = MaterialTheme.typography.labelSmall,
-                                        fontSize = 9.sp,
+                                        fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = Color(0xFFFFB77C)
                                     )
                                 }
                             }
@@ -470,7 +487,8 @@ fun BoxCard(
     onMove: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    itemPhotos: List<String> = emptyList()
 ) {
     val box = boxWithCounts.box
     val tagColor = remember(box.colorHex) { parseColorSafe(box.colorHex) }

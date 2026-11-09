@@ -69,6 +69,10 @@ class InventoryRepository(private val database: AppDatabase) {
 
     fun getItemsInBox(boxId: String): Flow<List<ItemEntity>> = itemDao.getItemsInBox(boxId)
 
+    fun getAllItemsWithPhotos(): Flow<List<ItemEntity>> = itemDao.getAllItemsWithPhotos()
+
+    fun getItemPhotosInBox(boxId: String): Flow<List<String>> = itemDao.getItemPhotosInBox(boxId)
+
     fun getAllCategories(): Flow<List<CategoryEntity>> = categoryDao.getAllCategories()
 
     fun getLoanedItems(): Flow<List<ItemEntity>> = itemDao.getLoanedItems()
@@ -348,14 +352,16 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Maletín de llaves, tornillería y taladro",
             parentBoxId = "box_trastero",
             colorHex = "#EF4444",
+            primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuCAew30R10pnSi74P-3gS6FwxtvW-QjepoKz-jmgBPY7DEP6iLOcG22hxX-a7ucTOuIJRk8UcE3AlZn5inE-aj_ZNiwctuFLmLHLZ-Ww0Lb_ftR7vjeOR3nOu9rGWaAhD5KP3vsvVpsFAxjlKl4rW74diWttEVxo644O_BGFDMSIoaThon86W0Nt2NGary8tJDNlD-6vLsjqYp725yQ1MZpgVeW5SWHPVjIMPIzrU_y",
             zone = "Taller"
         )
         val boxCables = BoxEntity(
             id = "box_cables",
-            name = "Cables & Conexiones",
+            name = "Periféricos & Audio",
             description = "HDMI, USB-C, adaptadores y regletas",
             parentBoxId = "box_trastero",
             colorHex = "#3B82F6",
+            primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuBUj9geDQBhgmf756qfUrtwUrHfkAMA0Y4KzQpon1nLUhaR-0ZzXAthPQjmJif3yaLxfa7jhI6-ImK1pLEh4ipmJc358uK3Pg_4J6eO9Ts_zdp-lmqu6yM_k0-x6tqHsXahTQ59wE2op6s0YNFVpKjlpzuXEaOFxC0qdUt11OCFCPeiAETg2FixYBL2i_AsR61Zo1nw_JwKiNCVZW37Fj7ScbegI-pTw9NuWZxH_e3r",
             zone = "Taller"
         )
         val boxArmario = BoxEntity(
@@ -392,6 +398,7 @@ class InventoryRepository(private val database: AppDatabase) {
                 description = "Puntas Torx, Phillips y planas en estuche negro",
                 boxId = "box_herramientas",
                 categoryId = "cat_herr",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuDwk-ILGGFWq3RT5sQFnxGlTmu3h3-Jc4RrZ5EHsKkbtSxfHr8sQvkSTtikkvmMKrHUXRFIbWrWM5Tb2Ip6Eb99QMfSZlTTyAJB_Wo6roNl7UPlDxPMqXXx6Sxm-uWtL73MCCouFWRCu2Dp6sRDSaHzYPzrGWU9ItCVU8LxU5tXeaDNcDOg36H_0jBBPiuVzamwVUYRe9_Wse0IaRDbfoUpccEJ8VvUPui2ZghaBlb_",
                 quantity = 1,
                 tags = "Bricolaje, Reparación"
             ),
@@ -401,6 +408,7 @@ class InventoryRepository(private val database: AppDatabase) {
                 description = "Con 2 baterías y cargador rápido",
                 boxId = "box_herramientas",
                 categoryId = "cat_herr",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuD7_R_cqUvDyQULOuhwA-_1iZ3Qg4CUoIJyo3a75MYSw3S9qE8mDCEcToxW7FrtJAFsR70CC_z4kKcLHosxvOrQSoNk5Xj_ZZoGI-XfS13C2RGCPkBsoEGfHgZLm6T8wxpB7ladlvEixFzqvzrwxx-bKHpBeYSsegtZ-T2oYVMNUu9QWXyjAUnEKU67Q3gyEJe9igzp8hShkpkHJiAp1rA5E_m-L-HZVLFJGHDvnFpF",
                 quantity = 1,
                 tags = "Eléctrico, Taller",
                 isLoaned = true,
@@ -410,12 +418,93 @@ class InventoryRepository(private val database: AppDatabase) {
             ),
             ItemEntity(
                 id = UUID.randomUUID().toString(),
+                name = "Juego de llaves fijas",
+                description = "Medidas métricas 6-22 mm",
+                boxId = "box_herramientas",
+                categoryId = "cat_herr",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuBagPPcK6hdlm9dcF3-HJVYgmmT6FSTL8cDb0XLafqQSb0Qo0B_pvGJv0KKk22x6OcWP0AGVw7bIYHduSm2B9iA0gPGXqX0W3hWEkGWaMJck8o9GorUAxkrtn_7ZxoQEX5daNJmauHnnhBz1X0u_6gizq7SFUtU3VHzBG3Fz_J9X-SsIDTLBHQw8nXhzoaaVrn2hR8SvZ1g__3xbyI207CnP9Oy8SyKRobiRzuxJxFX",
+                quantity = 1,
+                tags = "Herramientas"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Metro láser digital",
+                description = "Alcance 50m con Bluetooth",
+                boxId = "box_herramientas",
+                categoryId = "cat_herr",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuAL7Mcvd2YzqEMtQnhQ3HdekW2O6fW_gVf-k-bjcFRTbAlXkr4SIiNiw0MWO3_5pRPYGO9BcG7mf4hPqN0tHFzsxELgR9K3vvn7NNigj1VACZUKgwRiqwylcAamoMTDkk7WSx98C4wtvm0ZSGnJ2bWpKrGNoabbRozOU6g6SyNcEJeiW0nSYQyxSPwh_3nW28H-xTpB-y963XWPwy4FUJwoc0GlQXy_W_dP4eaVlhI0",
+                quantity = 1,
+                tags = "Medición"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Soldador estaño 60W",
+                description = "Temperatura regulable con soporte",
+                boxId = "box_herramientas",
+                categoryId = "cat_herr",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuA4Cc6nV-Wjrrg-O9Zq-G0J-Vkfz2Y2yn2dVC3pKE9kSeUHx9NPsbGsGIgxStAKxj0iRLW7vBLQX9_kVSEYeVsSbh1kQ5vwsSM53XH_DeBn6BAEaT6gVRyHkT7jgUzDMRFFWENtj5urshpaMVH_JYGGCiBuVJTi8nXuQo1rt4_MDQ61Gkn1UEv7XFiZR8aZ9mGMSVEBH3g0yxnNO3tem01ffTNhSyrG3fSWLSca3WWE",
+                quantity = 1,
+                tags = "Electrónica"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
                 name = "Cable HDMI 2.1 4K 120Hz (2 metros)",
                 description = "Trenzado de nylon ultra resistente",
                 boxId = "box_cables",
                 categoryId = "cat_cables",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuC5c_eotg_L7-SgM5x8QHAoGRvckDezg3GNUL-IdDcSzxT5T1GJDje_bzcQBzhKQs6VS8DYor4R1A-KzUy2V5ckrEJkj8GuqOeYD5ETAIzejOOVPSDbikFD9SDoYBhziHdHskHpO0xm0sagCbaeUUW2-ip1pxDesTui6-mvhYNyovqcw7xOdzlC7OdT2o3FW3C86r2c7s2xQGaoMpznpUwhR1tXIlCIotT4b6MANPmF",
                 quantity = 3,
                 tags = "Monitor, TV, Video"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Switches Mecánicos y Teclado",
+                description = "Switches lubricados y keycaps PBT",
+                boxId = "box_cables",
+                categoryId = "cat_elec",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuAnHsmtGkAHoP61NzA5uVby1Y5fKg2Dbs1ZdgQw2LsX_TU5xh1s9JNrgAjMWrJKnMeGDGceyT25TGOw4XzM7t9bIA4cwKT9WgOUtQfiajY9JipJ5jHcd_TivSZ_Lp1XK79cOHCycp0Xp_tiPYqMY0ullnetyP547Y2h9qjPRNN1rcXLLNCpsv8MG5qY-jsOXWVXwFy3JpFRetvPM4IVy1q6nz6XuBNu3bUzqGf5a6PX",
+                quantity = 1,
+                tags = "Teclado, PC"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Pinceles & Rotuladores Caligrafía",
+                description = "Pelo sintético de precisión",
+                boxId = "box_cables",
+                categoryId = "cat_elec",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuCR34FFaXdllXOspcft5Lsc1Y_AACpTlvLROB9FHKJxt9UqG7w_Axy7XKp3HQUCMoJpbcDQYHRZjRzrZ6rPi-4PltN2FQVpsz0yOTw0lLIWcHR6AC3doY0rnvYyr4LLpY0CcFnSb286KpDFC8_faHUTPfPuiqgWwHhCSo62yNDluxyYEQMPBsO_CPdkQjyLz4ArenYuevyOWA_eI7Gd2l1aJVeN2YqRF0-3tFK8Ne2z",
+                quantity = 4,
+                tags = "Arte"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Paleta Mezclas Cerámica",
+                description = "Superficie blanca esmaltada",
+                boxId = "box_cables",
+                categoryId = "cat_elec",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuCcu-_HZ6sZHG6IKCBiKXNo2JZNNR0XjicyoF4SoEXLvIke9G_OI5OYV2FmrVmvAgZ2UEwJsJ7GsYkGc0viayBqjZA308XW2y3QWJTIPSoJFzI95SVsCAE7URWI4MWRBN3u-Q22P1WwCkXjX8VITnlLs8DTtvhREoJMg46PMa5NQZbGrrya3y4y8DWB1IoMr1FteX3Djy6JKrzDHBf7VD4aTMKp3nbhTbaVp6a0HbM9",
+                quantity = 1,
+                tags = "Arte"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Cuadernos Acuarela Grano Fino",
+                description = "Papel 300g 100% algodón",
+                boxId = "box_cables",
+                categoryId = "cat_elec",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuBvNIZTdt6d1k4sFVLbeJwB4TxDvZkY3Rl4NHQADwU0ScvcB-U_EcDalFrtijg3DmQFXf7qhTVqMFZsrSbVAjse4zuCUu9CWPF-QqVa4itniDDKIHmuNvamF9m-Kv_dUNIhdFeoVPx8SfTXezDIJVAQWMHI0YaRoUnVmpukF2YKeCpAhxydjqb-5xS7_BLjNEZ2CilmdnLG8Kha5jr_4pJo6EsAcaYnqc78j8FGcRfb",
+                quantity = 2,
+                tags = "Arte"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Organizador Cables Velcro",
+                description = "Bobina 5 metros reutilizable",
+                boxId = "box_cables",
+                categoryId = "cat_cables",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuDwk-ILGGFWq3RT5sQFnxGlTmu3h3-Jc4RrZ5EHsKkbtSxfHr8sQvkSTtikkvmMKrHUXRFIbWrWM5Tb2Ip6Eb99QMfSZlTTyAJB_Wo6roNl7UPlDxPMqXXx6Sxm-uWtL73MCCouFWRCu2Dp6sRDSaHzYPzrGWU9ItCVU8LxU5tXeaDNcDOg36H_0jBBPiuVzamwVUYRe9_Wse0IaRDbfoUpccEJ8VvUPui2ZghaBlb_",
+                quantity = 1,
+                tags = "Organización"
             ),
             ItemEntity(
                 id = UUID.randomUUID().toString(),
@@ -423,6 +512,7 @@ class InventoryRepository(private val database: AppDatabase) {
                 description = "Aluminio gris espacial",
                 boxId = "box_cables",
                 categoryId = "cat_elec",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuCxwIWmOX9ha0pNj9uGYeX2-Tl8Ai02PTQFpikmNWaEmRWmiWEOqdxaKKB9Y5I_aApeQLHL3pjpITug21aDRPCP3UDpoffUg4G0NeVYV8vY00u9_918gTjibDzVa5Ocve7X5ixuOA56Tl4beMy47bk11k-dhIoSGv1W_4q-NE5JK-iSwSW9bqRVPqOJj3qMzz62ZSlKYC42g6ReIF8Lr-0KTBs_QvKx_OSiwXNe5m78",
                 quantity = 2,
                 tags = "Red, Portátil"
             ),
@@ -432,8 +522,19 @@ class InventoryRepository(private val database: AppDatabase) {
                 description = "Sobre ignífugo etiquetado 'Casa'",
                 boxId = "box_archivo",
                 categoryId = "cat_docs",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuBUj9geDQBhgmf756qfUrtwUrHfkAMA0Y4KzQpon1nLUhaR-0ZzXAthPQjmJif3yaLxfa7jhI6-ImK1pLEh4ipmJc358uK3Pg_4J6eO9Ts_zdp-lmqu6yM_k0-x6tqHsXahTQ59wE2op6s0YNFVpKjlpzuXEaOFxC0qdUt11OCFCPeiAETg2FixYBL2i_AsR61Zo1nw_JwKiNCVZW37Fj7ScbegI-pTw9NuWZxH_e3r",
                 quantity = 1,
                 tags = "Importante, Legal"
+            ),
+            ItemEntity(
+                id = UUID.randomUUID().toString(),
+                name = "Certificados de garantía electrodomésticos",
+                description = "Carpeta azul de anillas",
+                boxId = "box_archivo",
+                categoryId = "cat_docs",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuCAew30R10pnSi74P-3gS6FwxtvW-QjepoKz-jmgBPY7DEP6iLOcG22hxX-a7ucTOuIJRk8UcE3AlZn5inE-aj_ZNiwctuFLmLHLZ-Ww0Lb_ftR7vjeOR3nOu9rGWaAhD5KP3vsvVpsFAxjlKl4rW74diWttEVxo644O_BGFDMSIoaThon86W0Nt2NGary8tJDNlD-6vLsjqYp725yQ1MZpgVeW5SWHPVjIMPIzrU_y",
+                quantity = 1,
+                tags = "Garantías, Hogar"
             ),
             ItemEntity(
                 id = UUID.randomUUID().toString(),
@@ -441,6 +542,7 @@ class InventoryRepository(private val database: AppDatabase) {
                 description = "Talla L, impermeable con capucha",
                 boxId = "box_ropa",
                 categoryId = "cat_ropa",
+                primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuCR34FFaXdllXOspcft5Lsc1Y_AACpTlvLROB9FHKJxt9UqG7w_Axy7XKp3HQUCMoJpbcDQYHRZjRzrZ6rPi-4PltN2FQVpsz0yOTw0lLIWcHR6AC3doY0rnvYyr4LLpY0CcFnSb286KpDFC8_faHUTPfPuiqgWwHhCSo62yNDluxyYEQMPBsO_CPdkQjyLz4ArenYuevyOWA_eI7Gd2l1aJVeN2YqRF0-3tFK8Ne2z",
                 quantity = 1,
                 tags = "Montaña, Nieve"
             ),

@@ -180,6 +180,7 @@ fun MainInventoryScreen(
     val allBoxes by viewModel.allBoxes.collectAsState()
     val categories by viewModel.allCategories.collectAsState()
     val allZones by viewModel.allZones.collectAsState()
+    val boxItemPhotos by viewModel.boxItemPhotos.collectAsState()
 
     val isSearchActive by viewModel.isSearchActive.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -1163,6 +1164,7 @@ fun MainInventoryScreen(
                                     items(displayedBoxes, key = { it.id }) { box ->
                                         BoxGridCard(
                                             boxWithCounts = BoxWithCounts(box, 0, 0),
+                                            itemPhotos = boxItemPhotos[box.id] ?: emptyList(),
                                             onClick = {
                                                 if (searchQuery.isNotBlank()) viewModel.recordSearchQuery(searchQuery)
                                                 viewModel.setSearchQuery("")
@@ -1644,6 +1646,7 @@ fun MainInventoryScreen(
                                                             Box(modifier = Modifier.weight(1f)) {
                                                                 BoxGridCard(
                                                                     boxWithCounts = bwc,
+                                                                    itemPhotos = boxItemPhotos[bwc.box.id] ?: emptyList(),
                                                                     onClick = { viewModel.openBox(bwc.box.id) },
                                                                     onMove = { viewModel.openMoveBoxDialog(bwc.box) },
                                                                     onEdit = { viewModel.openEditBoxDialog(bwc.box) },
@@ -1939,6 +1942,7 @@ fun MainInventoryScreen(
                                                 Box(modifier = Modifier.weight(1f)) {
                                                     BoxGridCard(
                                                         boxWithCounts = bwc,
+                                                        itemPhotos = boxItemPhotos[bwc.box.id] ?: emptyList(),
                                                         onClick = { viewModel.openBox(bwc.box.id) },
                                                         onMove = { viewModel.openMoveBoxDialog(bwc.box) },
                                                         onEdit = { viewModel.openEditBoxDialog(bwc.box) },

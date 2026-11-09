@@ -41,6 +41,12 @@ interface ItemDao {
     @Query("SELECT * FROM items ORDER BY name ASC")
     fun getAllItemsWithBox(): Flow<List<ItemWithBox>>
 
+    @Query("SELECT * FROM items WHERE primary_photo_uri IS NOT NULL AND primary_photo_uri != ''")
+    fun getAllItemsWithPhotos(): Flow<List<ItemEntity>>
+
+    @Query("SELECT primary_photo_uri FROM items WHERE box_id = :boxId AND primary_photo_uri IS NOT NULL AND primary_photo_uri != ''")
+    fun getItemPhotosInBox(boxId: String): Flow<List<String>>
+
     // --- Searches & Filters ---
 
     @Query("""
