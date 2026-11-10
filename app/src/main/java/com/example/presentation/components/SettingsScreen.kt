@@ -78,6 +78,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.example.data.local.entity.BoxEntity
+import com.example.data.repository.CategoryStat
 
 /**
  * SettingsScreen adhering strictly to the Google Stitch AI AMOLED Dark Design (#000000 / #14110E).
@@ -98,6 +100,8 @@ fun SettingsScreen(
     onExportCsvToFile: ((Uri) -> Unit)? = null,
     onExportPdfToFile: ((Uri) -> Unit)? = null,
     onImportJsonFromFile: ((Uri) -> Unit)? = null,
+    categoryStats: List<CategoryStat> = emptyList(),
+    allBoxes: List<BoxEntity> = emptyList(),
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -523,6 +527,17 @@ fun SettingsScreen(
                 }
             }
         }
+
+        // =====================================================================
+        // SECTION: DESGLOSE DE ALMACENAMIENTO (GRÁFICO CIRCULAR / PIE CHART)
+        // =====================================================================
+        StoragePieChartCard(
+            categoryStats = categoryStats,
+            allBoxes = allBoxes,
+            totalItemsCount = totalItemsCount,
+            totalBoxesCount = totalBoxesCount,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         // =====================================================================
         // SECTION 2: APARIENCIA Y VISUALIZACIÓN

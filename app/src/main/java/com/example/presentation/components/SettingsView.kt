@@ -22,6 +22,8 @@ fun SettingsView(
     onExportCsvToFile: ((Uri) -> Unit)? = null,
     onExportPdfToFile: ((Uri) -> Unit)? = null,
     onImportJsonFromFile: ((Uri) -> Unit)? = null,
+    categoryStats: List<com.example.data.repository.CategoryStat> = emptyList(),
+    allBoxes: List<com.example.data.local.entity.BoxEntity> = emptyList(),
     modifier: Modifier = Modifier
 ) {
     SettingsScreen(
@@ -37,6 +39,8 @@ fun SettingsView(
         onExportCsvToFile = onExportCsvToFile,
         onExportPdfToFile = onExportPdfToFile,
         onImportJsonFromFile = onImportJsonFromFile,
+        categoryStats = categoryStats,
+        allBoxes = allBoxes,
         modifier = modifier
     )
 }

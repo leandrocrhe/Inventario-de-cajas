@@ -982,7 +982,9 @@ fun MainInventoryScreen(
                         onOpenBackup = { viewModel.openBackupDialog() },
                         onExportCsvToFile = { uri -> viewModel.exportCsvToUri(uri, context) },
                         onExportPdfToFile = { uri -> viewModel.exportPdfToUri(uri, context) },
-                        onImportJsonFromFile = { uri -> viewModel.importJsonFromUri(uri, context) }
+                        onImportJsonFromFile = { uri -> viewModel.importJsonFromUri(uri, context) },
+                        categoryStats = categoryStats,
+                        allBoxes = allBoxes
                     )
                 }
 
