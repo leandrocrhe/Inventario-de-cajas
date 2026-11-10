@@ -66,13 +66,14 @@ import java.util.Locale
 @Composable
 fun BackupDialog(
     progressState: BackupProgressState = BackupProgressState.Idle,
+    initialTab: Int = 0,
     onExportJsonToFile: (Uri) -> Unit,
     onExportCsvToFile: (Uri) -> Unit,
     onImportJsonFromFile: (Uri) -> Unit,
     onResetProgress: () -> Unit = {},
     onDismiss: () -> Unit
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) } // 0: Exportar a Archivo, 1: Restaurar de Archivo
+    var selectedTab by remember(initialTab) { mutableIntStateOf(initialTab) } // 0: Exportar a Archivo, 1: Restaurar de Archivo
     val timestamp = remember {
         SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
     }
@@ -436,7 +437,7 @@ fun BackupDialog(
                     // Import Tab
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            text = "Restaura tu inventario seleccionando un archivo físico de respaldo (.json) guardado previamente en tu dispositivo:",
+                            text = "Restaura tu inventario seleccionando un archivo físico de respaldo (.json, .csv o .zip) guardado previamente en tu dispositivo:",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -463,7 +464,7 @@ fun BackupDialog(
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Text(
-                                            text = "Storage Access Framework",
+                                            text = "Soporta JSON completo, Catálogo CSV y ZIP con fotos",
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -473,7 +474,7 @@ fun BackupDialog(
                                 Spacer(modifier = Modifier.height(10.dp))
 
                                 Text(
-                                    text = "El proceso validará la integridad del JSON, verificará la ausencia de referencias circulares, restaurará las entidades en Room de forma transaccional y extraerá todas las fotos al almacenamiento interno privado de la aplicación.",
+                                    text = "Detecta automáticamente el formato: para JSON/ZIP restaura la base de datos íntegra con fotos; para CSV interpreta la jerarquía de 'Ruta_Caja' (separada por >) creando o asociando las cajas y vinculando categorías y objetos de forma transaccional.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -483,7 +484,9 @@ fun BackupDialog(
                                 Button(
                                     onClick = {
                                         onResetProgress()
-                                        openDocumentLauncher.launch(arrayOf("application/json", "text/*", "*/*"))
+                                        openDocumentLauncher.launch(
+                                            arrayOf("application/json", "text/csv", "text/comma-separated-values", "application/zip", "application/x-zip-compressed", "text/*", "*/*")
+                                        )
                                     },
                                     enabled = !isProcessing,
                                     shape = RoundedCornerShape(12.dp),
@@ -494,11 +497,11 @@ fun BackupDialog(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .testTag("select_import_file_button")
-                                ) {
-                                    Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(20.dp))
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Seleccionar Archivo de Respaldo (.json)", fontWeight = FontWeight.Bold)
-                                }
+                                 ) {
+                                     Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(20.dp))
+                                     Spacer(modifier = Modifier.width(8.dp))
+                                     Text("Seleccionar Archivo de Respaldo (.json / .csv / .zip)", fontWeight = FontWeight.Bold)
+                                 }
                             }
                         }
 

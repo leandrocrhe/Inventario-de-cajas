@@ -698,7 +698,9 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .clickable {
                                 if (onImportJsonFromFile != null) {
-                                    openDocumentLauncher.launch(arrayOf("application/json", "*/*"))
+                                    openDocumentLauncher.launch(
+                                        arrayOf("application/json", "text/csv", "text/comma-separated-values", "application/zip", "application/x-zip-compressed", "text/*", "*/*")
+                                    )
                                 } else {
                                     onOpenBackup()
                                 }
@@ -736,7 +738,7 @@ fun SettingsScreen(
                                     color = Color(0xFFFFFFFF)
                                 )
                                 Text(
-                                    text = "Cargar archivo externo o zip de respaldo",
+                                    text = "Cargar archivo externo (.json, .csv o .zip)",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color(0xFFA89F95)
                                 )

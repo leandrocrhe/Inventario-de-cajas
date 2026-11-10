@@ -208,6 +208,7 @@ fun MainInventoryScreen(
     val isStatsDialogOpen by viewModel.isStatsDialogOpen.collectAsState()
     val isLoansSheetOpen by viewModel.isLoansSheetOpen.collectAsState()
     val isBackupDialogOpen by viewModel.isBackupDialogOpen.collectAsState()
+    val backupDialogInitialTab by viewModel.backupDialogInitialTab.collectAsState()
     val backupProgressState by viewModel.backupProgressState.collectAsState()
     val boxViewMode by viewModel.boxViewMode.collectAsState()
     val gridColumns by viewModel.gridColumns.collectAsState()
@@ -2155,6 +2156,7 @@ fun MainInventoryScreen(
     if (isBackupDialogOpen) {
         BackupDialog(
             progressState = backupProgressState,
+            initialTab = backupDialogInitialTab,
             onExportJsonToFile = { uri -> viewModel.exportJsonToUri(uri, context) },
             onExportCsvToFile = { uri -> viewModel.exportCsvToUri(uri, context) },
             onImportJsonFromFile = { uri -> viewModel.importJsonFromUri(uri, context) },

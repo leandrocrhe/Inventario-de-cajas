@@ -90,6 +90,9 @@ interface BoxDao {
     @Query("DELETE FROM boxes WHERE id = :boxId")
     suspend fun deleteBoxById(boxId: String)
 
+    @Query("DELETE FROM boxes")
+    suspend fun deleteAllBoxes()
+
     @Query("SELECT COUNT(*) FROM boxes")
     fun getTotalBoxesCount(): Flow<Int>
 

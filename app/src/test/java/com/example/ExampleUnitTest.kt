@@ -61,6 +61,7 @@ class ExampleUnitTest {
         }
         override suspend fun deleteBox(box: BoxEntity) { boxes.removeIf { it.id == box.id } }
         override suspend fun deleteBoxById(boxId: String) { boxes.removeIf { it.id == boxId } }
+        override suspend fun deleteAllBoxes() { boxes.clear() }
         override fun getTotalBoxesCount(): Flow<Int> = flowOf(boxes.size)
         override fun searchBoxes(query: String): Flow<List<BoxEntity>> = flowOf(boxes)
         override fun getAllZones(): Flow<List<String>> = flowOf(boxes.mapNotNull { it.zone }.distinct())

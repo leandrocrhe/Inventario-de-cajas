@@ -29,4 +29,7 @@ interface ZoneDao {
 
     @Query("UPDATE zones SET name = :newName WHERE name = :oldName")
     suspend fun renameZone(oldName: String, newName: String)
+
+    @Query("DELETE FROM zones")
+    suspend fun deleteAllZones()
 }

@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -22,6 +23,8 @@ import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
+import java.util.zip.ZipInputStream
 
 data class ImportResult(
     val success: Boolean,
@@ -222,6 +225,7 @@ class BackupManager(private val database: AppDatabase) {
 
     /**
      * Imports inventory from an InputStream (Storage Access Framework).
+     * Automatically detects plain JSON (.json) or compressed backups (.zip) containing JSON and photos.
      */
     suspend fun importJsonFromStream(
         context: Context,
@@ -230,12 +234,482 @@ class BackupManager(private val database: AppDatabase) {
     ): ImportResult = withContext(Dispatchers.IO) {
         try {
             onProgress?.invoke("Leyendo archivo de respaldo...")
-            val content = inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-            importJson(content, context, onProgress)
+            val buffered = BufferedInputStream(inputStream)
+            buffered.mark(1024)
+            val header = ByteArray(4)
+            val bytesRead = buffered.read(header)
+            buffered.reset()
+
+            val isZip = bytesRead >= 4 &&
+                    header[0] == 0x50.toByte() &&
+                    header[1] == 0x4B.toByte() &&
+                    header[2] == 0x03.toByte() &&
+                    header[3] == 0x04.toByte()
+
+            if (isZip) {
+                onProgress?.invoke("Descomprimiendo archivo de respaldo ZIP...")
+                var jsonContent: String? = null
+                val extractedPhotosMap = mutableMapOf<String, String>()
+                val photosDir = File(context.filesDir, "inventory_photos").apply { mkdirs() }
+
+                val zipStream = ZipInputStream(buffered)
+                var entry = zipStream.nextEntry
+                while (entry != null) {
+                    val entryName = entry.name.replace("\\", "/")
+                    if (!entry.isDirectory) {
+                        if (entryName.endsWith(".json", ignoreCase = true) && jsonContent == null) {
+                            jsonContent = zipStream.bufferedReader(Charsets.UTF_8).readText()
+                        } else if (entryName.endsWith(".jpg", ignoreCase = true) ||
+                            entryName.endsWith(".jpeg", ignoreCase = true) ||
+                            entryName.endsWith(".png", ignoreCase = true) ||
+                            entryName.endsWith(".webp", ignoreCase = true)
+                        ) {
+                            val cleanName = File(entryName).name
+                            val targetFile = File(photosDir, "restored_${System.currentTimeMillis()}_$cleanName")
+                            targetFile.outputStream().use { out ->
+                                zipStream.copyTo(out)
+                            }
+                            val restoredUri = Uri.fromFile(targetFile).toString()
+                            extractedPhotosMap[entryName] = restoredUri
+                            extractedPhotosMap[cleanName] = restoredUri
+                        }
+                    }
+                    zipStream.closeEntry()
+                    entry = zipStream.nextEntry
+                }
+
+                if (jsonContent.isNullOrBlank()) {
+                    return@withContext ImportResult(
+                        success = false,
+                        message = "El archivo ZIP no contiene ningún archivo de catálogo .json válido."
+                    )
+                }
+
+                importJson(jsonContent, context, onProgress, extractedPhotosMap)
+            } else {
+                val rawText = buffered.bufferedReader(Charsets.UTF_8).use { it.readText() }
+                val cleanText = rawText.trim().removePrefix("\uFEFF").trim()
+                if (cleanText.isBlank()) {
+                    return@withContext ImportResult(
+                        success = false,
+                        message = "El archivo seleccionado está vacío."
+                    )
+                }
+
+                val isJson = cleanText.startsWith("{") || cleanText.startsWith("[")
+                val isCsv = !isJson && (
+                    cleanText.lines().firstOrNull()?.let { line ->
+                        line.contains(",") || line.contains(";") ||
+                        line.contains("Nombre", ignoreCase = true) ||
+                        line.contains("Ruta_Caja", ignoreCase = true) ||
+                        line.contains("ID", ignoreCase = true)
+                    } == true
+                )
+
+                if (isCsv) {
+                    importCsv(cleanText, onProgress)
+                } else if (isJson) {
+                    importJson(cleanText, context, onProgress)
+                } else {
+                    // Try parsing as CSV first; if not recognized, attempt JSON
+                    val csvResult = importCsv(cleanText, onProgress)
+                    if (csvResult.success) {
+                        csvResult
+                    } else {
+                        importJson(cleanText, context, onProgress)
+                    }
+                }
+            }
         } catch (e: Exception) {
             ImportResult(
                 success = false,
                 message = "Error de lectura de archivo: ${e.localizedMessage ?: "No se pudo leer el archivo"}"
+            )
+        }
+    }
+
+    /**
+     * Parses RFC-4180 compliant CSV text into a matrix of rows and columns,
+     * supporting escaped quotes and comma or semicolon delimiters.
+     */
+    private fun parseCsvRows(csvText: String): List<List<String>> {
+        val rows = mutableListOf<List<String>>()
+        val currentField = StringBuilder()
+        val currentRow = mutableListOf<String>()
+        var inQuotes = false
+        var i = 0
+        val len = csvText.length
+
+        // Detect delimiter based on first line
+        var delimiter = ','
+        val firstLineEnd = csvText.indexOf('\n').let { if (it == -1) len else it }
+        val firstLine = csvText.substring(0, firstLineEnd)
+        if (firstLine.count { it == ';' } > firstLine.count { it == ',' }) {
+            delimiter = ';'
+        }
+
+        while (i < len) {
+            val c = csvText[i]
+            if (inQuotes) {
+                if (c == '"') {
+                    if (i + 1 < len && csvText[i + 1] == '"') {
+                        currentField.append('"')
+                        i++ // Skip escaped quote
+                    } else {
+                        inQuotes = false
+                    }
+                } else {
+                    currentField.append(c)
+                }
+            } else {
+                when (c) {
+                    '"' -> {
+                        inQuotes = true
+                    }
+                    delimiter -> {
+                        currentRow.add(currentField.toString().trim())
+                        currentField.clear()
+                    }
+                    '\r' -> {
+                        // Ignore carriage return
+                    }
+                    '\n' -> {
+                        currentRow.add(currentField.toString().trim())
+                        currentField.clear()
+                        if (currentRow.any { it.isNotBlank() }) {
+                            rows.add(currentRow.toList())
+                        }
+                        currentRow.clear()
+                    }
+                    else -> {
+                        currentField.append(c)
+                    }
+                }
+            }
+            i++
+        }
+        if (currentField.isNotEmpty() || currentRow.isNotEmpty()) {
+            currentRow.add(currentField.toString().trim())
+            if (currentRow.any { it.isNotBlank() }) {
+                rows.add(currentRow.toList())
+            }
+        }
+        return rows
+    }
+
+    /**
+     * Imports flat CSV catalog into Room transactionally, resolving and creating
+     * hierarchical boxes from "Ruta_Caja" (> separator) and associating categories.
+     */
+    suspend fun importCsv(
+        csvContent: String,
+        onProgress: ((String) -> Unit)? = null
+    ): ImportResult = withContext(Dispatchers.IO) {
+        try {
+            onProgress?.invoke("Analizando estructura de archivo CSV...")
+            val cleanCsv = csvContent.trim().removePrefix("\uFEFF").trim()
+            if (cleanCsv.isBlank()) {
+                return@withContext ImportResult(
+                    success = false,
+                    message = "El archivo CSV está vacío."
+                )
+            }
+
+            val allRows = parseCsvRows(cleanCsv)
+            if (allRows.isEmpty()) {
+                return@withContext ImportResult(
+                    success = false,
+                    message = "No se encontraron filas con datos en el archivo CSV."
+                )
+            }
+
+            // Determine if the first row is a header
+            val firstRow = allRows[0]
+            val isHeader = firstRow.any { col ->
+                val lower = col.lowercase().trim()
+                lower == "nombre" || lower == "name" || lower == "id" ||
+                lower == "ruta_caja" || lower == "cantidad" || lower == "categoria" ||
+                lower == "tags" || lower == "etiquetas"
+            }
+
+            // Default column positions
+            var colId = 0
+            var colName = 1
+            var colQuantity = 2
+            var colCategory = 3
+            var colBoxPath = 4
+            var colTags = 5
+            var colLoaned = 6
+            var colLoanedTo = 7
+            var colLoanedDate = 8
+            var colDescription = 9
+            var colNotes = 10
+
+            val dataRows = if (isHeader) {
+                firstRow.forEachIndexed { index, headerName ->
+                    val h = headerName.lowercase().trim().replace(" ", "_")
+                        .replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
+                    when {
+                        h == "id" || h == "codigo" -> colId = index
+                        h == "nombre" || h == "name" || h == "objeto" || h == "item" || h == "articulo" -> colName = index
+                        h == "cantidad" || h == "quantity" || h == "qty" || h == "unidades" -> colQuantity = index
+                        h == "categoria" || h == "category" || h == "cat" -> colCategory = index
+                        h.contains("ruta") || h.contains("caja") || h.contains("box") || h.contains("path") -> colBoxPath = index
+                        h == "etiquetas" || h == "tags" -> colTags = index
+                        h == "prestado" || h == "loaned" || h == "is_loaned" -> colLoaned = index
+                        h.contains("prestado_a") || h.contains("destinatario") || h.contains("loaned_to") -> colLoanedTo = index
+                        h.contains("fecha") || h.contains("date") -> colLoanedDate = index
+                        h.contains("descripcion") || h.contains("description") || h == "desc" -> colDescription = index
+                        h.contains("nota") || h.contains("observaciones") -> colNotes = index
+                    }
+                }
+                allRows.drop(1)
+            } else {
+                allRows
+            }
+
+            if (dataRows.isEmpty()) {
+                return@withContext ImportResult(
+                    success = false,
+                    message = "El archivo CSV solo contenía encabezados y ninguna fila de datos."
+                )
+            }
+
+            onProgress?.invoke("Cargando inventario actual para vincular cajas y categorías...")
+            val existingBoxes = boxDao.getAllBoxesSync().toMutableList()
+            val existingCategories = categoryDao.getAllCategoriesSync().toMutableList()
+            val existingZones = zoneDao.getAllZonesSync().toMutableList()
+
+            val newBoxesToInsert = mutableListOf<BoxEntity>()
+            val newCategoriesToInsert = mutableListOf<CategoryEntity>()
+            val newZonesToInsert = mutableListOf<ZoneEntity>()
+            val itemsToInsert = mutableListOf<ItemEntity>()
+
+            // Lookup maps
+            val boxLookup = mutableMapOf<Pair<String, String?>, BoxEntity>()
+            existingBoxes.forEach { box ->
+                boxLookup[Pair(box.name.lowercase().trim(), box.parentBoxId)] = box
+            }
+
+            val categoryLookup = mutableMapOf<String, CategoryEntity>()
+            existingCategories.forEach { cat ->
+                categoryLookup[cat.name.lowercase().trim()] = cat
+            }
+
+            val zoneLookup = mutableSetOf<String>()
+            existingZones.forEach { zone ->
+                zoneLookup.add(zone.name.lowercase().trim())
+            }
+
+            // Helper to get or create boxes along hierarchical path (separated by >)
+            fun resolveBoxForPath(pathStr: String): String {
+                val cleanPath = pathStr.trim()
+                val rawSegments = if (cleanPath.contains(">")) {
+                    cleanPath.split(Regex("\\s*>\\s*"))
+                } else if (cleanPath.contains("/")) {
+                    cleanPath.split(Regex("\\s*/\\s*"))
+                } else {
+                    listOf(cleanPath)
+                }.map { it.trim() }.filter { it.isNotBlank() }
+
+                val segments = if (rawSegments.isEmpty() ||
+                    rawSegments.size == 1 && (rawSegments[0].equals("Sin caja", ignoreCase = true) ||
+                            rawSegments[0].equals("None", ignoreCase = true) ||
+                            rawSegments[0].equals("General", ignoreCase = true) ||
+                            rawSegments[0].isBlank())
+                ) {
+                    listOf("General")
+                } else {
+                    rawSegments
+                }
+
+                var currentParentId: String? = null
+                for (segment in segments) {
+                    val key = Pair(segment.lowercase(), currentParentId)
+                    var box = boxLookup[key]
+                    if (box == null) {
+                        val newId = UUID.randomUUID().toString()
+                        box = BoxEntity(
+                            id = newId,
+                            name = segment,
+                            description = "Caja creada automáticamente desde importación CSV",
+                            parentBoxId = currentParentId,
+                            colorHex = "#F59E0B",
+                            zone = if (currentParentId == null && segment != "General") segment else null,
+                            createdAt = System.currentTimeMillis()
+                        )
+                        boxLookup[key] = box
+                        newBoxesToInsert.add(box)
+                        existingBoxes.add(box)
+
+                        box.zone?.let { z ->
+                            val zKey = z.lowercase()
+                            if (!zoneLookup.contains(zKey)) {
+                                zoneLookup.add(zKey)
+                                newZonesToInsert.add(ZoneEntity(name = z, colorHex = "#F59E0B"))
+                            }
+                        }
+                    }
+                    currentParentId = box.id
+                }
+
+                return currentParentId ?: run {
+                    val defaultBox = existingBoxes.firstOrNull() ?: run {
+                        val genBox = BoxEntity(id = UUID.randomUUID().toString(), name = "General")
+                        newBoxesToInsert.add(genBox)
+                        existingBoxes.add(genBox)
+                        genBox
+                    }
+                    defaultBox.id
+                }
+            }
+
+            // Helper to get or create category
+            fun resolveCategory(catNameRaw: String): String? {
+                val trimmed = catNameRaw.trim()
+                if (trimmed.isBlank() || trimmed.equals("Sin categoría", ignoreCase = true) || trimmed.equals("Ninguna", ignoreCase = true)) {
+                    return null
+                }
+                val key = trimmed.lowercase()
+                var cat = categoryLookup[key]
+                if (cat == null) {
+                    cat = CategoryEntity(
+                        id = UUID.randomUUID().toString(),
+                        name = trimmed,
+                        iconName = "category",
+                        colorHex = "#64748B"
+                    )
+                    categoryLookup[key] = cat
+                    newCategoriesToInsert.add(cat)
+                    existingCategories.add(cat)
+                }
+                return cat.id
+            }
+
+            val dateFormats = listOf(
+                SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()),
+                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()),
+                SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()),
+                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            )
+
+            fun parseLoanDate(rawDate: String): Long? {
+                val d = rawDate.trim()
+                if (d.isBlank()) return null
+                d.toLongOrNull()?.let { return it }
+                for (format in dateFormats) {
+                    try {
+                        return format.parse(d)?.time
+                    } catch (_: Exception) {}
+                }
+                return null
+            }
+
+            onProgress?.invoke("Procesando ${dataRows.size} filas del catálogo CSV...")
+            for (row in dataRows) {
+                val rawName = row.getOrNull(colName)?.trim()
+                if (rawName.isNullOrBlank()) continue
+
+                val rawId = row.getOrNull(colId)?.trim()
+                val itemId = if (!rawId.isNullOrBlank()) rawId else UUID.randomUUID().toString()
+
+                val qtyStr = row.getOrNull(colQuantity)?.trim() ?: "1"
+                val quantity = qtyStr.toIntOrNull()?.coerceAtLeast(1) ?: 1
+
+                val catName = row.getOrNull(colCategory) ?: ""
+                val categoryId = resolveCategory(catName)
+
+                val boxPath = row.getOrNull(colBoxPath) ?: ""
+                val targetBoxId = resolveBoxForPath(boxPath)
+
+                val tags = row.getOrNull(colTags)?.trim() ?: ""
+
+                val loanedStr = row.getOrNull(colLoaned)?.trim() ?: ""
+                val isLoaned = loanedStr.equals("SI", ignoreCase = true) ||
+                        loanedStr.equals("SÍ", ignoreCase = true) ||
+                        loanedStr.equals("TRUE", ignoreCase = true) ||
+                        loanedStr == "1" ||
+                        loanedStr.equals("YES", ignoreCase = true)
+
+                val loanedTo = row.getOrNull(colLoanedTo)?.trim()?.takeIf { it.isNotBlank() }
+                val rawLoanDate = row.getOrNull(colLoanedDate) ?: ""
+                val loanedAt = if (isLoaned) parseLoanDate(rawLoanDate) ?: System.currentTimeMillis() else null
+
+                val description = row.getOrNull(colDescription)?.trim()?.takeIf { it.isNotBlank() }
+                val notes = row.getOrNull(colNotes)?.trim()?.takeIf { it.isNotBlank() }
+
+                itemsToInsert.add(
+                    ItemEntity(
+                        id = itemId,
+                        name = rawName,
+                        description = description,
+                        boxId = targetBoxId,
+                        categoryId = categoryId,
+                        primaryPhotoUri = null,
+                        quantity = quantity,
+                        tags = tags,
+                        isLoaned = isLoaned,
+                        loanedTo = loanedTo,
+                        loanedAt = loanedAt,
+                        notes = notes,
+                        createdAt = System.currentTimeMillis()
+                    )
+                )
+            }
+
+            if (itemsToInsert.isEmpty()) {
+                return@withContext ImportResult(
+                    success = false,
+                    message = "El archivo CSV no contiene objetos con nombres válidos para importar."
+                )
+            }
+
+            // Atomic Room Database Transaction
+            onProgress?.invoke("Guardando cambios masivos en la base de datos...")
+            database.withTransaction {
+                if (newCategoriesToInsert.isNotEmpty()) {
+                    categoryDao.insertCategories(newCategoriesToInsert)
+                }
+                if (newZonesToInsert.isNotEmpty()) {
+                    zoneDao.insertZones(newZonesToInsert)
+                }
+                if (newBoxesToInsert.isNotEmpty()) {
+                    // Sort topological if any parent-child in new boxes
+                    val sortedNewBoxes = mutableListOf<BoxEntity>()
+                    val insertedIds = mutableSetOf<String>()
+                    val pending = newBoxesToInsert.toMutableList()
+                    var prog = true
+                    while (pending.isNotEmpty() && prog) {
+                        prog = false
+                        val it = pending.iterator()
+                        while (it.hasNext()) {
+                            val b = it.next()
+                            val p = b.parentBoxId
+                            if (p == null || !newBoxesToInsert.any { it.id == p } || insertedIds.contains(p)) {
+                                sortedNewBoxes.add(b)
+                                insertedIds.add(b.id)
+                                it.remove()
+                                prog = true
+                            }
+                        }
+                    }
+                    sortedNewBoxes.addAll(pending)
+                    boxDao.insertBoxes(sortedNewBoxes)
+                }
+                itemDao.insertItems(itemsToInsert)
+            }
+
+            val totalBoxesInvolved = (newBoxesToInsert.map { it.id } + itemsToInsert.map { it.boxId }).distinct().size
+            ImportResult(
+                success = true,
+                message = "Catálogo CSV importado con éxito: ${itemsToInsert.size} objetos y $totalBoxesInvolved cajas procesadas (${dataRows.size} filas analizadas).",
+                boxesCount = totalBoxesInvolved,
+                itemsCount = itemsToInsert.size
+            )
+        } catch (e: Exception) {
+            ImportResult(
+                success = false,
+                message = "Error al procesar el archivo CSV: ${e.localizedMessage ?: "Formato de archivo o datos inválidos"}"
             )
         }
     }
@@ -247,35 +721,62 @@ class BackupManager(private val database: AppDatabase) {
     suspend fun importJson(
         jsonContent: String,
         context: Context? = null,
-        onProgress: ((String) -> Unit)? = null
+        onProgress: ((String) -> Unit)? = null,
+        extractedPhotosMap: Map<String, String> = emptyMap()
     ): ImportResult = withContext(Dispatchers.IO) {
         try {
             onProgress?.invoke("Validando estructura del archivo...")
-            val root = JSONObject(jsonContent)
-
-            // Validate header
-            val appIdentifier = root.optString("app", "")
-            if (!appIdentifier.contains("Inventario", ignoreCase = true) && !root.has("boxes")) {
+            val cleanJson = jsonContent.trim().removePrefix("\uFEFF").trim()
+            if (cleanJson.isBlank()) {
                 return@withContext ImportResult(
                     success = false,
-                    message = "El archivo seleccionado no es un respaldo compatible con Inventario de Cajas."
+                    message = "El contenido del archivo está vacío o no es legible."
                 )
             }
 
-            var photosRestoredCount = 0
+            val rootObj: JSONObject?
+            val rootArray: JSONArray?
+
+            if (cleanJson.startsWith("[")) {
+                rootObj = null
+                rootArray = try {
+                    JSONArray(cleanJson)
+                } catch (e: Exception) {
+                    return@withContext ImportResult(
+                        success = false,
+                        message = "Formato JSON inválido: ${e.localizedMessage ?: "Estructura no válida"}"
+                    )
+                }
+            } else {
+                rootArray = null
+                rootObj = try {
+                    JSONObject(cleanJson)
+                } catch (e: Exception) {
+                    return@withContext ImportResult(
+                        success = false,
+                        message = "Formato JSON inválido: ${e.localizedMessage ?: "Estructura no válida"}"
+                    )
+                }
+            }
+
+            var photosRestoredCount = extractedPhotosMap.size
 
             // 1. Categories
             val parsedCategories = mutableListOf<CategoryEntity>()
-            if (root.has("categories")) {
-                val catArray = root.getJSONArray("categories")
+            val catArray = rootObj?.optJSONArray("categories") ?: rootObj?.optJSONArray("categorias")
+            if (catArray != null) {
                 for (i in 0 until catArray.length()) {
-                    val obj = catArray.getJSONObject(i)
+                    val obj = catArray.optJSONObject(i) ?: continue
+                    val id = obj.optString("id").takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
+                    val name = obj.optString("name").takeIf { it.isNotBlank() } ?: obj.optString("nombre", "Categoría")
+                    val iconName = obj.optString("iconName").takeIf { it.isNotBlank() } ?: obj.optString("icono", "category")
+                    val colorHex = obj.optString("colorHex").takeIf { it.isNotBlank() } ?: obj.optString("color", "#64748B")
                     parsedCategories.add(
                         CategoryEntity(
-                            id = obj.getString("id"),
-                            name = obj.getString("name"),
-                            iconName = obj.optString("iconName", "category"),
-                            colorHex = obj.optString("colorHex", "#64748B")
+                            id = id,
+                            name = name,
+                            iconName = iconName,
+                            colorHex = colorHex
                         )
                     )
                 }
@@ -283,37 +784,35 @@ class BackupManager(private val database: AppDatabase) {
 
             // 2. Zones
             val parsedZones = mutableListOf<ZoneEntity>()
-            if (root.has("zones")) {
-                val zoneArray = root.getJSONArray("zones")
+            val zoneArray = rootObj?.optJSONArray("zones") ?: rootObj?.optJSONArray("zonas")
+            if (zoneArray != null) {
                 for (i in 0 until zoneArray.length()) {
-                    val obj = zoneArray.getJSONObject(i)
-                    val zoneName = obj.getString("name").trim()
-                    if (zoneName.isNotBlank()) {
-                        parsedZones.add(
-                            ZoneEntity(
-                                name = zoneName,
-                                colorHex = obj.optString("colorHex", "#F59E0B")
-                            )
-                        )
+                    val obj = zoneArray.optJSONObject(i) ?: continue
+                    val zoneName = (obj.optString("name").takeIf { it.isNotBlank() } ?: obj.optString("nombre", "")).trim()
+                    if (zoneName.isNotBlank() && parsedZones.none { it.name.equals(zoneName, ignoreCase = true) }) {
+                        val color = obj.optString("colorHex").takeIf { it.isNotBlank() } ?: obj.optString("color", "#F59E0B")
+                        parsedZones.add(ZoneEntity(name = zoneName, colorHex = color))
                     }
                 }
             }
 
-            // 3. Boxes
+            // 3. Boxes & Items
             val parsedBoxes = mutableListOf<BoxEntity>()
-            if (root.has("boxes")) {
-                val boxArray = root.getJSONArray("boxes")
-                for (i in 0 until boxArray.length()) {
-                    onProgress?.invoke("Restaurando cajas y fotos (${i + 1}/${boxArray.length()})...")
-                    val obj = boxArray.getJSONObject(i)
-                    val id = obj.getString("id")
-                    val parentId = if (obj.isNull("parentBoxId") || obj.optString("parentBoxId").isBlank()) {
-                        null
-                    } else {
-                        obj.getString("parentBoxId")
-                    }
+            val parsedItems = mutableListOf<ItemEntity>()
 
-                    // Extract image from Base64 if available
+            val boxArray = rootArray ?: (rootObj?.optJSONArray("boxes") ?: rootObj?.optJSONArray("cajas"))
+            if (boxArray != null) {
+                for (i in 0 until boxArray.length()) {
+                    onProgress?.invoke("Procesando cajas (${i + 1}/${boxArray.length()})...")
+                    val obj = boxArray.optJSONObject(i) ?: continue
+                    val id = obj.optString("id").takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
+                    val name = obj.optString("name").takeIf { it.isNotBlank() } ?: obj.optString("nombre", "Caja")
+                    val rawParentId = obj.optString("parentBoxId").takeIf { it.isNotBlank() }
+                        ?: obj.optString("parent_box_id").takeIf { it.isNotBlank() }
+                        ?: obj.optString("parentId").takeIf { it.isNotBlank() }
+                    val parentId = if (rawParentId.isNullOrBlank() || rawParentId == "null") null else rawParentId
+
+                    // Photo resolution
                     var restoredPhotoUri: String? = null
                     if (context != null && obj.has("photoBase64") && !obj.isNull("photoBase64")) {
                         val base64 = obj.getString("photoBase64")
@@ -324,31 +823,73 @@ class BackupManager(private val database: AppDatabase) {
                         }
                     }
 
-                    if (restoredPhotoUri == null && !obj.isNull("primaryPhotoUri")) {
+                    if (restoredPhotoUri == null) {
                         val rawUri = obj.optString("primaryPhotoUri").takeIf { it.isNotBlank() }
-                        // Check if file still exists locally or keep URI
-                        restoredPhotoUri = rawUri
+                            ?: obj.optString("photoUri").takeIf { it.isNotBlank() }
+                            ?: obj.optString("foto").takeIf { it.isNotBlank() }
+                        if (rawUri != null) {
+                            restoredPhotoUri = extractedPhotosMap[rawUri]
+                                ?: extractedPhotosMap[File(rawUri).name]
+                                ?: rawUri
+                        }
                     }
 
-                    val zoneVal = if (obj.isNull("zone")) null else obj.optString("zone").takeIf { it.isNotBlank() }
-                    if (zoneVal != null && parsedZones.none { it.name.equals(zoneVal, ignoreCase = true) }) {
-                        parsedZones.add(ZoneEntity(name = zoneVal, colorHex = obj.optString("colorHex", "#F59E0B")))
+                    val zoneVal = (obj.optString("zone").takeIf { it.isNotBlank() }
+                        ?: obj.optString("zona").takeIf { it.isNotBlank() })?.trim()
+
+                    if (zoneVal != null && zoneVal.isNotBlank() && parsedZones.none { it.name.equals(zoneVal, ignoreCase = true) }) {
+                        val boxColor = obj.optString("colorHex").takeIf { it.isNotBlank() } ?: obj.optString("color", "#F59E0B")
+                        parsedZones.add(ZoneEntity(name = zoneVal, colorHex = boxColor))
                     }
 
                     parsedBoxes.add(
                         BoxEntity(
                             id = id,
-                            name = obj.getString("name"),
-                            description = obj.optString("description").takeIf { it.isNotBlank() },
+                            name = name,
+                            description = (obj.optString("description").takeIf { it.isNotBlank() } ?: obj.optString("descripcion")).takeIf { it?.isNotBlank() == true },
                             parentBoxId = parentId,
-                            colorHex = obj.optString("colorHex", "#F59E0B"),
+                            colorHex = obj.optString("colorHex").takeIf { it.isNotBlank() } ?: obj.optString("color", "#F59E0B"),
                             primaryPhotoUri = restoredPhotoUri,
                             zone = zoneVal,
-                            sortOrder = obj.optInt("sortOrder", 0),
+                            sortOrder = obj.optInt("sortOrder", i),
                             createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                         )
                     )
+
+                    // Check for nested items inside this box
+                    val innerItems = obj.optJSONArray("items") ?: obj.optJSONArray("objetos") ?: obj.optJSONArray("articulos")
+                    if (innerItems != null) {
+                        for (j in 0 until innerItems.length()) {
+                            val itemObj = innerItems.optJSONObject(j) ?: continue
+                            parseSingleItem(itemObj, id, context, extractedPhotosMap, parsedItems) {
+                                photosRestoredCount++
+                            }
+                        }
+                    }
                 }
+            }
+
+            // Top-level Items
+            val itemArray = rootObj?.optJSONArray("items") ?: rootObj?.optJSONArray("objetos") ?: rootObj?.optJSONArray("articulos")
+            if (itemArray != null) {
+                for (i in 0 until itemArray.length()) {
+                    onProgress?.invoke("Procesando objetos (${i + 1}/${itemArray.length()})...")
+                    val obj = itemArray.optJSONObject(i) ?: continue
+                    val boxId = obj.optString("boxId").takeIf { it.isNotBlank() }
+                        ?: obj.optString("box_id").takeIf { it.isNotBlank() }
+                        ?: obj.optString("cajaId", "")
+                    parseSingleItem(obj, boxId, context, extractedPhotosMap, parsedItems) {
+                        photosRestoredCount++
+                    }
+                }
+            }
+
+            // Compatibility check
+            if (parsedBoxes.isEmpty() && parsedItems.isEmpty() && parsedCategories.isEmpty()) {
+                return@withContext ImportResult(
+                    success = false,
+                    message = "El archivo no contiene cajas ni objetos válidos para restaurar."
+                )
             }
 
             // 4. Cycle prevention verification in parsed boxes
@@ -368,78 +909,79 @@ class BackupManager(private val database: AppDatabase) {
                 }
             }
 
-            // 5. Items
-            val parsedItems = mutableListOf<ItemEntity>()
-            if (root.has("items")) {
-                val itemArray = root.getJSONArray("items")
-                for (i in 0 until itemArray.length()) {
-                    onProgress?.invoke("Restaurando objetos y fotos (${i + 1}/${itemArray.length()})...")
-                    val obj = itemArray.getJSONObject(i)
-                    val id = obj.getString("id")
-                    val catId = if (obj.isNull("categoryId") || obj.optString("categoryId").isBlank()) null else obj.getString("categoryId")
-                    val isLoaned = obj.optBoolean("isLoaned", false)
-                    val loanedTo = if (obj.isNull("loanedTo")) null else obj.optString("loanedTo").takeIf { it.isNotBlank() }
-                    val loanedAt = if (obj.isNull("loanedAt")) null else obj.optLong("loanedAt")
-                    val notes = if (obj.isNull("notes")) null else obj.optString("notes").takeIf { it.isNotBlank() }
+            // 5. Topological Sort for SQLite Foreign Key Integrity
+            // Root boxes (parentBoxId == null or not in backup) must be inserted before children
+            val sortedBoxes = mutableListOf<BoxEntity>()
+            val insertedBoxIds = mutableSetOf<String>()
+            val pendingBoxes = parsedBoxes.toMutableList()
 
-                    // Extract image from Base64 if available
-                    var restoredPhotoUri: String? = null
-                    if (context != null && obj.has("photoBase64") && !obj.isNull("photoBase64")) {
-                        val base64 = obj.getString("photoBase64")
-                        val savedUri = decodeBase64ToInternalFile(context, base64, "item", id)
-                        if (savedUri != null) {
-                            restoredPhotoUri = savedUri
-                            photosRestoredCount++
-                        }
+            var madeProgress = true
+            while (pendingBoxes.isNotEmpty() && madeProgress) {
+                madeProgress = false
+                val it = pendingBoxes.iterator()
+                while (it.hasNext()) {
+                    val b = it.next()
+                    val pId = b.parentBoxId
+                    if (pId == null || !boxMap.containsKey(pId) || insertedBoxIds.contains(pId)) {
+                        // If parent not in backup, convert to root box to avoid FK error
+                        val safeBox = if (pId != null && !boxMap.containsKey(pId)) b.copy(parentBoxId = null) else b
+                        sortedBoxes.add(safeBox)
+                        insertedBoxIds.add(safeBox.id)
+                        it.remove()
+                        madeProgress = true
                     }
-
-                    if (restoredPhotoUri == null && !obj.isNull("primaryPhotoUri")) {
-                        restoredPhotoUri = obj.optString("primaryPhotoUri").takeIf { it.isNotBlank() }
-                    }
-
-                    parsedItems.add(
-                        ItemEntity(
-                            id = id,
-                            name = obj.getString("name"),
-                            description = obj.optString("description").takeIf { it.isNotBlank() },
-                            boxId = obj.getString("boxId"),
-                            categoryId = catId,
-                            primaryPhotoUri = restoredPhotoUri,
-                            quantity = obj.optInt("quantity", 1).coerceAtLeast(1),
-                            tags = obj.optString("tags", ""),
-                            isLoaned = isLoaned,
-                            loanedTo = loanedTo,
-                            loanedAt = loanedAt,
-                            notes = notes,
-                            createdAt = obj.optLong("createdAt", System.currentTimeMillis())
-                        )
-                    )
                 }
             }
+            // Add any remaining boxes with parent cleared to ensure no crash
+            for (remaining in pendingBoxes) {
+                val safeBox = remaining.copy(parentBoxId = null)
+                sortedBoxes.add(safeBox)
+                insertedBoxIds.add(safeBox.id)
+            }
 
-            // 6. Transactional Room Database Restoration
+            // 6. Validate Items Foreign Keys
+            val categoryIds = parsedCategories.map { it.id }.toSet()
+            val validItems = parsedItems.map { item ->
+                var safeBoxId = item.boxId
+                if (!insertedBoxIds.contains(safeBoxId) && sortedBoxes.isNotEmpty()) {
+                    safeBoxId = sortedBoxes.first().id
+                }
+                var safeCatId = item.categoryId
+                if (safeCatId != null && !categoryIds.contains(safeCatId)) {
+                    safeCatId = null
+                }
+                item.copy(boxId = safeBoxId, categoryId = safeCatId)
+            }
+
+            // 7. Atomic Room Database Restoration in Transaction
             onProgress?.invoke("Guardando cambios en la base de datos...")
             database.withTransaction {
+                // Wipe previous data cleanly to avoid duplicate keys or orphaned rows
+                itemDao.deleteAllItems()
+                boxDao.deleteAllBoxes()
+                categoryDao.deleteAllCategories()
+                zoneDao.deleteAllZones()
+
                 if (parsedCategories.isNotEmpty()) {
                     categoryDao.insertCategories(parsedCategories)
                 }
                 if (parsedZones.isNotEmpty()) {
                     zoneDao.insertZones(parsedZones)
                 }
-                if (parsedBoxes.isNotEmpty()) {
-                    boxDao.insertBoxes(parsedBoxes)
+                if (sortedBoxes.isNotEmpty()) {
+                    boxDao.insertBoxes(sortedBoxes)
                 }
-                if (parsedItems.isNotEmpty()) {
-                    itemDao.insertItems(parsedItems)
+                if (validItems.isNotEmpty()) {
+                    itemDao.insertItems(validItems)
                 }
             }
 
-            val photoMsg = if (photosRestoredCount > 0) " con $photosRestoredCount fotos restauradas" else ""
+            val photoMsg = if (photosRestoredCount > 0) " y $photosRestoredCount fotos" else ""
             ImportResult(
                 success = true,
-                message = "Restauración exitosa: ${parsedBoxes.size} cajas y ${parsedItems.size} objetos recuperados$photoMsg.",
-                boxesCount = parsedBoxes.size,
-                itemsCount = parsedItems.size,
+                message = "Copia de seguridad restaurada con éxito: ${sortedBoxes.size} cajas y ${validItems.size} objetos actualizados$photoMsg.",
+                boxesCount = sortedBoxes.size,
+                itemsCount = validItems.size,
                 photosRestoredCount = photosRestoredCount
             )
         } catch (e: Exception) {
@@ -448,6 +990,68 @@ class BackupManager(private val database: AppDatabase) {
                 message = "Error al procesar el archivo: ${e.localizedMessage ?: "Estructura inválida o archivo corrupto"}"
             )
         }
+    }
+
+    private fun parseSingleItem(
+        obj: JSONObject,
+        boxId: String,
+        context: Context?,
+        extractedPhotosMap: Map<String, String>,
+        targetList: MutableList<ItemEntity>,
+        onPhotoRestored: () -> Unit
+    ) {
+        val id = obj.optString("id").takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
+        val name = obj.optString("name").takeIf { it.isNotBlank() } ?: obj.optString("nombre", "Objeto")
+        val desc = (obj.optString("description").takeIf { it.isNotBlank() } ?: obj.optString("descripcion")).takeIf { it?.isNotBlank() == true }
+        val catId = (obj.optString("categoryId").takeIf { it.isNotBlank() }
+            ?: obj.optString("category_id").takeIf { it.isNotBlank() }
+            ?: obj.optString("categoriaId")).takeIf { it?.isNotBlank() == true && it != "null" }
+
+        var restoredPhotoUri: String? = null
+        if (context != null && obj.has("photoBase64") && !obj.isNull("photoBase64")) {
+            val base64 = obj.getString("photoBase64")
+            val savedUri = decodeBase64ToInternalFile(context, base64, "item", id)
+            if (savedUri != null) {
+                restoredPhotoUri = savedUri
+                onPhotoRestored()
+            }
+        }
+
+        if (restoredPhotoUri == null) {
+            val rawUri = obj.optString("primaryPhotoUri").takeIf { it.isNotBlank() }
+                ?: obj.optString("photoUri").takeIf { it.isNotBlank() }
+                ?: obj.optString("foto").takeIf { it.isNotBlank() }
+            if (rawUri != null) {
+                restoredPhotoUri = extractedPhotosMap[rawUri]
+                    ?: extractedPhotosMap[File(rawUri).name]
+                    ?: rawUri
+            }
+        }
+
+        val quantity = obj.optInt("quantity", obj.optInt("cantidad", 1)).coerceAtLeast(1)
+        val tags = obj.optString("tags").takeIf { it.isNotBlank() } ?: obj.optString("etiquetas", "")
+        val isLoaned = obj.optBoolean("isLoaned", obj.optBoolean("prestado", false))
+        val loanedTo = (obj.optString("loanedTo").takeIf { it.isNotBlank() } ?: obj.optString("prestado_a")).takeIf { it?.isNotBlank() == true && it != "null" }
+        val loanedAt = if (obj.isNull("loanedAt") && obj.isNull("fecha_prestamo")) null else obj.optLong("loanedAt", obj.optLong("fecha_prestamo"))
+        val notes = (obj.optString("notes").takeIf { it.isNotBlank() } ?: obj.optString("notas")).takeIf { it?.isNotBlank() == true && it != "null" }
+
+        targetList.add(
+            ItemEntity(
+                id = id,
+                name = name,
+                description = desc,
+                boxId = boxId,
+                categoryId = catId,
+                primaryPhotoUri = restoredPhotoUri,
+                quantity = quantity,
+                tags = tags,
+                isLoaned = isLoaned,
+                loanedTo = loanedTo,
+                loanedAt = loanedAt,
+                notes = notes,
+                createdAt = obj.optLong("createdAt", System.currentTimeMillis())
+            )
+        )
     }
 
     /**

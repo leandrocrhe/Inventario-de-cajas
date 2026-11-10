@@ -18,6 +18,7 @@ import java.io.File
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -107,6 +108,8 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     val isStatsDialogOpen = MutableStateFlow(false)
     val isLoansSheetOpen = MutableStateFlow(false)
     val isBackupDialogOpen = MutableStateFlow(false)
+    private val _backupDialogInitialTab = MutableStateFlow(0)
+    val backupDialogInitialTab: StateFlow<Int> = _backupDialogInitialTab.asStateFlow()
     private val _backupProgressState = MutableStateFlow<BackupProgressState>(BackupProgressState.Idle)
     val backupProgressState: StateFlow<BackupProgressState> = _backupProgressState.asStateFlow()
 
@@ -350,8 +353,9 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
         isLoansSheetOpen.value = false
     }
 
-    fun openBackupDialog() {
+    fun openBackupDialog(initialTab: Int = 0) {
         resetBackupProgress()
+        _backupDialogInitialTab.value = initialTab
         isBackupDialogOpen.value = true
     }
 
@@ -616,39 +620,77 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun importJsonFromUri(sourceUri: Uri, context: Context) {
         viewModelScope.launch {
+            _backupDialogInitialTab.value = 1
+            isBackupDialogOpen.value = true
             _backupProgressState.value = BackupProgressState.Loading("Abriendo archivo de respaldo...")
             try {
-                val inputStream = context.contentResolver.openInputStream(sourceUri)
-                if (inputStream == null) {
-                    _backupProgressState.value = BackupProgressState.Error("No se pudo abrir el archivo seleccionado.")
-                    return@launch
+                val result = withContext(Dispatchers.IO) {
+                    val inputStream = try {
+                        context.contentResolver.openInputStream(sourceUri)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (inputStream == null) {
+                        return@withContext com.example.data.backup.ImportResult(
+                            success = false,
+                            message = "No se pudo abrir el archivo seleccionado. Permiso denegado o archivo inaccesible."
+                        )
+                    }
+                    inputStream.use { stream ->
+                        repository.importJsonFromStream(context, stream) { step ->
+                            _backupProgressState.value = BackupProgressState.Loading(step)
+                        }
+                    }
                 }
-                val result = repository.importJsonFromStream(context, inputStream) { step ->
-                    _backupProgressState.value = BackupProgressState.Loading(step)
-                }
+
                 if (result.success) {
                     _backupProgressState.value = BackupProgressState.Success(result.message)
                     _snackbarMessage.value = result.message
+                    // Reset navigation to root to avoid stale selections
+                    _currentBoxId.value = null
+                    _currentBox.value = null
+                    _breadcrumbs.value = emptyList()
+                    _searchQuery.value = ""
+                    _selectedCategoryFilter.value = null
                     refreshStats()
+                    refreshStorageStats()
                 } else {
                     _backupProgressState.value = BackupProgressState.Error(result.message)
+                    _snackbarMessage.value = result.message
                 }
             } catch (e: Exception) {
-                _backupProgressState.value = BackupProgressState.Error("Error al restaurar: ${e.localizedMessage ?: "Archivo corrupto o no accesible"}")
+                val errorMsg = "Error al restaurar: ${e.localizedMessage ?: "Archivo corrupto o no accesible"}"
+                _backupProgressState.value = BackupProgressState.Error(errorMsg)
+                _snackbarMessage.value = errorMsg
             }
         }
     }
 
     fun importBackup(content: String) {
         viewModelScope.launch {
+            _backupDialogInitialTab.value = 1
+            isBackupDialogOpen.value = true
             _backupProgressState.value = BackupProgressState.Loading("Restaurando datos...")
-            val result = repository.importJson(content, getApplication())
-            if (result.success) {
-                _backupProgressState.value = BackupProgressState.Success(result.message)
-                _snackbarMessage.value = result.message
-                refreshStats()
-            } else {
-                _backupProgressState.value = BackupProgressState.Error(result.message)
+            try {
+                val result = repository.importJson(content, getApplication())
+                if (result.success) {
+                    _backupProgressState.value = BackupProgressState.Success(result.message)
+                    _snackbarMessage.value = result.message
+                    _currentBoxId.value = null
+                    _currentBox.value = null
+                    _breadcrumbs.value = emptyList()
+                    _searchQuery.value = ""
+                    _selectedCategoryFilter.value = null
+                    refreshStats()
+                    refreshStorageStats()
+                } else {
+                    _backupProgressState.value = BackupProgressState.Error(result.message)
+                    _snackbarMessage.value = result.message
+                }
+            } catch (e: Exception) {
+                val errorMsg = "Error al restaurar: ${e.localizedMessage ?: "Error desconocido"}"
+                _backupProgressState.value = BackupProgressState.Error(errorMsg)
+                _snackbarMessage.value = errorMsg
             }
         }
     }

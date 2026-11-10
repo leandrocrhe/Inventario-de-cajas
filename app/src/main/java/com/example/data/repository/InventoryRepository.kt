@@ -315,6 +315,11 @@ class InventoryRepository(private val database: AppDatabase) {
         onProgress: ((String) -> Unit)? = null
     ): ImportResult = backupManager.importJsonFromStream(context, inputStream, onProgress)
 
+    suspend fun importCsv(
+        content: String,
+        onProgress: ((String) -> Unit)? = null
+    ): ImportResult = backupManager.importCsv(content, onProgress)
+
     // Initial seeding
     suspend fun seedInitialDataIfNeeded() = withContext(Dispatchers.IO) {
         val existingBoxes = boxDao.getAllBoxesSync()

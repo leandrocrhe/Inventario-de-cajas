@@ -11,6 +11,7 @@ import com.example.data.local.entity.ZoneEntity
 import com.example.data.local.relation.BoxHierarchy
 import com.example.data.local.relation.ItemWithBox
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -220,6 +221,154 @@ class ExampleRobolectricTest {
         val result = backupManager.importJson(circularJson, context)
         org.junit.Assert.assertFalse(result.success)
         assertTrue(result.message.contains("circular", ignoreCase = true))
+
+        db.close()
+    }
+
+    @Test
+    fun testBackupManagerRestoresReverseHierarchyTopologically() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val backupManager = com.example.data.backup.BackupManager(db)
+
+        // Child box appears BEFORE parent box in the JSON array
+        val reverseHierarchyJson = """
+            {
+              "app": "Inventario de Cajas",
+              "version": 3,
+              "boxes": [
+                { "id": "child_box_1", "name": "Caja Hija", "parentBoxId": "parent_box_1" },
+                { "id": "parent_box_1", "name": "Caja Padre", "parentBoxId": null }
+              ],
+              "items": [
+                { "id": "item_in_child", "name": "Cable HDMI", "boxId": "child_box_1", "quantity": 1 }
+              ]
+            }
+        """.trimIndent()
+
+        val result = backupManager.importJson(reverseHierarchyJson, context)
+        assertTrue(result.success)
+        assertEquals(2, result.boxesCount)
+        assertEquals(1, result.itemsCount)
+        assertTrue(result.message.contains("Copia de seguridad restaurada con éxito", ignoreCase = true))
+
+        val boxesInDb = db.boxDao().getAllBoxesSync()
+        val itemsInDb = db.itemDao().getAllItemsSync()
+        assertEquals(2, boxesInDb.size)
+        assertEquals(1, itemsInDb.size)
+
+        db.close()
+    }
+
+    @Test
+    fun testBackupManagerHandlesCorruptedOrEmptyJsonGracefully() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val backupManager = com.example.data.backup.BackupManager(db)
+
+        // 1. Corrupt JSON
+        val corruptResult = backupManager.importJson("{ broken json ...", context)
+        assertFalse(corruptResult.success)
+        assertTrue(corruptResult.message.contains("inválido", ignoreCase = true))
+
+        // 2. Empty JSON
+        val emptyResult = backupManager.importJson("", context)
+        assertFalse(emptyResult.success)
+        assertTrue(emptyResult.message.contains("vacío", ignoreCase = true))
+
+        db.close()
+    }
+
+    @Test
+    fun testBackupManagerImportsCsvCatalogWithHierarchicalBoxes() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val backupManager = com.example.data.backup.BackupManager(db)
+
+        val csvContent = """
+            ID,Nombre,Cantidad,Categoria,Ruta_Caja,Etiquetas,Prestado,Prestado_A,Fecha_Prestamo,Descripcion,Notas
+            item_csv_1,"Taladro Percutor",1,Herramientas,"Taller > Estante A > Herramientas Pesadas","taller, eléctrico",SI,"Carlos Gómez",2026-11-10 10:00,"Taladro Bosch 750W","Revisar brocas"
+            item_csv_2,"Cinta Aislante",5,Electricidad,"Taller > Estante B","cables, manual",NO,"",,"Cinta negra 20m",""
+        """.trimIndent()
+
+        val result = backupManager.importCsv(csvContent)
+        assertTrue(result.success)
+        assertEquals(2, result.itemsCount)
+        assertTrue(result.message.contains("CSV", ignoreCase = true))
+
+        // Verify boxes were created hierarchically
+        val boxes = db.boxDao().getAllBoxesSync()
+        val boxNames = boxes.map { it.name }.toSet()
+        assertTrue(boxNames.contains("Taller"))
+        assertTrue(boxNames.contains("Estante A"))
+        assertTrue(boxNames.contains("Herramientas Pesadas"))
+        assertTrue(boxNames.contains("Estante B"))
+
+        // Verify parent-child relations
+        val rootBox = boxes.find { it.name == "Taller" }
+        assertNotNull(rootBox)
+        assertEquals(null, rootBox?.parentBoxId)
+
+        val estanteA = boxes.find { it.name == "Estante A" }
+        assertNotNull(estanteA)
+        assertEquals(rootBox?.id, estanteA?.parentBoxId)
+
+        val pesadas = boxes.find { it.name == "Herramientas Pesadas" }
+        assertNotNull(pesadas)
+        assertEquals(estanteA?.id, pesadas?.parentBoxId)
+
+        // Verify items
+        val items = db.itemDao().getAllItemsSync()
+        assertEquals(2, items.size)
+        val taladro = items.find { it.id == "item_csv_1" }
+        assertNotNull(taladro)
+        assertEquals("Taladro Percutor", taladro?.name)
+        assertEquals(pesadas?.id, taladro?.boxId)
+        assertEquals(true, taladro?.isLoaned)
+        assertEquals("Carlos Gómez", taladro?.loanedTo)
+
+        // Verify categories
+        val categories = db.categoryDao().getAllCategoriesSync()
+        val catNames = categories.map { it.name }
+        assertTrue(catNames.contains("Herramientas"))
+        assertTrue(catNames.contains("Electricidad"))
+
+        db.close()
+    }
+
+    @Test
+    fun testBackupManagerStreamAutoDetectsCsvAndImportsSuccessfully() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val backupManager = com.example.data.backup.BackupManager(db)
+
+        val csvData = """
+            Nombre,Cantidad,Categoria,Ruta_Caja
+            "Multímetro Digital",2,Electrónica,"Laboratorio > Mesa 1"
+        """.trimIndent()
+
+        val inputStream = java.io.ByteArrayInputStream(csvData.toByteArray(Charsets.UTF_8))
+        val result = backupManager.importJsonFromStream(context, inputStream)
+        assertTrue(result.success)
+        assertEquals(1, result.itemsCount)
+
+        val items = db.itemDao().getAllItemsSync()
+        assertEquals(1, items.size)
+        assertEquals("Multímetro Digital", items[0].name)
+        assertEquals(2, items[0].quantity)
+
+        val boxes = db.boxDao().getAllBoxesSync()
+        val mesa = boxes.find { it.name == "Mesa 1" }
+        assertNotNull(mesa)
+        assertEquals(mesa?.id, items[0].boxId)
 
         db.close()
     }
