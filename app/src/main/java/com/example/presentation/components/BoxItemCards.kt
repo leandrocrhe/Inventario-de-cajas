@@ -2,9 +2,15 @@ package com.example.presentation.components
 
 import android.net.Uri
 import androidx.core.net.toUri
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -82,6 +88,43 @@ fun parseColorSafe(hex: String, fallback: Color = Color(0xFFF59E0B)): Color {
     }
 }
 
+/**
+ * Modifier extension providing immediate tactile feedback with smooth spring scale animation on press/click.
+ */
+@Composable
+fun Modifier.pressScaleEffect(
+    scaleDown: Float = 0.96f,
+    onClick: (() -> Unit)? = null
+): Modifier {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) scaleDown else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "press_scale_anim"
+    )
+
+    return this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+        .then(
+            if (onClick != null) {
+                Modifier.clickable(
+                    interactionSource = interactionSource,
+                    indication = androidx.compose.foundation.LocalIndication.current,
+                    onClick = onClick
+                )
+            } else {
+                Modifier
+            }
+        )
+}
+
 // =====================================================================
 // =====================================================================
 // BOX GRID CARD (Matching inventario_cuadr_cula_por_zonas_foto_portada_1)
@@ -145,9 +188,9 @@ fun BoxGridCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         modifier = modifier
             .fillMaxWidth()
+            .pressScaleEffect(scaleDown = 0.96f, onClick = onClick)
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, Color(0xFF2C2622), RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
             .testTag("box_grid_${box.id}")
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -500,9 +543,9 @@ fun BoxCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
             .fillMaxWidth()
+            .pressScaleEffect(scaleDown = 0.97f, onClick = onClick)
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
             .testTag("box_card_${box.id}")
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -715,9 +758,9 @@ fun ItemGridCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
             .fillMaxWidth()
+            .pressScaleEffect(scaleDown = 0.96f, onClick = onClick)
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .testTag("item_grid_${item.id}")
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -942,9 +985,9 @@ fun ItemCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
             .fillMaxWidth()
+            .pressScaleEffect(scaleDown = 0.97f, onClick = onClick)
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .testTag("item_card_${item.id}")
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
