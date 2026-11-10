@@ -5,6 +5,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -413,9 +414,23 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Barra de progreso visual de espacio utilizado en el dispositivo
-                    val percentInt = (deviceUsagePercent * 100).toInt()
-                    val usedStorageFormatted = formatStorageBytes(deviceUsedBytes)
+                    // Animación suave de carga mediante Animatable desde 0% hasta el valor real
+                    val storageProgressAnimatable = remember { Animatable(0f) }
+
+                    LaunchedEffect(deviceUsagePercent) {
+                        if (deviceUsagePercent > 0f) {
+                            storageProgressAnimatable.snapTo(0f)
+                            storageProgressAnimatable.animateTo(
+                                targetValue = deviceUsagePercent,
+                                animationSpec = tween(durationMillis = 1100, easing = FastOutSlowInEasing)
+                            )
+                        }
+                    }
+
+                    val currentAnimatedPercent = storageProgressAnimatable.value
+                    val percentInt = (currentAnimatedPercent * 100).toInt()
+                    val animatedUsedBytes = (currentAnimatedPercent * deviceTotalBytes).toLong().coerceAtMost(deviceUsedBytes)
+                    val usedStorageFormatted = formatStorageBytes(if (deviceTotalBytes > 0L) animatedUsedBytes else deviceUsedBytes)
                     val totalStorageFormatted = formatStorageBytes(deviceTotalBytes)
 
                     Surface(
@@ -463,7 +478,7 @@ fun SettingsScreen(
                                         text = "$percentInt% en uso",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (deviceUsagePercent > 0.9f) Color(0xFFEF4444) else Color(0xFFFFB77C),
+                                        color = if (currentAnimatedPercent > 0.9f) Color(0xFFEF4444) else Color(0xFFFFB77C),
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                     )
                                 }
@@ -471,13 +486,7 @@ fun SettingsScreen(
 
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            // Barra de progreso con esquinas redondeadas y gradiente
-                            val animatedProgress by animateFloatAsState(
-                                targetValue = deviceUsagePercent,
-                                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
-                                label = "storage_progress_animation"
-                            )
-
+                            // Barra de progreso animada con esquinas redondeadas y gradiente
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -488,12 +497,12 @@ fun SettingsScreen(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxWidth(animatedProgress)
+                                        .fillMaxWidth(currentAnimatedPercent.coerceIn(0f, 1f))
                                         .fillMaxHeight()
                                         .clip(RoundedCornerShape(9999.dp))
                                         .background(
                                             androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                                if (deviceUsagePercent > 0.9f) {
+                                                if (currentAnimatedPercent > 0.9f) {
                                                     listOf(Color(0xFFF97316), Color(0xFFEF4444))
                                                 } else {
                                                     listOf(Color(0xFFFFB77C), Color(0xFFF59E0B))
