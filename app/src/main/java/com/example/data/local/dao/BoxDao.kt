@@ -98,9 +98,9 @@ interface BoxDao {
 
     @Query("""
         SELECT DISTINCT zone_name FROM (
-            SELECT name AS zone_name FROM zones WHERE TRIM(name) != ''
+            SELECT name AS zone_name FROM zones WHERE TRIM(name) != '' AND LOWER(name) != 'null'
             UNION
-            SELECT zone AS zone_name FROM boxes WHERE zone IS NOT NULL AND TRIM(zone) != ''
+            SELECT zone AS zone_name FROM boxes WHERE zone IS NOT NULL AND TRIM(zone) != '' AND LOWER(zone) != 'null'
         ) ORDER BY zone_name ASC
     """)
     fun getAllZones(): Flow<List<String>>

@@ -788,9 +788,20 @@ class BackupManager(private val database: AppDatabase) {
             if (zoneArray != null) {
                 for (i in 0 until zoneArray.length()) {
                     val obj = zoneArray.optJSONObject(i) ?: continue
-                    val zoneName = (obj.optString("name").takeIf { it.isNotBlank() } ?: obj.optString("nombre", "")).trim()
-                    if (zoneName.isNotBlank() && parsedZones.none { it.name.equals(zoneName, ignoreCase = true) }) {
-                        val color = obj.optString("colorHex").takeIf { it.isNotBlank() } ?: obj.optString("color", "#F59E0B")
+                    val rawZoneName = when {
+                        !obj.isNull("name") -> obj.optString("name").trim()
+                        !obj.isNull("nombre") -> obj.optString("nombre").trim()
+                        else -> null
+                    }
+                    val zoneName = rawZoneName?.takeIf {
+                        it.isNotBlank() && !it.equals("null", ignoreCase = true) && !it.equals("undefined", ignoreCase = true)
+                    }
+                    if (!zoneName.isNullOrBlank() && parsedZones.none { it.name.equals(zoneName, ignoreCase = true) }) {
+                        val color = when {
+                            !obj.isNull("colorHex") -> obj.optString("colorHex").trim()
+                            !obj.isNull("color") -> obj.optString("color").trim()
+                            else -> null
+                        }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: "#F59E0B"
                         parsedZones.add(ZoneEntity(name = zoneName, colorHex = color))
                     }
                 }
@@ -805,12 +816,16 @@ class BackupManager(private val database: AppDatabase) {
                 for (i in 0 until boxArray.length()) {
                     onProgress?.invoke("Procesando cajas (${i + 1}/${boxArray.length()})...")
                     val obj = boxArray.optJSONObject(i) ?: continue
-                    val id = obj.optString("id").takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
-                    val name = obj.optString("name").takeIf { it.isNotBlank() } ?: obj.optString("nombre", "Caja")
+                    val id = obj.optString("id").takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: UUID.randomUUID().toString()
+                    val name = when {
+                        !obj.isNull("name") -> obj.optString("name").trim()
+                        !obj.isNull("nombre") -> obj.optString("nombre").trim()
+                        else -> null
+                    }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: "Caja"
                     val rawParentId = obj.optString("parentBoxId").takeIf { it.isNotBlank() }
                         ?: obj.optString("parent_box_id").takeIf { it.isNotBlank() }
                         ?: obj.optString("parentId").takeIf { it.isNotBlank() }
-                    val parentId = if (rawParentId.isNullOrBlank() || rawParentId == "null") null else rawParentId
+                    val parentId = if (rawParentId.isNullOrBlank() || rawParentId.equals("null", ignoreCase = true)) null else rawParentId
 
                     // Photo resolution
                     var restoredPhotoUri: String? = null
@@ -827,28 +842,56 @@ class BackupManager(private val database: AppDatabase) {
                         val rawUri = obj.optString("primaryPhotoUri").takeIf { it.isNotBlank() }
                             ?: obj.optString("photoUri").takeIf { it.isNotBlank() }
                             ?: obj.optString("foto").takeIf { it.isNotBlank() }
-                        if (rawUri != null) {
+                        if (rawUri != null && !rawUri.equals("null", ignoreCase = true)) {
                             restoredPhotoUri = extractedPhotosMap[rawUri]
                                 ?: extractedPhotosMap[File(rawUri).name]
                                 ?: rawUri
                         }
                     }
 
-                    val zoneVal = (obj.optString("zone").takeIf { it.isNotBlank() }
-                        ?: obj.optString("zona").takeIf { it.isNotBlank() })?.trim()
+                    // Strict handling of zone: null or "null" -> explicit null
+                    val rawZone = when {
+                        !obj.isNull("zone") -> obj.optString("zone").trim()
+                        !obj.isNull("zona") -> obj.optString("zona").trim()
+                        else -> null
+                    }
+                    val zoneVal = rawZone?.takeIf {
+                        it.isNotBlank() &&
+                        !it.equals("null", ignoreCase = true) &&
+                        !it.equals("none", ignoreCase = true) &&
+                        !it.equals("undefined", ignoreCase = true) &&
+                        !it.equals("sin zona", ignoreCase = true) &&
+                        !it.equals("sin zona asignada", ignoreCase = true)
+                    }
 
-                    if (zoneVal != null && zoneVal.isNotBlank() && parsedZones.none { it.name.equals(zoneVal, ignoreCase = true) }) {
-                        val boxColor = obj.optString("colorHex").takeIf { it.isNotBlank() } ?: obj.optString("color", "#F59E0B")
+                    if (zoneVal != null && parsedZones.none { it.name.equals(zoneVal, ignoreCase = true) }) {
+                        val boxColor = when {
+                            !obj.isNull("colorHex") -> obj.optString("colorHex").trim()
+                            !obj.isNull("color") -> obj.optString("color").trim()
+                            else -> null
+                        }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: "#F59E0B"
                         parsedZones.add(ZoneEntity(name = zoneVal, colorHex = boxColor))
                     }
+
+                    val rawDesc = when {
+                        !obj.isNull("description") -> obj.optString("description").trim()
+                        !obj.isNull("descripcion") -> obj.optString("descripcion").trim()
+                        else -> null
+                    }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) }
+
+                    val rawColor = when {
+                        !obj.isNull("colorHex") -> obj.optString("colorHex").trim()
+                        !obj.isNull("color") -> obj.optString("color").trim()
+                        else -> null
+                    }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: "#F59E0B"
 
                     parsedBoxes.add(
                         BoxEntity(
                             id = id,
                             name = name,
-                            description = (obj.optString("description").takeIf { it.isNotBlank() } ?: obj.optString("descripcion")).takeIf { it?.isNotBlank() == true },
+                            description = rawDesc,
                             parentBoxId = parentId,
-                            colorHex = obj.optString("colorHex").takeIf { it.isNotBlank() } ?: obj.optString("color", "#F59E0B"),
+                            colorHex = rawColor,
                             primaryPhotoUri = restoredPhotoUri,
                             zone = zoneVal,
                             sortOrder = obj.optInt("sortOrder", i),
@@ -1000,12 +1043,25 @@ class BackupManager(private val database: AppDatabase) {
         targetList: MutableList<ItemEntity>,
         onPhotoRestored: () -> Unit
     ) {
-        val id = obj.optString("id").takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
-        val name = obj.optString("name").takeIf { it.isNotBlank() } ?: obj.optString("nombre", "Objeto")
-        val desc = (obj.optString("description").takeIf { it.isNotBlank() } ?: obj.optString("descripcion")).takeIf { it?.isNotBlank() == true }
-        val catId = (obj.optString("categoryId").takeIf { it.isNotBlank() }
-            ?: obj.optString("category_id").takeIf { it.isNotBlank() }
-            ?: obj.optString("categoriaId")).takeIf { it?.isNotBlank() == true && it != "null" }
+        val id = obj.optString("id").takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: UUID.randomUUID().toString()
+        val name = when {
+            !obj.isNull("name") -> obj.optString("name").trim()
+            !obj.isNull("nombre") -> obj.optString("nombre").trim()
+            else -> null
+        }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: "Objeto"
+
+        val desc = when {
+            !obj.isNull("description") -> obj.optString("description").trim()
+            !obj.isNull("descripcion") -> obj.optString("descripcion").trim()
+            else -> null
+        }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) }
+
+        val catId = when {
+            !obj.isNull("categoryId") -> obj.optString("categoryId").trim()
+            !obj.isNull("category_id") -> obj.optString("category_id").trim()
+            !obj.isNull("categoriaId") -> obj.optString("categoriaId").trim()
+            else -> null
+        }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) }
 
         var restoredPhotoUri: String? = null
         if (context != null && obj.has("photoBase64") && !obj.isNull("photoBase64")) {
@@ -1021,7 +1077,7 @@ class BackupManager(private val database: AppDatabase) {
             val rawUri = obj.optString("primaryPhotoUri").takeIf { it.isNotBlank() }
                 ?: obj.optString("photoUri").takeIf { it.isNotBlank() }
                 ?: obj.optString("foto").takeIf { it.isNotBlank() }
-            if (rawUri != null) {
+            if (rawUri != null && !rawUri.equals("null", ignoreCase = true)) {
                 restoredPhotoUri = extractedPhotosMap[rawUri]
                     ?: extractedPhotosMap[File(rawUri).name]
                     ?: rawUri
@@ -1029,11 +1085,25 @@ class BackupManager(private val database: AppDatabase) {
         }
 
         val quantity = obj.optInt("quantity", obj.optInt("cantidad", 1)).coerceAtLeast(1)
-        val tags = obj.optString("tags").takeIf { it.isNotBlank() } ?: obj.optString("etiquetas", "")
+        val tags = when {
+            !obj.isNull("tags") -> obj.optString("tags").trim()
+            !obj.isNull("etiquetas") -> obj.optString("etiquetas").trim()
+            else -> ""
+        }.takeIf { !it.equals("null", ignoreCase = true) } ?: ""
+
         val isLoaned = obj.optBoolean("isLoaned", obj.optBoolean("prestado", false))
-        val loanedTo = (obj.optString("loanedTo").takeIf { it.isNotBlank() } ?: obj.optString("prestado_a")).takeIf { it?.isNotBlank() == true && it != "null" }
+        val loanedTo = when {
+            !obj.isNull("loanedTo") -> obj.optString("loanedTo").trim()
+            !obj.isNull("prestado_a") -> obj.optString("prestado_a").trim()
+            else -> null
+        }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) }
+
         val loanedAt = if (obj.isNull("loanedAt") && obj.isNull("fecha_prestamo")) null else obj.optLong("loanedAt", obj.optLong("fecha_prestamo"))
-        val notes = (obj.optString("notes").takeIf { it.isNotBlank() } ?: obj.optString("notas")).takeIf { it?.isNotBlank() == true && it != "null" }
+        val notes = when {
+            !obj.isNull("notes") -> obj.optString("notes").trim()
+            !obj.isNull("notas") -> obj.optString("notas").trim()
+            else -> null
+        }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) }
 
         targetList.add(
             ItemEntity(

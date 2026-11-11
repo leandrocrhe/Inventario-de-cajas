@@ -383,6 +383,9 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     // CRUD actions
     fun saveBox(name: String, description: String?, colorHex: String, photoUri: String?, zone: String? = null) {
         viewModelScope.launch {
+            val cleanZone = zone?.trim()?.takeIf {
+                it.isNotBlank() && !it.equals("null", ignoreCase = true) && !it.equals("sin zona asignada", ignoreCase = true)
+            }
             val editing = _boxToEdit.value
             if (editing != null) {
                 repository.updateBox(
@@ -391,7 +394,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                         description = description?.takeIf { it.isNotBlank() }?.trim(),
                         colorHex = colorHex,
                         primaryPhotoUri = photoUri ?: editing.primaryPhotoUri,
-                        zone = zone?.takeIf { it.isNotBlank() }?.trim()
+                        zone = cleanZone
                     )
                 )
                 _snackbarMessage.value = "Caja actualizada: $name"
@@ -405,7 +408,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                     parentBoxId = _currentBoxId.value,
                     primaryPhotoUri = photoUri,
                     colorHex = colorHex,
-                    zone = zone?.takeIf { it.isNotBlank() }?.trim()
+                    zone = cleanZone
                 )
                 _snackbarMessage.value = "Caja creada: $name"
             }
@@ -415,16 +418,21 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun createZone(name: String, colorHex: String = "#F59E0B") {
+        val cleanName = name.trim()
+        if (cleanName.isBlank() || cleanName.equals("null", ignoreCase = true)) return
         viewModelScope.launch {
-            repository.createZone(name, colorHex)
-            _snackbarMessage.value = "Zona creada: $name"
+            repository.createZone(cleanName, colorHex)
+            _snackbarMessage.value = "Zona creada: $cleanName"
         }
     }
 
     fun renameZone(oldName: String, newName: String) {
+        val cleanOld = oldName.trim()
+        val cleanNew = newName.trim()
+        if (cleanNew.isBlank() || cleanNew.equals("null", ignoreCase = true)) return
         viewModelScope.launch {
-            repository.renameZone(oldName, newName)
-            _snackbarMessage.value = "Zona renombrada a: $newName"
+            repository.renameZone(cleanOld, cleanNew)
+            _snackbarMessage.value = "Zona renombrada a: $cleanNew"
         }
     }
 

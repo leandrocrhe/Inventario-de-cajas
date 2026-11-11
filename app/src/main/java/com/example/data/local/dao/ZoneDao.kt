@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ZoneDao {
-    @Query("SELECT * FROM zones ORDER BY name ASC")
+    @Query("SELECT * FROM zones WHERE LOWER(name) != 'null' AND TRIM(name) != '' ORDER BY name ASC")
     fun getAllZones(): Flow<List<ZoneEntity>>
 
-    @Query("SELECT * FROM zones ORDER BY name ASC")
+    @Query("SELECT * FROM zones WHERE LOWER(name) != 'null' AND TRIM(name) != '' ORDER BY name ASC")
     suspend fun getAllZonesSync(): List<ZoneEntity>
 
-    @Query("SELECT name FROM zones ORDER BY name ASC")
+    @Query("SELECT name FROM zones WHERE LOWER(name) != 'null' AND TRIM(name) != '' ORDER BY name ASC")
     fun getAllZoneNames(): Flow<List<String>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

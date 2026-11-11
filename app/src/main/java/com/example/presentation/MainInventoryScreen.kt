@@ -1278,8 +1278,10 @@ fun MainInventoryScreen(
                         }
 
                         val zoneGroups = remember(rootBoxesWithCounts, allBoxes, allZones) {
-                            val assignedZones = rootBoxesWithCounts.mapNotNull { it.box.zone?.trim()?.takeIf { z -> z.isNotEmpty() } }.distinct()
-                            val allKnownZones = (allZones + assignedZones).distinct().sorted()
+                            val assignedZones = rootBoxesWithCounts.mapNotNull {
+                                it.box.zone?.trim()?.takeIf { z -> z.isNotEmpty() && !z.equals("null", ignoreCase = true) }
+                            }.distinct()
+                            val allKnownZones = (allZones.filter { it.isNotBlank() && !it.equals("null", ignoreCase = true) } + assignedZones).distinct().sorted()
 
                             val map = linkedMapOf<String, MutableList<BoxWithCounts>>()
                             allKnownZones.forEach { z -> map[z] = mutableListOf() }
@@ -1287,7 +1289,7 @@ fun MainInventoryScreen(
 
                             rootBoxesWithCounts.forEach { bwc ->
                                 val z = bwc.box.zone?.trim()
-                                if (!z.isNullOrBlank()) {
+                                if (!z.isNullOrBlank() && !z.equals("null", ignoreCase = true)) {
                                     map.getOrPut(z) { mutableListOf() }.add(bwc)
                                 } else {
                                     unassigned.add(bwc)
@@ -1301,7 +1303,7 @@ fun MainInventoryScreen(
                                 }
                             }
                             if (unassigned.isNotEmpty()) {
-                                result.add("Sin estancia asignada" to unassigned)
+                                result.add("Cajas sin zona asignada" to unassigned)
                             }
                             result
                         }
@@ -1562,6 +1564,7 @@ fun MainInventoryScreen(
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     modifier = Modifier.weight(1f)
                                                 ) {
+                                                    val isUnassignedGroup = zoneName == "Cajas sin zona asignada"
                                                     // Badge de Zona
                                                     Box(
                                                         modifier = Modifier
@@ -1572,9 +1575,9 @@ fun MainInventoryScreen(
                                                         contentAlignment = Alignment.Center
                                                     ) {
                                                         Icon(
-                                                            imageVector = Icons.Default.LocationOn,
+                                                            imageVector = if (isUnassignedGroup) Icons.Default.Inventory2 else Icons.Default.LocationOn,
                                                             contentDescription = null,
-                                                            tint = zoneTagColor,
+                                                            tint = if (isUnassignedGroup) Color(0xFFA89F95) else zoneTagColor,
                                                             modifier = Modifier.size(18.dp)
                                                         )
                                                     }
@@ -1608,7 +1611,13 @@ fun MainInventoryScreen(
                                                             }
                                                         }
                                                         Text(
-                                                            text = if (displayBoxes.isEmpty()) "Sin cajas asignadas todavía" else "${displayBoxes.size} ${if (displayBoxes.size == 1) "caja en esta estancia" else "cajas en esta estancia"}",
+                                                            text = if (isUnassignedGroup) {
+                                                                "Cajas huérfanas sin ubicación específica"
+                                                            } else if (displayBoxes.isEmpty()) {
+                                                                "Sin cajas asignadas todavía"
+                                                            } else {
+                                                                "${displayBoxes.size} ${if (displayBoxes.size == 1) "caja en esta estancia" else "cajas en esta estancia"}"
+                                                            },
                                                             style = MaterialTheme.typography.labelSmall,
                                                             color = Color(0xFFA89F95),
                                                             maxLines = 1,
@@ -1667,7 +1676,7 @@ fun MainInventoryScreen(
                                                                     .weight(1f)
                                                                     .clip(RoundedCornerShape(16.dp))
                                                                     .clickable {
-                                                                        createBoxInitialZone = if (zoneName == "Sin estancia asignada") null else zoneName
+                                                                        createBoxInitialZone = if (zoneName == "Cajas sin zona asignada" || zoneName == "Sin estancia asignada") null else zoneName
                                                                         viewModel.openCreateBoxDialog()
                                                                     }
                                                             ) {
@@ -1723,7 +1732,7 @@ fun MainInventoryScreen(
                                                             .fillMaxWidth()
                                                             .clip(RoundedCornerShape(14.dp))
                                                             .clickable {
-                                                                createBoxInitialZone = if (zoneName == "Sin estancia asignada") null else zoneName
+                                                                createBoxInitialZone = if (zoneName == "Cajas sin zona asignada" || zoneName == "Sin estancia asignada") null else zoneName
                                                                 viewModel.openCreateBoxDialog()
                                                             }
                                                     ) {

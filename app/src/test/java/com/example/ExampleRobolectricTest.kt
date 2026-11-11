@@ -372,4 +372,68 @@ class ExampleRobolectricTest {
 
         db.close()
     }
+
+    @Test
+    fun testBackupManagerDoesNotCreateNullZoneForOrphanBoxes() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val backupManager = com.example.data.backup.BackupManager(db)
+
+        val jsonWithNullZone = """
+            {
+              "app": "Inventario de Cajas",
+              "version": 3,
+              "boxes": [
+                {
+                  "id": "box_orphan_1",
+                  "name": "Caja Sin Zona",
+                  "zone": null,
+                  "parentBoxId": null
+                },
+                {
+                  "id": "box_orphan_2",
+                  "name": "Caja Literal Null",
+                  "zone": "null",
+                  "parentBoxId": null
+                },
+                {
+                  "id": "box_with_real_zone",
+                  "name": "Caja en Taller",
+                  "zone": "Taller",
+                  "parentBoxId": null
+                }
+              ],
+              "items": []
+            }
+        """.trimIndent()
+
+        val result = backupManager.importJson(jsonWithNullZone, context)
+        assertTrue(result.success)
+        assertEquals(3, result.boxesCount)
+
+        val allBoxes = db.boxDao().getAllBoxesSync()
+        assertEquals(3, allBoxes.size)
+
+        val orphan1 = allBoxes.find { it.id == "box_orphan_1" }
+        assertNotNull(orphan1)
+        assertNull(orphan1?.zone)
+
+        val orphan2 = allBoxes.find { it.id == "box_orphan_2" }
+        assertNotNull(orphan2)
+        assertNull(orphan2?.zone)
+
+        val withZone = allBoxes.find { it.id == "box_with_real_zone" }
+        assertNotNull(withZone)
+        assertEquals("Taller", withZone?.zone)
+
+        // Ensure no "null" zone entity was created
+        val allZones = db.zoneDao().getAllZonesSync()
+        assertTrue(allZones.none { it.name.equals("null", ignoreCase = true) })
+        assertEquals(1, allZones.size)
+        assertEquals("Taller", allZones[0].name)
+
+        db.close()
+    }
 }

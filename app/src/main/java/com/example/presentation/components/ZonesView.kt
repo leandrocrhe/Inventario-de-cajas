@@ -90,7 +90,8 @@ fun ZonesView(
     var isCreateDialogOpen by remember { mutableStateOf(false) }
     var zoneToRename by remember { mutableStateOf<String?>(null) }
     var zoneToDelete by remember { mutableStateOf<String?>(null) }
-    val unassignedBoxes = remember(allBoxes) { allBoxes.filter { it.zone.isNullOrBlank() } }
+    val cleanZones = remember(zones) { zones.filter { it.isNotBlank() && !it.equals("null", ignoreCase = true) } }
+    val unassignedBoxes = remember(allBoxes) { allBoxes.filter { it.zone.isNullOrBlank() || it.zone.equals("null", ignoreCase = true) } }
 
     LazyColumn(
         modifier = modifier
@@ -278,7 +279,7 @@ fun ZonesView(
         }
 
         // Zones Stack List
-        if (zones.isEmpty()) {
+        if (cleanZones.isEmpty()) {
             item {
                 Surface(
                     shape = RoundedCornerShape(16.dp),
@@ -324,7 +325,7 @@ fun ZonesView(
                 }
             }
         } else {
-            items(zones, key = { it }) { zoneName ->
+            items(cleanZones, key = { it }) { zoneName ->
                 val boxesInZone = remember(allBoxes, zoneName) {
                     allBoxes.filter { it.zone.equals(zoneName, ignoreCase = true) }
                 }

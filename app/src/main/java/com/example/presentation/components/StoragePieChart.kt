@@ -606,7 +606,9 @@ private fun buildZoneSlices(boxes: List<BoxEntity>): List<PieChartSlice> {
     if (boxes.isEmpty()) return emptyList()
 
     val total = boxes.size.coerceAtLeast(1)
-    val grouped = boxes.groupBy { it.zone?.takeIf { z -> z.isNotBlank() } ?: "Sin Zona" }
+    val grouped = boxes.groupBy {
+        it.zone?.trim()?.takeIf { z -> z.isNotBlank() && !z.equals("null", ignoreCase = true) } ?: "Cajas sin zona asignada"
+    }
 
     return grouped.entries.sortedByDescending { it.value.size }.mapIndexed { index, entry ->
         val pct = (entry.value.size.toFloat() / total.toFloat()) * 100f

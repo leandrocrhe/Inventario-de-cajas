@@ -64,7 +64,7 @@ class ExampleUnitTest {
         override suspend fun deleteAllBoxes() { boxes.clear() }
         override fun getTotalBoxesCount(): Flow<Int> = flowOf(boxes.size)
         override fun searchBoxes(query: String): Flow<List<BoxEntity>> = flowOf(boxes)
-        override fun getAllZones(): Flow<List<String>> = flowOf(boxes.mapNotNull { it.zone }.distinct())
+        override fun getAllZones(): Flow<List<String>> = flowOf(boxes.mapNotNull { it.zone?.takeIf { z -> z.isNotBlank() && !z.equals("null", ignoreCase = true) } }.distinct())
         override suspend fun renameZoneInBoxes(oldName: String, newName: String) {
             boxes.indices.forEach { i ->
                 if (boxes[i].zone == oldName) {

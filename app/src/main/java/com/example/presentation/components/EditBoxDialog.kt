@@ -67,7 +67,10 @@ fun EditBoxDialog(
 ) {
     var name by remember { mutableStateOf(boxToEdit?.name ?: "") }
     var description by remember { mutableStateOf(boxToEdit?.description ?: "") }
-    var zone by remember { mutableStateOf(boxToEdit?.zone ?: initialZone ?: "") }
+    val initialCleanZone = (boxToEdit?.zone ?: initialZone)?.trim()?.takeIf {
+        it.isNotBlank() && !it.equals("null", ignoreCase = true) && !it.equals("cajas sin zona asignada", ignoreCase = true) && !it.equals("sin estancia asignada", ignoreCase = true)
+    } ?: ""
+    var zone by remember { mutableStateOf(initialCleanZone) }
     var selectedColor by remember { mutableStateOf(boxToEdit?.colorHex ?: "#F59E0B") }
     var photoUri by remember { mutableStateOf(boxToEdit?.primaryPhotoUri) }
 
@@ -159,8 +162,12 @@ fun EditBoxDialog(
                         }
                     }
 
+                    val validExistingZones = remember(existingZones) {
+                        existingZones.filter { it.isNotBlank() && !it.equals("null", ignoreCase = true) }
+                    }
+
                     // Chips de zonas existentes
-                    if (existingZones.isNotEmpty()) {
+                    if (validExistingZones.isNotEmpty()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -168,7 +175,7 @@ fun EditBoxDialog(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            existingZones.forEach { z ->
+                            validExistingZones.forEach { z ->
                                 val isSelected = zone.equals(z, ignoreCase = true)
                                 FilterChip(
                                     selected = isSelected,
@@ -265,7 +272,12 @@ fun EditBoxDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onSave(name, description, selectedColor, photoUri, zone.takeIf { it.isNotBlank() }) },
+                onClick = {
+                    val cleanZ = zone.trim().takeIf {
+                        it.isNotBlank() && !it.equals("null", ignoreCase = true) && !it.equals("cajas sin zona asignada", ignoreCase = true)
+                    }
+                    onSave(name.trim(), description.trim().takeIf { it.isNotBlank() }, selectedColor, photoUri, cleanZ)
+                },
                 enabled = name.isNotBlank(),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.testTag("save_box_button")
