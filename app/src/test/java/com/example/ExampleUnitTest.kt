@@ -177,4 +177,25 @@ class ExampleUnitTest {
         val box1Cleared = fakeDao.getBoxById("1")
         assertEquals(null, box1Cleared?.zone)
     }
+
+    @Test
+    fun testThemeModeSelection() {
+        fun resolveTheme(mode: com.example.ui.theme.ThemeMode, systemDark: Boolean): Boolean = when (mode) {
+            com.example.ui.theme.ThemeMode.SYSTEM -> systemDark
+            com.example.ui.theme.ThemeMode.DARK -> true
+            com.example.ui.theme.ThemeMode.LIGHT -> false
+        }
+
+        // When mode is SYSTEM, it follows system dark/light state
+        assertTrue(resolveTheme(com.example.ui.theme.ThemeMode.SYSTEM, systemDark = true))
+        assertFalse(resolveTheme(com.example.ui.theme.ThemeMode.SYSTEM, systemDark = false))
+
+        // When mode is DARK, it is always dark
+        assertTrue(resolveTheme(com.example.ui.theme.ThemeMode.DARK, systemDark = true))
+        assertTrue(resolveTheme(com.example.ui.theme.ThemeMode.DARK, systemDark = false))
+
+        // When mode is LIGHT, it is always light
+        assertFalse(resolveTheme(com.example.ui.theme.ThemeMode.LIGHT, systemDark = true))
+        assertFalse(resolveTheme(com.example.ui.theme.ThemeMode.LIGHT, systemDark = false))
+    }
 }

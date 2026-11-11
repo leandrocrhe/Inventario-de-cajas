@@ -69,9 +69,20 @@ private val LightColorScheme =
         onErrorContainer = Color(0xFF410002)
     )
 
+enum class ThemeMode(val title: String) {
+    SYSTEM("Sistema"),
+    DARK("Oscuro"),
+    LIGHT("Claro")
+}
+
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    darkTheme: Boolean = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+    },
     dynamicColor: Boolean = false, // Use our handcrafted Stitch Warm / AMOLED theme by default
     content: @Composable () -> Unit,
 ) {

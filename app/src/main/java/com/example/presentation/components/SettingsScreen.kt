@@ -52,6 +52,10 @@ import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.SettingsBackupRestore
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.TableChart
+import androidx.compose.material.icons.outlined.BrightnessAuto
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
+import com.example.ui.theme.ThemeMode
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -97,6 +101,8 @@ fun SettingsScreen(
     gridColumns: Int = 2,
     onViewModeChange: (String) -> Unit = {},
     onGridColumnsChange: (Int) -> Unit = {},
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    onThemeModeChange: (ThemeMode) -> Unit = {},
     onOpenBackup: () -> Unit = {},
     onExportCsvToFile: ((Uri) -> Unit)? = null,
     onExportPdfToFile: ((Uri) -> Unit)? = null,
@@ -216,7 +222,7 @@ fun SettingsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp)
             .testTag("settings_screen"),
@@ -227,8 +233,8 @@ fun SettingsScreen(
         // =====================================================================
         Card(
             shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF14110E)),
-            border = BorderStroke(1.dp, Color(0xFF2C2622)),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("local_inventory_card")
@@ -281,12 +287,12 @@ fun SettingsScreen(
                                     text = "Inventario Local",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFFFFFF)
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "Espacio personal en este dispositivo",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFA89F95)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -573,56 +579,95 @@ fun SettingsScreen(
 
             Card(
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF14110E)),
-                border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    // Option 1: Tema visual (AMOLED)
-                    Row(
+                    // Option 1: Tema visual (Sistema, Oscuro, Claro)
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Tema visual",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = when (themeMode) {
+                                        ThemeMode.SYSTEM -> "Detecta automáticamente la preferencia del sistema"
+                                        ThemeMode.DARK -> "Esquema oscuro (AMOLED y ámbar cálido)"
+                                        ThemeMode.LIGHT -> "Esquema claro (Porcelana y kraft)"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             Text(
-                                text = "Tema visual",
-                                style = MaterialTheme.typography.titleMedium,
+                                text = themeMode.title,
+                                style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFFFFF)
-                            )
-                            Text(
-                                text = "Máximo contraste y ahorro de batería",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFA89F95)
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
 
-                        Surface(
-                            shape = RoundedCornerShape(9999.dp),
-                            color = Color(0xFF181512),
-                            border = BorderStroke(1.dp, Color(0xFF2C2622))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
+                            val themeOptions = listOf(
+                                Triple(ThemeMode.SYSTEM, "Sistema", Icons.Outlined.BrightnessAuto),
+                                Triple(ThemeMode.DARK, "Oscuro", Icons.Outlined.DarkMode),
+                                Triple(ThemeMode.LIGHT, "Claro", Icons.Outlined.LightMode)
+                            )
+
+                            themeOptions.forEach { (mode, label, icon) ->
+                                val isSelected = themeMode == mode
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                                    ),
                                     modifier = Modifier
-                                        .size(10.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFF000000))
-                                        .border(1.5.dp, Color(0xFFFFB77C), CircleShape)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "AMOLED",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFFB77C)
-                                )
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable {
+                                            onThemeModeChange(mode)
+                                        }
+                                        .testTag("theme_mode_${mode.name.lowercase()}")
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = null,
+                                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = label,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -650,7 +695,7 @@ fun SettingsScreen(
                                 text = "Vista predeterminada de cajas",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFFFFF)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = currentBoxViewMode,
@@ -732,12 +777,12 @@ fun SettingsScreen(
                                 text = "Densidad de cuadrícula",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFFFFF)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Distribución en pantalla móvil",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFA89F95)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
@@ -804,8 +849,8 @@ fun SettingsScreen(
 
             Card(
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF14110E)),
-                border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -844,12 +889,12 @@ fun SettingsScreen(
                                     text = "Crear copia de respaldo",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFFFFFF)
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "Genera archivo .json con imágenes incluidas",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFA89F95)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -1058,8 +1103,8 @@ fun SettingsScreen(
 
             Card(
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF14110E)),
-                border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -1074,12 +1119,12 @@ fun SettingsScreen(
                             text = "Administrar Zonas",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFFFFFF)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Configurar estanterías, habitaciones y trasteros",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFA89F95)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -1137,8 +1182,8 @@ fun SettingsScreen(
 
             Card(
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF14110E)),
-                border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(

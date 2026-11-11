@@ -132,8 +132,8 @@ fun StoragePieChartCard(
 
     Card(
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF14110E)),
-        border = BorderStroke(1.dp, Color(0xFF2C2622)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = modifier
             .fillMaxWidth()
             .testTag("storage_pie_chart_card")
@@ -174,12 +174,12 @@ fun StoragePieChartCard(
                             text = "Desglose de Almacenamiento",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Distribución por categoría o tipo de caja",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFA89F95)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -311,12 +311,12 @@ fun StoragePieChartCard(
                                 text = String.format(Locale.US, "%.1f%%", currentSlice.percentage),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = currentSlice.countText,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFFA89F95),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 10.sp
                             )
                         } else {
@@ -324,14 +324,14 @@ fun StoragePieChartCard(
                                 text = "TOTAL",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFA89F95),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 10.sp
                             )
                             Text(
                                 text = "$activeTotalCount",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = totalLabel,

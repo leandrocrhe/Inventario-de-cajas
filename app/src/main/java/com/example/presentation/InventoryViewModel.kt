@@ -14,6 +14,7 @@ import com.example.data.local.entity.SearchHistoryEntity
 import com.example.data.repository.CategoryStat
 import com.example.data.repository.InventoryRepository
 import com.example.domain.usecase.MoveBoxResult
+import com.example.ui.theme.ThemeMode
 import java.io.File
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,23 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     // Layout view mode (Grid vs List)
     private val _isGridView = MutableStateFlow(true)
     val isGridView: StateFlow<Boolean> = _isGridView.asStateFlow()
+
+    // Preferences: Theme mode (System auto, Dark, Light)
+    private val prefs = application.getSharedPreferences("inventory_user_prefs", Context.MODE_PRIVATE)
+
+    private val _themeMode = MutableStateFlow(
+        when (prefs.getString("theme_mode", "SYSTEM")) {
+            "DARK" -> ThemeMode.DARK
+            "LIGHT" -> ThemeMode.LIGHT
+            else -> ThemeMode.SYSTEM
+        }
+    )
+    val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
+
+    fun setThemeMode(mode: ThemeMode) {
+        _themeMode.value = mode
+        prefs.edit().putString("theme_mode", mode.name).apply()
+    }
 
     // Preferences: Default view mode and grid density
     private val _boxViewMode = MutableStateFlow("Portadas")
@@ -89,6 +107,8 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     // Dialog & Feedback state
     private val _boxToEdit = MutableStateFlow<BoxEntity?>(null)
     val boxToEdit: StateFlow<BoxEntity?> = _boxToEdit.asStateFlow()
+    private val _prefilledZone = MutableStateFlow<String?>(null)
+    val prefilledZone: StateFlow<String?> = _prefilledZone.asStateFlow()
     val isBoxDialogOpen = MutableStateFlow(false)
 
     private val _itemToEdit = MutableStateFlow<ItemEntity?>(null)
@@ -148,6 +168,9 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allBoxes: StateFlow<List<BoxEntity>> = repository.getAllBoxes()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allInventoryItems: StateFlow<List<ItemEntity>> = repository.searchItems("")
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allCategories: StateFlow<List<CategoryEntity>> = repository.getAllCategories()
@@ -280,19 +303,22 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     // Dialog triggers
-    fun openCreateBoxDialog() {
+    fun openCreateBoxDialog(initialZone: String? = null) {
         _boxToEdit.value = null
+        _prefilledZone.value = initialZone
         isBoxDialogOpen.value = true
     }
 
     fun openEditBoxDialog(box: BoxEntity) {
         _boxToEdit.value = box
+        _prefilledZone.value = null
         isBoxDialogOpen.value = true
     }
 
     fun dismissBoxDialog() {
         isBoxDialogOpen.value = false
         _boxToEdit.value = null
+        _prefilledZone.value = null
     }
 
     fun openCreateItemDialog() {
