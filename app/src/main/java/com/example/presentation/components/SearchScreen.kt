@@ -123,6 +123,7 @@ fun SearchScreen(
     onMoveBox: (BoxEntity) -> Unit,
     onEditBox: (BoxEntity) -> Unit,
     onDeleteBox: (BoxEntity) -> Unit,
+    onManageCategories: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedZone by remember { mutableStateOf<String?>(null) }
@@ -614,20 +615,57 @@ fun SearchScreen(
                                     )
                                 }
 
-                                if (selectedCategories.isNotEmpty()) {
-                                    Surface(
-                                        shape = RoundedCornerShape(9999.dp),
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
-                                    ) {
-                                        Text(
-                                            text = "${selectedCategories.size} seleccionadas",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                                            fontSize = 11.sp
-                                        )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    if (selectedCategories.isNotEmpty()) {
+                                        Surface(
+                                            shape = RoundedCornerShape(9999.dp),
+                                            color = MaterialTheme.colorScheme.primaryContainer,
+                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                                        ) {
+                                            Text(
+                                                text = "${selectedCategories.size} sel",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
+
+                                    if (onManageCategories != null) {
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = MaterialTheme.colorScheme.surfaceVariant,
+                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .clickable { onManageCategories() }
+                                                .testTag("btn_manage_categories_search")
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Tune,
+                                                    contentDescription = "Gestionar categorías",
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                                Text(
+                                                    text = "Gestionar",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    fontSize = 11.sp
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }

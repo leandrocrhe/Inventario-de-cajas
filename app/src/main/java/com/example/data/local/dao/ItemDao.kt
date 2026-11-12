@@ -103,4 +103,10 @@ interface ItemDao {
 
     @Query("UPDATE items SET is_loaned = 0, loaned_to = NULL, loaned_at = NULL, notes = NULL WHERE id = :itemId")
     suspend fun returnLoanedItem(itemId: String)
+
+    @Query("UPDATE items SET category_id = :newCategoryId WHERE category_id = :oldCategoryId")
+    suspend fun reassignCategory(oldCategoryId: String, newCategoryId: String)
+
+    @Query("SELECT COUNT(*) FROM items WHERE category_id = :categoryId")
+    suspend fun getItemsCountByCategoryId(categoryId: String): Int
 }

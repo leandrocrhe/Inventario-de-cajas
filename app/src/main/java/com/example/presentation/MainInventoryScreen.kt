@@ -125,6 +125,7 @@ import com.example.presentation.components.BackupDialog
 import com.example.presentation.components.BoxCard
 import com.example.presentation.components.BoxGridCard
 import com.example.presentation.components.BreadcrumbBar
+import com.example.presentation.components.CategoryManagementBottomSheet
 import com.example.presentation.components.DeleteConfirmDialog
 import com.example.presentation.components.EditBoxDialog
 import com.example.presentation.components.EditItemDialog
@@ -211,6 +212,7 @@ fun MainInventoryScreen(
     val isStatsDialogOpen by viewModel.isStatsDialogOpen.collectAsState()
     val isLoansSheetOpen by viewModel.isLoansSheetOpen.collectAsState()
     val isBackupDialogOpen by viewModel.isBackupDialogOpen.collectAsState()
+    val isCategoryManagementOpen by viewModel.isCategoryManagementOpen.collectAsState()
     val backupDialogInitialTab by viewModel.backupDialogInitialTab.collectAsState()
     val backupProgressState by viewModel.backupProgressState.collectAsState()
     val boxViewMode by viewModel.boxViewMode.collectAsState()
@@ -251,8 +253,11 @@ fun MainInventoryScreen(
     }
 
     // Intercept back button for nested navigation, tabs, search, and detail modal
-    BackHandler(enabled = selectedItemForDetail != null || isSearchAndFilterOpen || isSearchActive || searchQuery.isNotBlank() || currentBottomTab != AppBottomTab.CAJAS || currentBoxId != null) {
+    BackHandler(enabled = isCategoryManagementOpen || selectedItemForDetail != null || isSearchAndFilterOpen || isSearchActive || searchQuery.isNotBlank() || currentBottomTab != AppBottomTab.CAJAS || currentBoxId != null) {
         when {
+            isCategoryManagementOpen -> {
+                viewModel.closeCategoryManagement()
+            }
             selectedItemForDetail != null -> {
                 selectedItemForDetail = null
             }
@@ -792,7 +797,8 @@ fun MainInventoryScreen(
                             },
                             onMoveBox = { box -> viewModel.openMoveBoxDialog(box) },
                             onEditBox = { box -> viewModel.openEditBoxDialog(box) },
-                            onDeleteBox = { box -> viewModel.requestDeleteBox(BoxWithCounts(box, 0, 0)) }
+                            onDeleteBox = { box -> viewModel.requestDeleteBox(BoxWithCounts(box, 0, 0)) },
+                            onManageCategories = { viewModel.openCategoryManagement() }
                         )
                     } else if (currentBoxId == null) {
                         // =============================================================
@@ -1645,6 +1651,7 @@ fun MainInventoryScreen(
             currentBox = currentBox,
             allBoxes = allBoxes,
             categories = categories,
+            onManageCategories = { viewModel.openCategoryManagement() },
             onSave = { name, desc, qty, catId, tags, photo, targetBoxId ->
                 viewModel.saveItem(name, desc, qty, catId, tags, photo, targetBoxId)
             },
@@ -1715,6 +1722,17 @@ fun MainInventoryScreen(
             target = target,
             onConfirm = { viewModel.confirmDelete() },
             onDismiss = { viewModel.dismissDeleteDialog() }
+        )
+    }
+
+    if (isCategoryManagementOpen) {
+        CategoryManagementBottomSheet(
+            categories = categories,
+            itemsInInventory = allInventoryItems,
+            onCreateCategory = { name, colorHex, iconName -> viewModel.createCategory(name, colorHex, iconName) },
+            onUpdateCategory = { id, name, colorHex, iconName -> viewModel.updateCategory(id, name, colorHex, iconName) },
+            onDeleteCategory = { categoryId -> viewModel.deleteCategory(categoryId) },
+            onDismiss = { viewModel.closeCategoryManagement() }
         )
     }
 }

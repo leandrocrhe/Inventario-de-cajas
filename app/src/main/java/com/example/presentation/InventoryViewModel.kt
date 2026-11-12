@@ -128,6 +128,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     val isStatsDialogOpen = MutableStateFlow(false)
     val isLoansSheetOpen = MutableStateFlow(false)
     val isBackupDialogOpen = MutableStateFlow(false)
+    val isCategoryManagementOpen = MutableStateFlow(false)
     private val _backupDialogInitialTab = MutableStateFlow(0)
     val backupDialogInitialTab: StateFlow<Int> = _backupDialogInitialTab.asStateFlow()
     private val _backupProgressState = MutableStateFlow<BackupProgressState>(BackupProgressState.Idle)
@@ -135,6 +136,14 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun resetBackupProgress() {
         _backupProgressState.value = BackupProgressState.Idle
+    }
+
+    fun openCategoryManagement() {
+        isCategoryManagementOpen.value = true
+    }
+
+    fun closeCategoryManagement() {
+        isCategoryManagementOpen.value = false
     }
 
     private val _categoryStats = MutableStateFlow<List<CategoryStat>>(emptyList())
@@ -222,6 +231,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     init {
         viewModelScope.launch {
             repository.seedInitialDataIfNeeded()
+            repository.ensureDefaultCategoryExists()
             refreshStats()
             refreshStorageStats()
         }
@@ -467,6 +477,60 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
             repository.deleteZone(name)
             _snackbarMessage.value = "Zona eliminada: $name"
         }
+    }
+
+    // Category CRUD actions
+    fun createCategory(name: String, colorHex: String, iconName: String) {
+        viewModelScope.launch {
+            val result = repository.createCategory(name, colorHex, iconName)
+            result.fold(
+                onSuccess = { cat ->
+                    _snackbarMessage.value = "Categoría creada: ${cat.name}"
+                    refreshStats()
+                },
+                onFailure = { err ->
+                    _snackbarMessage.value = err.localizedMessage ?: "Error al crear categoría"
+                }
+            )
+        }
+    }
+
+    fun updateCategory(id: String, name: String, colorHex: String, iconName: String) {
+        viewModelScope.launch {
+            val result = repository.updateCategory(id, name, colorHex, iconName)
+            result.fold(
+                onSuccess = { cat ->
+                    _snackbarMessage.value = "Categoría actualizada: ${cat.name}"
+                    refreshStats()
+                },
+                onFailure = { err ->
+                    _snackbarMessage.value = err.localizedMessage ?: "Error al actualizar categoría"
+                }
+            )
+        }
+    }
+
+    fun deleteCategory(categoryId: String) {
+        viewModelScope.launch {
+            val result = repository.deleteCategory(categoryId)
+            result.fold(
+                onSuccess = { count ->
+                    if (count > 0) {
+                        _snackbarMessage.value = "Categoría eliminada. $count objeto(s) reasignados a «Sin categoría»"
+                    } else {
+                        _snackbarMessage.value = "Categoría eliminada"
+                    }
+                    refreshStats()
+                },
+                onFailure = { err ->
+                    _snackbarMessage.value = err.localizedMessage ?: "Error al eliminar categoría"
+                }
+            )
+        }
+    }
+
+    suspend fun getCategoryItemCount(categoryId: String): Int {
+        return repository.getCategoryItemCount(categoryId)
     }
 
     fun saveItem(

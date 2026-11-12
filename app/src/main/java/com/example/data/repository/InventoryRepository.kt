@@ -18,6 +18,7 @@ import com.example.data.local.relation.BoxWithItems
 import com.example.data.local.relation.ItemWithBox
 import com.example.domain.usecase.MoveBoxResult
 import com.example.domain.usecase.MoveBoxUseCase
+import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -31,6 +32,13 @@ data class CategoryStat(
 )
 
 class InventoryRepository(private val database: AppDatabase) {
+
+    companion object {
+        const val DEFAULT_CATEGORY_ID = "cat_default_sin_categoria"
+        const val DEFAULT_CATEGORY_NAME = "Sin categoría"
+        const val DEFAULT_CATEGORY_COLOR = "#64748B"
+        const val DEFAULT_CATEGORY_ICON = "category"
+    }
 
     private val boxDao = database.boxDao()
     private val itemDao = database.itemDao()
@@ -74,6 +82,99 @@ class InventoryRepository(private val database: AppDatabase) {
     fun getItemPhotosInBox(boxId: String): Flow<List<String>> = itemDao.getItemPhotosInBox(boxId)
 
     fun getAllCategories(): Flow<List<CategoryEntity>> = categoryDao.getAllCategories()
+
+    suspend fun ensureDefaultCategoryExists(): CategoryEntity = withContext(Dispatchers.IO) {
+        val existingById = categoryDao.getCategoryById(DEFAULT_CATEGORY_ID)
+        if (existingById != null) return@withContext existingById
+
+        val existingByName = categoryDao.getAllCategoriesSync()
+            .find { it.name.equals(DEFAULT_CATEGORY_NAME, ignoreCase = true) }
+        if (existingByName != null) return@withContext existingByName
+
+        val defaultCat = CategoryEntity(
+            id = DEFAULT_CATEGORY_ID,
+            name = DEFAULT_CATEGORY_NAME,
+            iconName = DEFAULT_CATEGORY_ICON,
+            colorHex = DEFAULT_CATEGORY_COLOR
+        )
+        categoryDao.insertCategory(defaultCat)
+        defaultCat
+    }
+
+    suspend fun createCategory(
+        name: String,
+        colorHex: String = "#F59E0B",
+        iconName: String = "category"
+    ): Result<CategoryEntity> = withContext(Dispatchers.IO) {
+        val cleanName = name.trim()
+        if (cleanName.isBlank()) {
+            return@withContext Result.failure(IllegalArgumentException("El nombre de la categoría no puede estar vacío"))
+        }
+        val existing = categoryDao.getAllCategoriesSync()
+        if (existing.any { it.name.equals(cleanName, ignoreCase = true) }) {
+            return@withContext Result.failure(IllegalArgumentException("Ya existe una categoría con el nombre «$cleanName»"))
+        }
+
+        val newCat = CategoryEntity(
+            id = UUID.randomUUID().toString(),
+            name = cleanName,
+            iconName = iconName.ifBlank { "category" },
+            colorHex = colorHex.ifBlank { "#F59E0B" }
+        )
+        categoryDao.insertCategory(newCat)
+        Result.success(newCat)
+    }
+
+    suspend fun updateCategory(
+        id: String,
+        name: String,
+        colorHex: String,
+        iconName: String
+    ): Result<CategoryEntity> = withContext(Dispatchers.IO) {
+        val cleanName = name.trim()
+        if (cleanName.isBlank()) {
+            return@withContext Result.failure(IllegalArgumentException("El nombre de la categoría no puede estar vacío"))
+        }
+        val current = categoryDao.getCategoryById(id)
+            ?: return@withContext Result.failure(IllegalArgumentException("No se encontró la categoría seleccionada"))
+
+        val existing = categoryDao.getAllCategoriesSync()
+        if (existing.any { it.id != id && it.name.equals(cleanName, ignoreCase = true) }) {
+            return@withContext Result.failure(IllegalArgumentException("Ya existe otra categoría con el nombre «$cleanName»"))
+        }
+
+        val updated = current.copy(
+            name = cleanName,
+            colorHex = colorHex.ifBlank { current.colorHex },
+            iconName = iconName.ifBlank { current.iconName }
+        )
+        categoryDao.updateCategory(updated)
+        Result.success(updated)
+    }
+
+    suspend fun deleteCategory(categoryId: String): Result<Int> = withContext(Dispatchers.IO) {
+        if (categoryId == DEFAULT_CATEGORY_ID) {
+            return@withContext Result.failure(IllegalArgumentException("No se puede eliminar la categoría de resguardo «Sin categoría»"))
+        }
+        val current = categoryDao.getCategoryById(categoryId)
+            ?: return@withContext Result.failure(IllegalArgumentException("Categoría no encontrada"))
+
+        if (current.name.equals(DEFAULT_CATEGORY_NAME, ignoreCase = true)) {
+            return@withContext Result.failure(IllegalArgumentException("No se puede eliminar la categoría de resguardo «Sin categoría»"))
+        }
+
+        database.withTransaction {
+            val defaultCat = ensureDefaultCategoryExists()
+            val affectedCount = itemDao.getItemsCountByCategoryId(categoryId)
+            itemDao.reassignCategory(categoryId, defaultCat.id)
+            categoryDao.deleteCategoryById(categoryId)
+            Result.success(affectedCount)
+        }
+    }
+
+    suspend fun getCategoryItemCount(categoryId: String): Int = withContext(Dispatchers.IO) {
+        itemDao.getItemsCountByCategoryId(categoryId)
+    }
 
     fun getLoanedItems(): Flow<List<ItemEntity>> = itemDao.getLoanedItems()
 
@@ -326,6 +427,7 @@ class InventoryRepository(private val database: AppDatabase) {
         if (existingBoxes.isNotEmpty()) return@withContext
 
         // Default categories
+        val catDefault = CategoryEntity(DEFAULT_CATEGORY_ID, DEFAULT_CATEGORY_NAME, DEFAULT_CATEGORY_ICON, DEFAULT_CATEGORY_COLOR)
         val catElec = CategoryEntity("cat_elec", "Electrónica", "memory", "#3B82F6")
         val catHerr = CategoryEntity("cat_herr", "Herramientas", "build", "#F59E0B")
         val catRopa = CategoryEntity("cat_ropa", "Ropa", "checkroom", "#EC4899")
@@ -333,7 +435,7 @@ class InventoryRepository(private val database: AppDatabase) {
         val catHogar = CategoryEntity("cat_hogar", "Hogar", "home", "#8B5CF6")
         val catCables = CategoryEntity("cat_cables", "Cables y Conexiones", "cable", "#06B6D4")
 
-        categoryDao.insertCategories(listOf(catElec, catHerr, catRopa, catDocs, catHogar, catCables))
+        categoryDao.insertCategories(listOf(catDefault, catElec, catHerr, catRopa, catDocs, catHogar, catCables))
 
         val defaultZones = listOf(
             ZoneEntity("Trastero", "#F59E0B"),
