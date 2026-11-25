@@ -609,4 +609,42 @@ class ExampleRobolectricTest {
 
         db.close()
     }
+
+    @Test
+    fun testSemanticBoxColorPaletteAndPersistence() = kotlinx.coroutines.runBlocking {
+        val colors = com.example.presentation.components.SEMANTIC_BOX_COLORS
+        assertTrue(colors.size >= 8)
+        assertEquals(colors.size, colors.map { it.hex.uppercase() }.distinct().size)
+        colors.forEach {
+            assertTrue(it.colorName.isNotBlank())
+            assertTrue(it.meaning.isNotBlank())
+            assertTrue(it.shortBadge.isNotBlank())
+        }
+
+        // Known semantic meanings
+        val purple = com.example.presentation.components.resolveSemanticBoxColor("#8B5CF6")
+        assertEquals("Púrpura", purple.colorName)
+        assertEquals("Creativo", purple.meaning)
+        assertEquals("Púrpura · Creativo", purple.headerDisplayLabel)
+
+        val legacyPurple = com.example.presentation.components.resolveSemanticBoxColor("#a855f7")
+        assertEquals("Púrpura", legacyPurple.colorName)
+        assertEquals("Creativo", legacyPurple.meaning)
+
+        val fallback = com.example.presentation.components.resolveSemanticBoxColor("#123456")
+        assertEquals("Personalizado", fallback.colorName)
+
+        // Room persistence of selected semantic colorHex
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val box = BoxEntity(id = "box_sem", name = "Cables Estudio", colorHex = "#3B82F6", zone = "Estudio")
+        db.boxDao().insertBox(box)
+        val loaded = db.boxDao().getBoxById("box_sem")
+        assertNotNull(loaded)
+        assertEquals("#3B82F6", loaded?.colorHex)
+        assertEquals("Tecnología", com.example.presentation.components.resolveSemanticBoxColor(loaded?.colorHex).meaning)
+        db.close()
+    }
 }

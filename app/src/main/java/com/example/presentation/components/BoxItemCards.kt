@@ -144,17 +144,11 @@ fun BoxGridCard(
 ) {
     val box = boxWithCounts.box
     val tagColor = remember(box.colorHex) { parseColorSafe(box.colorHex) }
+    val semanticColor = remember(box.colorHex) { resolveSemanticBoxColor(box.colorHex) }
     val displayCatColor = remember(categoryColorHex, tagColor) {
         categoryColorHex?.let { parseColorSafe(it) } ?: tagColor
     }
-    val catLabel = categoryName ?: when {
-        box.name.contains("audio", ignoreCase = true) || box.name.contains("tecno", ignoreCase = true) || box.name.contains("cable", ignoreCase = true) -> "Tecno"
-        box.name.contains("arte", ignoreCase = true) || box.name.contains("pintura", ignoreCase = true) || box.name.contains("tinta", ignoreCase = true) -> "Arte"
-        box.name.contains("herramienta", ignoreCase = true) || box.name.contains("taller", ignoreCase = true) -> "Taller"
-        box.name.contains("montaña", ignoreCase = true) || box.name.contains("camping", ignoreCase = true) -> "Camping"
-        box.name.contains("ropa", ignoreCase = true) || box.name.contains("invierno", ignoreCase = true) || box.name.contains("textil", ignoreCase = true) -> "Textil"
-        else -> "Caja"
-    }
+    val catLabel = categoryName ?: semanticColor.shortBadge
 
     var menuExpanded by remember { mutableStateOf(false) }
 
