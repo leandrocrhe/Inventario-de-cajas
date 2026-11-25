@@ -20,7 +20,13 @@ class ExampleUnitTest {
 
     private class FakeBoxDao(private val boxes: MutableList<BoxEntity>) : BoxDao {
         override fun getRootBoxesWithCounts(): Flow<List<BoxWithCounts>> = flowOf(emptyList())
+        override fun getRootBoxesWithCountsByNameAsc(): Flow<List<BoxWithCounts>> = flowOf(emptyList())
+        override fun getRootBoxesWithCountsByCreatedAsc(): Flow<List<BoxWithCounts>> = flowOf(emptyList())
+        override fun getRootBoxesWithCountsByRecentDesc(): Flow<List<BoxWithCounts>> = flowOf(emptyList())
         override fun getChildBoxesWithCounts(parentId: String): Flow<List<BoxWithCounts>> = flowOf(emptyList())
+        override fun getChildBoxesWithCountsByNameAsc(parentId: String): Flow<List<BoxWithCounts>> = flowOf(emptyList())
+        override fun getChildBoxesWithCountsByCreatedAsc(parentId: String): Flow<List<BoxWithCounts>> = flowOf(emptyList())
+        override fun getChildBoxesWithCountsByRecentDesc(parentId: String): Flow<List<BoxWithCounts>> = flowOf(emptyList())
         override fun getBoxHierarchy(boxId: String): Flow<BoxHierarchy?> = flowOf(
             boxes.find { it.id == boxId }?.let { b ->
                 BoxHierarchy(
@@ -51,7 +57,9 @@ class ExampleUnitTest {
         )
         override suspend fun getBoxById(id: String): BoxEntity? = boxes.find { it.id == id }
         override fun getBoxFlowById(id: String): Flow<BoxEntity?> = flowOf(boxes.find { it.id == id })
-        override fun getAllBoxes(): Flow<List<BoxEntity>> = flowOf(boxes)
+        override fun getAllBoxes(): Flow<List<BoxEntity>> = flowOf(boxes.sortedBy { it.name.lowercase() })
+        override fun getAllBoxesByCreatedAsc(): Flow<List<BoxEntity>> = flowOf(boxes.sortedBy { it.createdAt })
+        override fun getAllBoxesByRecentDesc(): Flow<List<BoxEntity>> = flowOf(boxes.sortedByDescending { it.createdAt })
         override suspend fun getAllBoxesSync(): List<BoxEntity> = boxes.toList()
         override suspend fun insertBox(box: BoxEntity) { boxes.add(box) }
         override suspend fun insertBoxes(boxes: List<BoxEntity>) { this.boxes.addAll(boxes) }

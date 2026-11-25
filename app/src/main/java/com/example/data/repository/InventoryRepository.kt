@@ -16,6 +16,7 @@ import com.example.data.local.relation.BoxHierarchy
 import com.example.data.local.relation.BoxWithChildren
 import com.example.data.local.relation.BoxWithItems
 import com.example.data.local.relation.ItemWithBox
+import com.example.domain.model.InventorySortOption
 import com.example.domain.usecase.MoveBoxResult
 import com.example.domain.usecase.MoveBoxUseCase
 import com.example.domain.util.TagUtils
@@ -51,10 +52,22 @@ class InventoryRepository(private val database: AppDatabase) {
     private val pdfExportHelper = com.example.data.backup.PdfExportHelper(database)
 
     // Flow queries
-    fun getRootBoxesWithCounts(): Flow<List<BoxWithCounts>> = boxDao.getRootBoxesWithCounts()
+    fun getRootBoxesWithCounts(
+        sortOption: InventorySortOption = InventorySortOption.NAME_ASC
+    ): Flow<List<BoxWithCounts>> = when (sortOption) {
+        InventorySortOption.CREATED_DATE -> boxDao.getRootBoxesWithCountsByCreatedAsc()
+        InventorySortOption.NAME_ASC -> boxDao.getRootBoxesWithCountsByNameAsc()
+        InventorySortOption.MOST_RECENT -> boxDao.getRootBoxesWithCountsByRecentDesc()
+    }
 
-    fun getChildBoxesWithCounts(parentId: String): Flow<List<BoxWithCounts>> =
-        boxDao.getChildBoxesWithCounts(parentId)
+    fun getChildBoxesWithCounts(
+        parentId: String,
+        sortOption: InventorySortOption = InventorySortOption.NAME_ASC
+    ): Flow<List<BoxWithCounts>> = when (sortOption) {
+        InventorySortOption.CREATED_DATE -> boxDao.getChildBoxesWithCountsByCreatedAsc(parentId)
+        InventorySortOption.NAME_ASC -> boxDao.getChildBoxesWithCountsByNameAsc(parentId)
+        InventorySortOption.MOST_RECENT -> boxDao.getChildBoxesWithCountsByRecentDesc(parentId)
+    }
 
     fun getBoxHierarchy(boxId: String): Flow<BoxHierarchy?> = boxDao.getBoxHierarchy(boxId)
 
@@ -72,11 +85,24 @@ class InventoryRepository(private val database: AppDatabase) {
 
     suspend fun getBoxById(id: String): BoxEntity? = boxDao.getBoxById(id)
 
-    fun getAllBoxes(): Flow<List<BoxEntity>> = boxDao.getAllBoxes()
+    fun getAllBoxes(
+        sortOption: InventorySortOption = InventorySortOption.NAME_ASC
+    ): Flow<List<BoxEntity>> = when (sortOption) {
+        InventorySortOption.CREATED_DATE -> boxDao.getAllBoxesByCreatedAsc()
+        InventorySortOption.NAME_ASC -> boxDao.getAllBoxes()
+        InventorySortOption.MOST_RECENT -> boxDao.getAllBoxesByRecentDesc()
+    }
 
     suspend fun getAllBoxesSync(): List<BoxEntity> = boxDao.getAllBoxesSync()
 
-    fun getItemsInBox(boxId: String): Flow<List<ItemEntity>> = itemDao.getItemsInBox(boxId)
+    fun getItemsInBox(
+        boxId: String,
+        sortOption: InventorySortOption = InventorySortOption.NAME_ASC
+    ): Flow<List<ItemEntity>> = when (sortOption) {
+        InventorySortOption.CREATED_DATE -> itemDao.getItemsInBoxByCreatedAsc(boxId)
+        InventorySortOption.NAME_ASC -> itemDao.getItemsInBox(boxId)
+        InventorySortOption.MOST_RECENT -> itemDao.getItemsInBoxByRecentDesc(boxId)
+    }
 
     fun getAllItemsWithPhotos(): Flow<List<ItemEntity>> = itemDao.getAllItemsWithPhotos()
 
@@ -187,8 +213,15 @@ class InventoryRepository(private val database: AppDatabase) {
 
     fun getTotalLoanedCount(): Flow<Int> = itemDao.getTotalLoanedCount()
 
-    fun searchItems(query: String, categoryId: String? = null): Flow<List<ItemEntity>> =
-        itemDao.searchItems(query, categoryId)
+    fun searchItems(
+        query: String,
+        categoryId: String? = null,
+        sortOption: InventorySortOption = InventorySortOption.NAME_ASC
+    ): Flow<List<ItemEntity>> = when (sortOption) {
+        InventorySortOption.CREATED_DATE -> itemDao.searchItemsByCreatedAsc(query, categoryId)
+        InventorySortOption.NAME_ASC -> itemDao.searchItems(query, categoryId)
+        InventorySortOption.MOST_RECENT -> itemDao.searchItemsByRecentDesc(query, categoryId)
+    }
 
     fun searchBoxes(query: String): Flow<List<BoxEntity>> = boxDao.searchBoxes(query)
 
@@ -507,13 +540,17 @@ class InventoryRepository(private val database: AppDatabase) {
         )
         zoneDao.insertZones(defaultZones)
 
+        val seedNow = System.currentTimeMillis()
+        val hourMs = 3_600_000L
+
         val boxTrastero = BoxEntity(
             id = "box_trastero",
             name = "Trastero Principal",
             description = "Estantería metálica del fondo, balda 2",
             parentBoxId = null,
             colorHex = "#F59E0B",
-            zone = "Trastero"
+            zone = "Trastero",
+            createdAt = seedNow - 6 * hourMs
         )
         val boxHerramientas = BoxEntity(
             id = "box_herramientas",
@@ -522,7 +559,8 @@ class InventoryRepository(private val database: AppDatabase) {
             parentBoxId = "box_trastero",
             colorHex = "#EF4444",
             primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuCAew30R10pnSi74P-3gS6FwxtvW-QjepoKz-jmgBPY7DEP6iLOcG22hxX-a7ucTOuIJRk8UcE3AlZn5inE-aj_ZNiwctuFLmLHLZ-Ww0Lb_ftR7vjeOR3nOu9rGWaAhD5KP3vsvVpsFAxjlKl4rW74diWttEVxo644O_BGFDMSIoaThon86W0Nt2NGary8tJDNlD-6vLsjqYp725yQ1MZpgVeW5SWHPVjIMPIzrU_y",
-            zone = "Taller"
+            zone = "Taller",
+            createdAt = seedNow - 5 * hourMs
         )
         val boxCables = BoxEntity(
             id = "box_cables",
@@ -531,7 +569,8 @@ class InventoryRepository(private val database: AppDatabase) {
             parentBoxId = "box_trastero",
             colorHex = "#3B82F6",
             primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuBUj9geDQBhgmf756qfUrtwUrHfkAMA0Y4KzQpon1nLUhaR-0ZzXAthPQjmJif3yaLxfa7jhI6-ImK1pLEh4ipmJc358uK3Pg_4J6eO9Ts_zdp-lmqu6yM_k0-x6tqHsXahTQ59wE2op6s0YNFVpKjlpzuXEaOFxC0qdUt11OCFCPeiAETg2FixYBL2i_AsR61Zo1nw_JwKiNCVZW37Fj7ScbegI-pTw9NuWZxH_e3r",
-            zone = "Taller"
+            zone = "Taller",
+            createdAt = seedNow - 4 * hourMs
         )
         val boxArmario = BoxEntity(
             id = "box_armario",
@@ -539,7 +578,8 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Cajonera blanca junto al escritorio",
             parentBoxId = null,
             colorHex = "#8B5CF6",
-            zone = "Estudio"
+            zone = "Estudio",
+            createdAt = seedNow - 3 * hourMs
         )
         val boxArchivo = BoxEntity(
             id = "box_archivo",
@@ -547,7 +587,8 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Carpetas 2024-2026 ordenadas alfabéticamente",
             parentBoxId = "box_armario",
             colorHex = "#10B981",
-            zone = "Estudio"
+            zone = "Estudio",
+            createdAt = seedNow - 2 * hourMs
         )
         val boxRopa = BoxEntity(
             id = "box_ropa",
@@ -555,7 +596,8 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Abrigos de montaña, guantes y bufandas al vacío",
             parentBoxId = null,
             colorHex = "#EC4899",
-            zone = "Dormitorio"
+            zone = "Dormitorio",
+            createdAt = seedNow - 1 * hourMs
         )
 
         boxDao.insertBoxes(listOf(boxTrastero, boxHerramientas, boxCables, boxArmario, boxArchivo, boxRopa))

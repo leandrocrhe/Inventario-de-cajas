@@ -19,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.flow.first
 import java.util.Date
 
 @RunWith(RobolectricTestRunner::class)
@@ -542,6 +543,69 @@ class ExampleRobolectricTest {
         assertEquals("HDMI", db.itemDao().getItemById("i1")!!.tags)
         assertEquals("", db.itemDao().getItemById("i2")!!.tags)
         assertEquals("Taller", db.itemDao().getItemById("i3")!!.tags)
+
+        db.close()
+    }
+
+    @Test
+    fun testRepositorySortsBoxesAndItemsByCreatedDateNameAndMostRecent() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val repo = com.example.data.repository.InventoryRepository(db)
+
+        // Insert root boxes with intentionally non-alphabetical creation timestamps
+        val boxZetaOldest = BoxEntity(id = "b_zeta", name = "Zeta Caja", createdAt = 1_000L, zone = "Zona 1")
+        val boxAlfaMiddle = BoxEntity(id = "b_alfa", name = "alfa Caja", createdAt = 2_000L, zone = "Zona 1")
+        val boxBetaNewest = BoxEntity(id = "b_beta", name = "Beta Caja", createdAt = 3_000L, zone = "Zona 2")
+        db.boxDao().insertBoxes(listOf(boxZetaOldest, boxAlfaMiddle, boxBetaNewest))
+
+        // Insert child boxes inside b_alfa
+        val childZ = BoxEntity(id = "c_z", name = "Zeta Sub", parentBoxId = "b_alfa", createdAt = 1_000L)
+        val childA = BoxEntity(id = "c_a", name = "Alfa Sub", parentBoxId = "b_alfa", createdAt = 3_000L)
+        val childM = BoxEntity(id = "c_m", name = "Medio Sub", parentBoxId = "b_alfa", createdAt = 2_000L)
+        db.boxDao().insertBoxes(listOf(childZ, childA, childM))
+
+        // Insert items inside b_alfa
+        val itemZ = ItemEntity(id = "it_z", name = "Zapatillas", boxId = "b_alfa", createdAt = 1_000L)
+        val itemA = ItemEntity(id = "it_a", name = "auriculares", boxId = "b_alfa", createdAt = 2_000L)
+        val itemM = ItemEntity(id = "it_m", name = "Martillo", boxId = "b_alfa", createdAt = 3_000L)
+        db.itemDao().insertItems(listOf(itemZ, itemA, itemM))
+
+        // 1. Root boxes sorting
+        val rootByCreated = repo.getRootBoxesWithCounts(com.example.domain.model.InventorySortOption.CREATED_DATE).first()
+        assertEquals(listOf("b_zeta", "b_alfa", "b_beta"), rootByCreated.map { it.box.id })
+
+        val rootByName = repo.getRootBoxesWithCounts(com.example.domain.model.InventorySortOption.NAME_ASC).first()
+        assertEquals(listOf("b_alfa", "b_beta", "b_zeta"), rootByName.map { it.box.id })
+
+        val rootByRecent = repo.getRootBoxesWithCounts(com.example.domain.model.InventorySortOption.MOST_RECENT).first()
+        assertEquals(listOf("b_beta", "b_alfa", "b_zeta"), rootByRecent.map { it.box.id })
+
+        // 2. Child boxes sorting
+        val childByCreated = repo.getChildBoxesWithCounts("b_alfa", com.example.domain.model.InventorySortOption.CREATED_DATE).first()
+        assertEquals(listOf("c_z", "c_m", "c_a"), childByCreated.map { it.box.id })
+
+        val childByName = repo.getChildBoxesWithCounts("b_alfa", com.example.domain.model.InventorySortOption.NAME_ASC).first()
+        assertEquals(listOf("c_a", "c_m", "c_z"), childByName.map { it.box.id })
+
+        val childByRecent = repo.getChildBoxesWithCounts("b_alfa", com.example.domain.model.InventorySortOption.MOST_RECENT).first()
+        assertEquals(listOf("c_a", "c_m", "c_z"), childByRecent.map { it.box.id })
+
+        // 3. Items in box sorting
+        val itemsByCreated = repo.getItemsInBox("b_alfa", com.example.domain.model.InventorySortOption.CREATED_DATE).first()
+        assertEquals(listOf("it_z", "it_a", "it_m"), itemsByCreated.map { it.id })
+
+        val itemsByName = repo.getItemsInBox("b_alfa", com.example.domain.model.InventorySortOption.NAME_ASC).first()
+        assertEquals(listOf("it_a", "it_m", "it_z"), itemsByName.map { it.id })
+
+        val itemsByRecent = repo.getItemsInBox("b_alfa", com.example.domain.model.InventorySortOption.MOST_RECENT).first()
+        assertEquals(listOf("it_m", "it_a", "it_z"), itemsByRecent.map { it.id })
+
+        // 4. Global items search sorting
+        val allByRecent = repo.searchItems("", sortOption = com.example.domain.model.InventorySortOption.MOST_RECENT).first()
+        assertEquals(listOf("it_m", "it_a", "it_z"), allByRecent.map { it.id })
 
         db.close()
     }

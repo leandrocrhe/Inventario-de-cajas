@@ -29,7 +29,7 @@ interface BoxDao {
             (SELECT COUNT(*) FROM items it WHERE it.box_id = b.id) AS itemsCount
         FROM boxes b 
         WHERE b.parent_box_id IS NULL 
-        ORDER BY b.sort_order ASC, b.name ASC
+        ORDER BY b.sort_order ASC, b.name COLLATE NOCASE ASC
     """)
     fun getRootBoxesWithCounts(): Flow<List<BoxWithCounts>>
 
@@ -38,10 +38,70 @@ interface BoxDao {
             (SELECT COUNT(*) FROM boxes sub WHERE sub.parent_box_id = b.id) AS childBoxesCount,
             (SELECT COUNT(*) FROM items it WHERE it.box_id = b.id) AS itemsCount
         FROM boxes b 
+        WHERE b.parent_box_id IS NULL 
+        ORDER BY b.name COLLATE NOCASE ASC
+    """)
+    fun getRootBoxesWithCountsByNameAsc(): Flow<List<BoxWithCounts>>
+
+    @Query("""
+        SELECT b.*, 
+            (SELECT COUNT(*) FROM boxes sub WHERE sub.parent_box_id = b.id) AS childBoxesCount,
+            (SELECT COUNT(*) FROM items it WHERE it.box_id = b.id) AS itemsCount
+        FROM boxes b 
+        WHERE b.parent_box_id IS NULL 
+        ORDER BY b.created_at ASC, b.name COLLATE NOCASE ASC
+    """)
+    fun getRootBoxesWithCountsByCreatedAsc(): Flow<List<BoxWithCounts>>
+
+    @Query("""
+        SELECT b.*, 
+            (SELECT COUNT(*) FROM boxes sub WHERE sub.parent_box_id = b.id) AS childBoxesCount,
+            (SELECT COUNT(*) FROM items it WHERE it.box_id = b.id) AS itemsCount
+        FROM boxes b 
+        WHERE b.parent_box_id IS NULL 
+        ORDER BY b.created_at DESC, b.name COLLATE NOCASE ASC
+    """)
+    fun getRootBoxesWithCountsByRecentDesc(): Flow<List<BoxWithCounts>>
+
+    @Query("""
+        SELECT b.*, 
+            (SELECT COUNT(*) FROM boxes sub WHERE sub.parent_box_id = b.id) AS childBoxesCount,
+            (SELECT COUNT(*) FROM items it WHERE it.box_id = b.id) AS itemsCount
+        FROM boxes b 
         WHERE b.parent_box_id = :parentId 
-        ORDER BY b.sort_order ASC, b.name ASC
+        ORDER BY b.sort_order ASC, b.name COLLATE NOCASE ASC
     """)
     fun getChildBoxesWithCounts(parentId: String): Flow<List<BoxWithCounts>>
+
+    @Query("""
+        SELECT b.*, 
+            (SELECT COUNT(*) FROM boxes sub WHERE sub.parent_box_id = b.id) AS childBoxesCount,
+            (SELECT COUNT(*) FROM items it WHERE it.box_id = b.id) AS itemsCount
+        FROM boxes b 
+        WHERE b.parent_box_id = :parentId 
+        ORDER BY b.name COLLATE NOCASE ASC
+    """)
+    fun getChildBoxesWithCountsByNameAsc(parentId: String): Flow<List<BoxWithCounts>>
+
+    @Query("""
+        SELECT b.*, 
+            (SELECT COUNT(*) FROM boxes sub WHERE sub.parent_box_id = b.id) AS childBoxesCount,
+            (SELECT COUNT(*) FROM items it WHERE it.box_id = b.id) AS itemsCount
+        FROM boxes b 
+        WHERE b.parent_box_id = :parentId 
+        ORDER BY b.created_at ASC, b.name COLLATE NOCASE ASC
+    """)
+    fun getChildBoxesWithCountsByCreatedAsc(parentId: String): Flow<List<BoxWithCounts>>
+
+    @Query("""
+        SELECT b.*, 
+            (SELECT COUNT(*) FROM boxes sub WHERE sub.parent_box_id = b.id) AS childBoxesCount,
+            (SELECT COUNT(*) FROM items it WHERE it.box_id = b.id) AS itemsCount
+        FROM boxes b 
+        WHERE b.parent_box_id = :parentId 
+        ORDER BY b.created_at DESC, b.name COLLATE NOCASE ASC
+    """)
+    fun getChildBoxesWithCountsByRecentDesc(parentId: String): Flow<List<BoxWithCounts>>
 
     @Query("SELECT * FROM boxes WHERE id = :id LIMIT 1")
     suspend fun getBoxById(id: String): BoxEntity?
@@ -49,8 +109,14 @@ interface BoxDao {
     @Query("SELECT * FROM boxes WHERE id = :id LIMIT 1")
     fun getBoxFlowById(id: String): Flow<BoxEntity?>
 
-    @Query("SELECT * FROM boxes ORDER BY name ASC")
+    @Query("SELECT * FROM boxes ORDER BY name COLLATE NOCASE ASC")
     fun getAllBoxes(): Flow<List<BoxEntity>>
+
+    @Query("SELECT * FROM boxes ORDER BY created_at ASC, name COLLATE NOCASE ASC")
+    fun getAllBoxesByCreatedAsc(): Flow<List<BoxEntity>>
+
+    @Query("SELECT * FROM boxes ORDER BY created_at DESC, name COLLATE NOCASE ASC")
+    fun getAllBoxesByRecentDesc(): Flow<List<BoxEntity>>
 
     @Query("SELECT * FROM boxes")
     suspend fun getAllBoxesSync(): List<BoxEntity>

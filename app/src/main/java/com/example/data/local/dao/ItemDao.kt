@@ -19,8 +19,14 @@ data class CategoryCount(
 @Dao
 interface ItemDao {
 
-    @Query("SELECT * FROM items WHERE box_id = :boxId ORDER BY name ASC")
+    @Query("SELECT * FROM items WHERE box_id = :boxId ORDER BY name COLLATE NOCASE ASC")
     fun getItemsInBox(boxId: String): Flow<List<ItemEntity>>
+
+    @Query("SELECT * FROM items WHERE box_id = :boxId ORDER BY created_at ASC, name COLLATE NOCASE ASC")
+    fun getItemsInBoxByCreatedAsc(boxId: String): Flow<List<ItemEntity>>
+
+    @Query("SELECT * FROM items WHERE box_id = :boxId ORDER BY created_at DESC, name COLLATE NOCASE ASC")
+    fun getItemsInBoxByRecentDesc(boxId: String): Flow<List<ItemEntity>>
 
     @Query("SELECT * FROM items WHERE id = :id LIMIT 1")
     suspend fun getItemById(id: String): ItemEntity?
@@ -38,7 +44,7 @@ interface ItemDao {
     fun getItemWithBox(itemId: String): Flow<ItemWithBox?>
 
     @Transaction
-    @Query("SELECT * FROM items ORDER BY name ASC")
+    @Query("SELECT * FROM items ORDER BY name COLLATE NOCASE ASC")
     fun getAllItemsWithBox(): Flow<List<ItemWithBox>>
 
     @Query("SELECT * FROM items WHERE primary_photo_uri IS NOT NULL AND primary_photo_uri != ''")
@@ -53,11 +59,27 @@ interface ItemDao {
         SELECT * FROM items 
         WHERE (:query = '' OR name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%' OR tags LIKE '%' || :query || '%')
           AND (:categoryId IS NULL OR category_id = :categoryId)
-        ORDER BY name ASC
+        ORDER BY name COLLATE NOCASE ASC
     """)
     fun searchItems(query: String, categoryId: String? = null): Flow<List<ItemEntity>>
 
-    @Query("SELECT * FROM items WHERE category_id = :categoryId ORDER BY name ASC")
+    @Query("""
+        SELECT * FROM items 
+        WHERE (:query = '' OR name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%' OR tags LIKE '%' || :query || '%')
+          AND (:categoryId IS NULL OR category_id = :categoryId)
+        ORDER BY created_at ASC, name COLLATE NOCASE ASC
+    """)
+    fun searchItemsByCreatedAsc(query: String, categoryId: String? = null): Flow<List<ItemEntity>>
+
+    @Query("""
+        SELECT * FROM items 
+        WHERE (:query = '' OR name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%' OR tags LIKE '%' || :query || '%')
+          AND (:categoryId IS NULL OR category_id = :categoryId)
+        ORDER BY created_at DESC, name COLLATE NOCASE ASC
+    """)
+    fun searchItemsByRecentDesc(query: String, categoryId: String? = null): Flow<List<ItemEntity>>
+
+    @Query("SELECT * FROM items WHERE category_id = :categoryId ORDER BY name COLLATE NOCASE ASC")
     fun getItemsByCategoryId(categoryId: String): Flow<List<ItemEntity>>
 
     @Query("SELECT * FROM items WHERE is_loaned = 1 ORDER BY loaned_at DESC")

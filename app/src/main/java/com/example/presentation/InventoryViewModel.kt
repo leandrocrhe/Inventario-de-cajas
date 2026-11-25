@@ -13,6 +13,7 @@ import com.example.data.local.entity.ItemEntity
 import com.example.data.local.entity.SearchHistoryEntity
 import com.example.data.repository.CategoryStat
 import com.example.data.repository.InventoryRepository
+import com.example.domain.model.InventorySortOption
 import com.example.domain.usecase.MoveBoxResult
 import com.example.domain.util.TagStat
 import com.example.domain.util.TagUtils
@@ -87,6 +88,21 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun setGridColumns(cols: Int) {
         _gridColumns.value = cols
+    }
+
+    // Inventory sort preference (Fecha de creación, Nombre A-Z, Más recientes)
+    private val _sortOption = MutableStateFlow(
+        when (prefs.getString("inventory_sort_option", InventorySortOption.NAME_ASC.name)) {
+            InventorySortOption.CREATED_DATE.name -> InventorySortOption.CREATED_DATE
+            InventorySortOption.MOST_RECENT.name -> InventorySortOption.MOST_RECENT
+            else -> InventorySortOption.NAME_ASC
+        }
+    )
+    val sortOption: StateFlow<InventorySortOption> = _sortOption.asStateFlow()
+
+    fun setSortOption(option: InventorySortOption) {
+        _sortOption.value = option
+        prefs.edit().putString("inventory_sort_option", option.name).apply()
     }
 
     // Navigation state: null = Root ("Mis Cajas")
@@ -173,31 +189,37 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
 
-    // Dynamic queries based on currentBoxId
+    // Dynamic queries based on currentBoxId and sortOption
     @OptIn(ExperimentalCoroutinesApi::class)
-    val currentBoxesWithCounts: StateFlow<List<BoxWithCounts>> = _currentBoxId
-        .flatMapLatest { boxId ->
-            if (boxId == null) {
-                repository.getRootBoxesWithCounts()
-            } else {
-                repository.getChildBoxesWithCounts(boxId)
-            }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val currentBoxesWithCounts: StateFlow<List<BoxWithCounts>> = combine(_currentBoxId, _sortOption) { boxId, sort ->
+        Pair(boxId, sort)
+    }.flatMapLatest { (boxId, sort) ->
+        if (boxId == null) {
+            repository.getRootBoxesWithCounts(sort)
+        } else {
+            repository.getChildBoxesWithCounts(boxId, sort)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val currentItems: StateFlow<List<ItemEntity>> = _currentBoxId
-        .flatMapLatest { boxId ->
-            if (boxId == null) {
-                repository.searchItems("")
-            } else {
-                repository.getItemsInBox(boxId)
-            }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val currentItems: StateFlow<List<ItemEntity>> = combine(_currentBoxId, _sortOption) { boxId, sort ->
+        Pair(boxId, sort)
+    }.flatMapLatest { (boxId, sort) ->
+        if (boxId == null) {
+            repository.searchItems("", sortOption = sort)
+        } else {
+            repository.getItemsInBox(boxId, sort)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val allBoxes: StateFlow<List<BoxEntity>> = repository.getAllBoxes()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val allBoxes: StateFlow<List<BoxEntity>> = _sortOption
+        .flatMapLatest { sort -> repository.getAllBoxes(sort) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val allInventoryItems: StateFlow<List<ItemEntity>> = repository.searchItems("")
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val allInventoryItems: StateFlow<List<ItemEntity>> = _sortOption
+        .flatMapLatest { sort -> repository.searchItems("", sortOption = sort) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allTagStats: StateFlow<List<TagStat>> = allInventoryItems
@@ -237,10 +259,10 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     val storageUsageMb: StateFlow<String> = _storageUsageMb.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val searchResultsItems: StateFlow<List<ItemEntity>> = combine(_searchQuery, _selectedCategoryFilter) { q, cat ->
-        Pair(q, cat)
-    }.flatMapLatest { (q, cat) ->
-        repository.searchItems(q, cat)
+    val searchResultsItems: StateFlow<List<ItemEntity>> = combine(_searchQuery, _selectedCategoryFilter, _sortOption) { q, cat, sort ->
+        Triple(q, cat, sort)
+    }.flatMapLatest { (q, cat, sort) ->
+        repository.searchItems(q, cat, sort)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)

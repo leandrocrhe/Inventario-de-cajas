@@ -46,7 +46,9 @@ import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.AutoAwesomeMosaic
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -67,6 +69,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.SortByAlpha
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Tune
@@ -94,6 +97,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -121,6 +125,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.data.local.dao.BoxWithCounts
 import com.example.data.local.entity.BoxEntity
 import com.example.data.local.entity.ItemEntity
+import com.example.domain.model.InventorySortOption
 import com.example.presentation.components.BackupDialog
 import com.example.presentation.components.BoxCard
 import com.example.presentation.components.BoxGridCard
@@ -224,6 +229,7 @@ fun MainInventoryScreen(
     val gridColumns by viewModel.gridColumns.collectAsState()
     val storageUsageMb by viewModel.storageUsageMb.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState()
+    val sortOption by viewModel.sortOption.collectAsState()
 
     val deleteTarget by viewModel.deleteTarget.collectAsState()
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
@@ -831,16 +837,17 @@ fun MainInventoryScreen(
                             )
                         }
 
-                        val zoneGroups = remember(rootBoxesWithCounts, allBoxes, allZones) {
+                        val zoneGroups = remember(rootBoxesWithCounts, allBoxes, allZones, sortOption) {
                             val assignedZones = rootBoxesWithCounts.mapNotNull {
                                 it.box.zone?.trim()?.takeIf { z -> z.isNotEmpty() && !z.equals("null", ignoreCase = true) }
                             }.distinct()
-                            val allKnownZones = (allZones.filter { it.isNotBlank() && !it.equals("null", ignoreCase = true) } + assignedZones).distinct().sorted()
+                            val allKnownZones = (allZones.filter { it.isNotBlank() && !it.equals("null", ignoreCase = true) } + assignedZones).distinct()
 
                             val map = linkedMapOf<String, MutableList<BoxWithCounts>>()
                             allKnownZones.forEach { z -> map[z] = mutableListOf() }
                             val unassigned = mutableListOf<BoxWithCounts>()
 
+                            // rootBoxesWithCounts already arrives sorted by sortOption from the repository
                             rootBoxesWithCounts.forEach { bwc ->
                                 val z = bwc.box.zone?.trim()
                                 if (!z.isNullOrBlank() && !z.equals("null", ignoreCase = true)) {
@@ -850,16 +857,29 @@ fun MainInventoryScreen(
                                 }
                             }
 
-                            val result = mutableListOf<Pair<String, List<BoxWithCounts>>>()
-                            for ((zName, boxes) in map) {
-                                if (boxes.isNotEmpty() || allZones.contains(zName)) {
-                                    result.add(zName to boxes)
-                                }
+                            val namedZones = map.entries
+                                .filter { (zName, boxes) -> boxes.isNotEmpty() || allZones.contains(zName) }
+                                .map { it.key to it.value.toList() }
+
+                            val sortedNamedZones = when (sortOption) {
+                                InventorySortOption.NAME_ASC -> namedZones.sortedBy { it.first.lowercase() }
+                                InventorySortOption.CREATED_DATE -> namedZones.sortedWith(
+                                    compareBy<Pair<String, List<BoxWithCounts>>> { (_, boxes) ->
+                                        boxes.minOfOrNull { it.box.createdAt } ?: Long.MAX_VALUE
+                                    }.thenBy { it.first.lowercase() }
+                                )
+                                InventorySortOption.MOST_RECENT -> namedZones.sortedWith(
+                                    compareByDescending<Pair<String, List<BoxWithCounts>>> { (_, boxes) ->
+                                        boxes.maxOfOrNull { it.box.createdAt } ?: Long.MIN_VALUE
+                                    }.thenBy { it.first.lowercase() }
+                                )
                             }
+
+                            val result = sortedNamedZones.toMutableList()
                             if (unassigned.isNotEmpty()) {
                                 result.add("Cajas sin zona asignada" to unassigned)
                             }
-                            result
+                            result.toList()
                         }
 
                         val activeZonesCount = remember(zoneGroups) { zoneGroups.count { it.second.isNotEmpty() } }
@@ -950,7 +970,10 @@ fun MainInventoryScreen(
                                             border = if (groupingFilter == GroupingFilterMode.RECIENTES) null else BorderStroke(1.dp, Color(0xFF2C2622)),
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(9999.dp))
-                                                .clickable { groupingFilter = GroupingFilterMode.RECIENTES }
+                                                .clickable {
+                                                    groupingFilter = GroupingFilterMode.RECIENTES
+                                                    viewModel.setSortOption(InventorySortOption.MOST_RECENT)
+                                                }
                                         ) {
                                             Row(
                                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -999,7 +1022,7 @@ fun MainInventoryScreen(
                                 }
                             }
 
-                            // Fila 2: Subtotal y Reordenar
+                            // Fila 2: Subtotal y Menú desplegable de ordenación
                             item {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -1021,27 +1044,10 @@ fun MainInventoryScreen(
                                         )
                                     }
 
-                                    Row(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .clickable { isSearchAndFilterOpen = false; currentBottomTab = AppBottomTab.ZONAS }
-                                            .padding(4.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "Gestionar",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                        Spacer(modifier = Modifier.width(2.dp))
-                                        Icon(
-                                            imageVector = Icons.Default.SwapVert,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
+                                    InventorySortDropdownMenu(
+                                        currentSort = sortOption,
+                                        onSelectSort = { viewModel.setSortOption(it) }
+                                    )
                                 }
                             }
 
@@ -1083,10 +1089,48 @@ fun MainInventoryScreen(
                                 }
                             }
 
-                            // =============================================================
-                            // ZONE ACCORDIONS: Cada zona agrupa sus cajas
-                            // =============================================================
-                            zoneGroups.forEach { (zoneName, displayBoxes) ->
+                            if (groupingFilter == GroupingFilterMode.RECIENTES && rootBoxesWithCounts.isNotEmpty()) {
+                                if (isGridView) {
+                                    val chunkedRecentBoxes = rootBoxesWithCounts.chunked(2)
+                                    items(chunkedRecentBoxes, key = { row -> row.joinToString("_") { it.box.id } }) { rowBoxes ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            rowBoxes.forEach { bwc ->
+                                                Box(modifier = Modifier.weight(1f)) {
+                                                    BoxGridCard(
+                                                        boxWithCounts = bwc,
+                                                        itemPhotos = boxItemPhotos[bwc.box.id] ?: emptyList(),
+                                                        onClick = { viewModel.openBox(bwc.box.id) },
+                                                        onMove = { viewModel.openMoveBoxDialog(bwc.box) },
+                                                        onEdit = { viewModel.openEditBoxDialog(bwc.box) },
+                                                        onDelete = { viewModel.requestDeleteBox(bwc) }
+                                                    )
+                                                }
+                                            }
+                                            if (rowBoxes.size == 1) {
+                                                Spacer(modifier = Modifier.weight(1f))
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    items(rootBoxesWithCounts, key = { it.box.id }) { bwc ->
+                                        BoxCard(
+                                            boxWithCounts = bwc,
+                                            itemPhotos = boxItemPhotos[bwc.box.id] ?: emptyList(),
+                                            onClick = { viewModel.openBox(bwc.box.id) },
+                                            onMove = { viewModel.openMoveBoxDialog(bwc.box) },
+                                            onEdit = { viewModel.openEditBoxDialog(bwc.box) },
+                                            onDelete = { viewModel.requestDeleteBox(bwc) }
+                                        )
+                                    }
+                                }
+                            } else {
+                                // =============================================================
+                                // ZONE ACCORDIONS: Cada zona agrupa sus cajas
+                                // =============================================================
+                                zoneGroups.forEach { (zoneName, displayBoxes) ->
                                 item(key = "zone_$zoneName") {
                                     val isCollapsed = collapsedZones[zoneName] ?: false
                                     val zoneColorIndex = (Math.abs(zoneName.hashCode()) % zonePalette.size)
@@ -1317,6 +1361,7 @@ fun MainInventoryScreen(
                                     }
                                 }
                             }
+                            }
                         }
                     } else {
                         // =============================================================
@@ -1479,6 +1524,26 @@ fun MainInventoryScreen(
                                         onClick = { selectedTab = 2 },
                                         text = { Text("Objetos (${itemsInBox.size})", fontWeight = FontWeight.SemiBold) }
                                     )
+                                }
+                            }
+
+                            if (rootBoxesWithCounts.isNotEmpty() || itemsInBox.isNotEmpty()) {
+                                item {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Ordenar contenido",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = Color(0xFFA89F95)
+                                        )
+                                        InventorySortDropdownMenu(
+                                            currentSort = sortOption,
+                                            onSelectSort = { viewModel.setSortOption(it) }
+                                        )
+                                    }
                                 }
                             }
 
@@ -1760,5 +1825,102 @@ fun MainInventoryScreen(
             onDeleteTag = { tagName -> viewModel.deleteTagGlobally(tagName) },
             onDismiss = { viewModel.closeTagManagement() }
         )
+    }
+}
+
+@Composable
+private fun InventorySortDropdownMenu(
+    currentSort: InventorySortOption,
+    onSelectSort: (InventorySortOption) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        Surface(
+            shape = RoundedCornerShape(9999.dp),
+            color = Color(0xFF181512),
+            border = BorderStroke(1.dp, Color(0xFF2C2622)),
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .clip(RoundedCornerShape(9999.dp))
+                .clickable { expanded = true }
+                .testTag("sort_dropdown_button")
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SwapVert,
+                    contentDescription = "Ordenar por",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = currentSort.label,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFFECE0DA),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Icon(
+                    imageVector = Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = Color(0xFFA89F95),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = Color(0xFF1C1713)
+        ) {
+            InventorySortOption.entries.forEach { option ->
+                val isSelected = option == currentSort
+                val optionIcon = when (option) {
+                    InventorySortOption.CREATED_DATE -> Icons.Default.CalendarToday
+                    InventorySortOption.NAME_ASC -> Icons.Default.SortByAlpha
+                    InventorySortOption.MOST_RECENT -> Icons.Default.Schedule
+                }
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = option.label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0xFFECE0DA)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = optionIcon,
+                            contentDescription = null,
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else Color(0xFFA89F95),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Seleccionado",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    },
+                    onClick = {
+                        expanded = false
+                        onSelectSort(option)
+                    },
+                    modifier = Modifier.testTag("sort_option_${option.name}")
+                )
+            }
+        }
     }
 }
