@@ -32,23 +32,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Hardware
-import androidx.compose.material.icons.filled.Hiking
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -82,25 +77,13 @@ import com.example.data.local.dao.BoxWithCounts
 import com.example.data.local.entity.BoxEntity
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
+import com.example.domain.util.TagUtils
 
 enum class BoxSortOption(val label: String, val icon: ImageVector) {
     RELEVANCE("Por relevancia", Icons.Default.AutoAwesome),
     RECENT("Más recientes", Icons.Default.Schedule),
     NAME_AZ("Nombre (A - Z)", Icons.Default.SortByAlpha),
     CAPACITY("Capacidad (% lleno)", Icons.Default.PieChart)
-}
-
-private fun getCategoryIcon(name: String): ImageVector {
-    val lower = name.lowercase()
-    return when {
-        lower.contains("herramienta") || lower.contains("tool") -> Icons.Default.Build
-        lower.contains("tecno") || lower.contains("audio") || lower.contains("electr") -> Icons.Default.Hardware
-        lower.contains("arte") || lower.contains("tinta") || lower.contains("pintur") -> Icons.Default.Palette
-        lower.contains("textil") || lower.contains("ropa") -> Icons.Default.Checkroom
-        lower.contains("camp") || lower.contains("viaje") -> Icons.Default.Hiking
-        lower.contains("doc") || lower.contains("papel") -> Icons.Default.Description
-        else -> Icons.Default.Category
-    }
 }
 
 /**
@@ -124,17 +107,35 @@ fun SearchScreen(
     onEditBox: (BoxEntity) -> Unit,
     onDeleteBox: (BoxEntity) -> Unit,
     onManageCategories: (() -> Unit)? = null,
+    onManageTags: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedZone by remember { mutableStateOf<String?>(null) }
     var selectedCategories by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var selectedTags by remember { mutableStateOf<Set<String>>(emptySet()) }
     var selectedStatus by remember { mutableStateOf<String?>(null) } // "Frecuente", "En préstamo", "Casi lleno (>80%)"
     var selectedSort by remember { mutableStateOf(BoxSortOption.RELEVANCE) }
     var isSortMenuOpen by remember { mutableStateOf(false) }
 
+    // Reactive tag statistics derived from live Room items
+    val tagStats = remember(itemsInInventory) {
+        TagUtils.computeTagStats(itemsInInventory)
+    }
+
+    // Keep selectedTags automatically synced if a tag was renamed/deleted in TagManagementBottomSheet
+    val activeTagLowerSet = remember(tagStats) {
+        tagStats.map { it.name.lowercase() }.toSet()
+    }
+    val effectiveSelectedTags = remember(selectedTags, activeTagLowerSet) {
+        selectedTags.filter { it.lowercase() in activeTagLowerSet }.toSet()
+    }
+
     // Active filters badge count on tune button
-    val activeFilterBadgeCount = remember(selectedZone, selectedCategories, selectedStatus) {
-        (if (selectedZone != null) 1 else 0) + selectedCategories.size + (if (selectedStatus != null) 1 else 0)
+    val activeFilterBadgeCount = remember(selectedZone, selectedCategories, effectiveSelectedTags, selectedStatus) {
+        (if (selectedZone != null) 1 else 0) +
+            selectedCategories.size +
+            effectiveSelectedTags.size +
+            (if (selectedStatus != null) 1 else 0)
     }
 
     // Filter boxes
@@ -143,6 +144,7 @@ fun SearchScreen(
         searchQuery,
         selectedZone,
         selectedCategories,
+        effectiveSelectedTags,
         selectedStatus,
         selectedSort,
         itemsInInventory
@@ -183,7 +185,18 @@ fun SearchScreen(
                 boxItems.any { it.categoryId in selectedCategories }
             }
 
-            // 4. Status Filter
+            // 4. Tag Filter
+            val matchesTag = if (effectiveSelectedTags.isEmpty()) {
+                true
+            } else {
+                val boxItems = itemsInInventory.filter { it.boxId == box.id }
+                boxItems.any { item ->
+                    val itemTagsLower = TagUtils.parseTags(item.tags).map { it.lowercase() }.toSet()
+                    effectiveSelectedTags.any { it.lowercase() in itemTagsLower }
+                }
+            }
+
+            // 5. Status Filter
             val matchesStatus = when (selectedStatus) {
                 "Frecuente" -> {
                     val count = itemsInInventory.count { it.boxId == box.id }
@@ -199,7 +212,7 @@ fun SearchScreen(
                 else -> true
             }
 
-            matchesQuery && matchesZone && matchesCategory && matchesStatus
+            matchesQuery && matchesZone && matchesCategory && matchesTag && matchesStatus
         }
 
         // Apply Sorting
@@ -220,10 +233,10 @@ fun SearchScreen(
         }
     }
 
-    // Matching Items (if search query or categories are active)
-    val matchingItems = remember(searchQuery, selectedCategories, itemsInInventory) {
+    // Matching Items (if search query, categories, or tags are active)
+    val matchingItems = remember(searchQuery, selectedCategories, effectiveSelectedTags, itemsInInventory) {
         val query = searchQuery.trim().lowercase()
-        if (query.isBlank() && selectedCategories.isEmpty()) {
+        if (query.isBlank() && selectedCategories.isEmpty() && effectiveSelectedTags.isEmpty()) {
             emptyList()
         } else {
             itemsInInventory.filter { item ->
@@ -232,7 +245,13 @@ fun SearchScreen(
                     (item.description?.lowercase()?.contains(query) == true) ||
                     item.tags.lowercase().contains(query)
                 val matchesCat = selectedCategories.isEmpty() || item.categoryId in selectedCategories
-                matchesQuery && matchesCat
+                val matchesTag = if (effectiveSelectedTags.isEmpty()) {
+                    true
+                } else {
+                    val itemTagsLower = TagUtils.parseTags(item.tags).map { it.lowercase() }.toSet()
+                    effectiveSelectedTags.any { it.lowercase() in itemTagsLower }
+                }
+                matchesQuery && matchesCat && matchesTag
             }
         }
     }
@@ -445,6 +464,7 @@ fun SearchScreen(
                                     onQueryChange("")
                                     selectedZone = null
                                     selectedCategories = emptySet()
+                                    selectedTags = emptySet()
                                     selectedStatus = null
                                 }
                                 .testTag("btn_clear_filters")
@@ -704,7 +724,7 @@ fun SearchScreen(
                                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                                         ) {
                                             Icon(
-                                                imageVector = getCategoryIcon(cat.name),
+                                                imageVector = IconMapper.getCategoryIcon(cat.iconName, cat.name),
                                                 contentDescription = null,
                                                 tint = if (isSelected) Color(0xFF2F1500) else MaterialTheme.colorScheme.onSurfaceVariant,
                                                 modifier = Modifier.size(15.dp)
@@ -723,6 +743,95 @@ fun SearchScreen(
                                                     modifier = Modifier.size(14.dp)
                                                 )
                                             }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Reactive Tag filter row
+                            if (tagStats.isNotEmpty() || onManageTags != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                                )
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Etiquetas:",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 11.sp
+                                    )
+
+                                    if (onManageTags != null) {
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = MaterialTheme.colorScheme.surfaceVariant,
+                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .clickable { onManageTags() }
+                                                .testTag("btn_manage_tags_search")
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Tag,
+                                                    contentDescription = "Gestionar etiquetas",
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(13.dp)
+                                                )
+                                                Text(
+                                                    text = "Gestionar",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    fontSize = 11.sp
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    tagStats.forEach { stat ->
+                                        val isTagSelected = effectiveSelectedTags.any { it.equals(stat.name, ignoreCase = true) }
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = if (isTagSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                            border = BorderStroke(
+                                                1.dp,
+                                                if (isTagSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                                            ),
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .clickable {
+                                                    selectedTags = if (isTagSelected) {
+                                                        selectedTags.filterNot { it.equals(stat.name, ignoreCase = true) }.toSet()
+                                                    } else {
+                                                        selectedTags + stat.name
+                                                    }
+                                                }
+                                                .testTag("filter_tag_${stat.name}")
+                                        ) {
+                                            Text(
+                                                text = "#${stat.name} (${stat.itemCount})",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = if (isTagSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isTagSelected) Color(0xFF2F1500) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                fontSize = 11.sp
+                                            )
                                         }
                                     }
                                 }

@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,12 +63,14 @@ import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
+import com.example.domain.util.TagUtils
+import com.example.presentation.components.IconMapper
 
 /**
  * Rich Object Detail Sheet matching Google Stitch AI prototype
  * (modal-object-detail in prototipo_navegable_interactivo_amoled_clics_reales/code.html)
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ObjectDetailSheet(
     item: ItemEntity,
@@ -320,12 +324,13 @@ fun ObjectDetailSheet(
             )
 
             // Category & Tags Row
-            if (category != null || item.tags.isNotBlank()) {
+            val parsedTags = remember(item.tags) { TagUtils.parseTags(item.tags) }
+            if (category != null || parsedTags.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(10.dp))
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     category?.let { cat ->
                         Surface(
@@ -333,24 +338,35 @@ fun ObjectDetailSheet(
                             color = catColor.copy(alpha = 0.15f),
                             border = BorderStroke(1.dp, catColor.copy(alpha = 0.4f))
                         ) {
-                            Text(
-                                text = cat.name,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = catColor,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = IconMapper.getCategoryIcon(cat.iconName, cat.name),
+                                    contentDescription = null,
+                                    tint = catColor,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Text(
+                                    text = cat.name,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = catColor
+                                )
+                            }
                         }
                     }
 
-                    if (item.tags.isNotBlank()) {
+                    parsedTags.forEach { tag ->
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = Color(0xFF1C1611),
                             border = BorderStroke(1.dp, Color(0xFF2E241C))
                         ) {
                             Text(
-                                text = "#${item.tags}",
+                                text = "#$tag",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFFECE0DA),
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)

@@ -14,6 +14,8 @@ import com.example.data.local.entity.SearchHistoryEntity
 import com.example.data.repository.CategoryStat
 import com.example.data.repository.InventoryRepository
 import com.example.domain.usecase.MoveBoxResult
+import com.example.domain.util.TagStat
+import com.example.domain.util.TagUtils
 import com.example.ui.theme.ThemeMode
 import java.io.File
 import java.util.Locale
@@ -40,6 +42,11 @@ sealed class BackupProgressState {
 sealed class DeleteTarget {
     data class Box(val box: BoxEntity, val subBoxesCount: Int, val itemsCount: Int) : DeleteTarget()
     data class Item(val item: ItemEntity) : DeleteTarget()
+}
+
+sealed class TagMutationEvent {
+    data class Renamed(val oldTag: String, val newTag: String) : TagMutationEvent()
+    data class Deleted(val tag: String) : TagMutationEvent()
 }
 
 class InventoryViewModel(application: Application) : AndroidViewModel(application) {
@@ -129,6 +136,9 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     val isLoansSheetOpen = MutableStateFlow(false)
     val isBackupDialogOpen = MutableStateFlow(false)
     val isCategoryManagementOpen = MutableStateFlow(false)
+    val isTagManagementOpen = MutableStateFlow(false)
+    private val _lastTagMutation = MutableStateFlow<Pair<Long, TagMutationEvent>?>(null)
+    val lastTagMutation: StateFlow<Pair<Long, TagMutationEvent>?> = _lastTagMutation.asStateFlow()
     private val _backupDialogInitialTab = MutableStateFlow(0)
     val backupDialogInitialTab: StateFlow<Int> = _backupDialogInitialTab.asStateFlow()
     private val _backupProgressState = MutableStateFlow<BackupProgressState>(BackupProgressState.Idle)
@@ -144,6 +154,14 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun closeCategoryManagement() {
         isCategoryManagementOpen.value = false
+    }
+
+    fun openTagManagement() {
+        isTagManagementOpen.value = true
+    }
+
+    fun closeTagManagement() {
+        isTagManagementOpen.value = false
     }
 
     private val _categoryStats = MutableStateFlow<List<CategoryStat>>(emptyList())
@@ -181,6 +199,14 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
 
     val allInventoryItems: StateFlow<List<ItemEntity>> = repository.searchItems("")
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allTagStats: StateFlow<List<TagStat>> = allInventoryItems
+        .map { items -> TagUtils.computeTagStats(items) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val suggestedTags: StateFlow<List<String>> = allInventoryItems
+        .map { items -> TagUtils.computeSuggestedTags(items) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TagUtils.DEFAULT_FALLBACK_TAGS)
 
     val allCategories: StateFlow<List<CategoryEntity>> = repository.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -533,6 +559,62 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
         return repository.getCategoryItemCount(categoryId)
     }
 
+    // Tag bulk management actions
+    fun renameTagGlobally(oldTag: String, newTag: String) {
+        val cleanOld = TagUtils.normalizeTag(oldTag)
+        val cleanNew = TagUtils.normalizeTag(newTag)
+        viewModelScope.launch {
+            val result = repository.renameTagGlobally(cleanOld, cleanNew)
+            result.fold(
+                onSuccess = { count ->
+                    _lastTagMutation.value = System.nanoTime() to TagMutationEvent.Renamed(cleanOld, cleanNew)
+                    _itemToEdit.value?.let { editing ->
+                        val updatedTags = TagUtils.formatTags(
+                            TagUtils.parseTags(editing.tags).map {
+                                if (it.equals(cleanOld, ignoreCase = true)) cleanNew else it
+                            }
+                        )
+                        _itemToEdit.value = editing.copy(tags = updatedTags)
+                    }
+                    _snackbarMessage.value = if (count > 0) {
+                        "Etiqueta «$cleanOld» actualizada a «$cleanNew» en $count objeto(s)"
+                    } else {
+                        "Etiqueta actualizada a «$cleanNew»"
+                    }
+                },
+                onFailure = { err ->
+                    _snackbarMessage.value = err.localizedMessage ?: "Error al renombrar etiqueta"
+                }
+            )
+        }
+    }
+
+    fun deleteTagGlobally(tagToDelete: String) {
+        val cleanTarget = TagUtils.normalizeTag(tagToDelete)
+        viewModelScope.launch {
+            val result = repository.deleteTagGlobally(cleanTarget)
+            result.fold(
+                onSuccess = { count ->
+                    _lastTagMutation.value = System.nanoTime() to TagMutationEvent.Deleted(cleanTarget)
+                    _itemToEdit.value?.let { editing ->
+                        val updatedTags = TagUtils.formatTags(
+                            TagUtils.removeTag(TagUtils.parseTags(editing.tags), cleanTarget)
+                        )
+                        _itemToEdit.value = editing.copy(tags = updatedTags)
+                    }
+                    _snackbarMessage.value = if (count > 0) {
+                        "Etiqueta «$cleanTarget» eliminada de $count objeto(s)"
+                    } else {
+                        "Etiqueta eliminada"
+                    }
+                },
+                onFailure = { err ->
+                    _snackbarMessage.value = err.localizedMessage ?: "Error al eliminar etiqueta"
+                }
+            )
+        }
+    }
+
     fun saveItem(
         name: String,
         description: String?,
@@ -549,6 +631,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                 return@launch
             }
 
+            val normalizedTags = TagUtils.formatTags(TagUtils.parseTags(tags))
             val editing = _itemToEdit.value
             if (editing != null) {
                 repository.updateItem(
@@ -557,7 +640,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                         description = description?.takeIf { it.isNotBlank() }?.trim(),
                         quantity = quantity.coerceAtLeast(1),
                         categoryId = categoryId,
-                        tags = tags.trim(),
+                        tags = normalizedTags,
                         primaryPhotoUri = photoUri ?: editing.primaryPhotoUri
                     )
                 )
@@ -570,7 +653,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                     categoryId = categoryId,
                     primaryPhotoUri = photoUri,
                     quantity = quantity,
-                    tags = tags
+                    tags = normalizedTags
                 )
                 _snackbarMessage.value = "Objeto guardado: $name"
             }

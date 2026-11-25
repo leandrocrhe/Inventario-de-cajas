@@ -18,9 +18,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Tune
@@ -35,6 +38,7 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
@@ -43,6 +47,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,12 +56,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.data.local.entity.BoxEntity
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
+import com.example.domain.util.TagUtils
+import com.example.presentation.TagMutationEvent
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -67,14 +76,39 @@ fun EditItemDialog(
     categories: List<CategoryEntity>,
     onSave: (name: String, description: String?, quantity: Int, categoryId: String?, tags: String, photoUri: String?, targetBoxId: String?) -> Unit,
     onDismiss: () -> Unit,
-    onManageCategories: (() -> Unit)? = null
+    onManageCategories: (() -> Unit)? = null,
+    suggestedTags: List<String> = emptyList(),
+    onManageTags: (() -> Unit)? = null,
+    lastTagMutation: Pair<Long, TagMutationEvent>? = null
 ) {
     var name by remember { mutableStateOf(itemToEdit?.name ?: "") }
     var description by remember { mutableStateOf(itemToEdit?.description ?: "") }
     var quantity by remember { mutableIntStateOf(itemToEdit?.quantity ?: 1) }
     var selectedCategoryId by remember { mutableStateOf(itemToEdit?.categoryId) }
-    var tags by remember { mutableStateOf(itemToEdit?.tags ?: "") }
+    var activeTags by remember(itemToEdit?.id) {
+        mutableStateOf(TagUtils.parseTags(itemToEdit?.tags ?: ""))
+    }
+    var tagInput by remember(itemToEdit?.id) { mutableStateOf("") }
     var photoUri by remember { mutableStateOf(itemToEdit?.primaryPhotoUri) }
+
+    // Keep in-dialog active tags synced if user renames/deletes tags globally while dialog is open
+    LaunchedEffect(lastTagMutation) {
+        val event = lastTagMutation?.second ?: return@LaunchedEffect
+        when (event) {
+            is TagMutationEvent.Renamed -> {
+                activeTags = TagUtils.parseTags(
+                    TagUtils.formatTags(
+                        activeTags.map {
+                            if (it.equals(event.oldTag, ignoreCase = true)) event.newTag else it
+                        }
+                    )
+                )
+            }
+            is TagMutationEvent.Deleted -> {
+                activeTags = TagUtils.removeTag(activeTags, event.tag)
+            }
+        }
+    }
 
     // If currentBox is null (e.g. from search or root), let user select box
     var selectedBoxId by remember {
@@ -82,7 +116,13 @@ fun EditItemDialog(
     }
     var boxDropdownExpanded by remember { mutableStateOf(false) }
 
-    val quickTags = listOf("Frágil", "Cables", "Herramienta", "Documento", "Invierno", "Repuesto", "Nuevo")
+    val availableSuggestions = remember(suggestedTags, activeTags) {
+        val source = suggestedTags.ifEmpty { TagUtils.DEFAULT_FALLBACK_TAGS }
+        source.filter { candidate ->
+            val norm = TagUtils.normalizeTag(candidate)
+            norm.isNotBlank() && activeTags.none { it.equals(norm, ignoreCase = true) }
+        }.take(12)
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -306,48 +346,199 @@ fun EditItemDialog(
                                     selectedCategoryId = if (isSelected) null else cat.id
                                 },
                                 shape = RoundedCornerShape(9999.dp),
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = IconMapper.getCategoryIcon(cat.iconName, cat.name),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
                                 label = { Text(cat.name) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
                                 )
                             )
                         }
                     }
                 }
 
-                // Tags
-                Column {
+                // Dynamic Tags Selector & Anti-Duplicate Normalization
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Etiquetas",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        if (onManageTags != null) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onManageTags() }
+                                    .testTag("btn_manage_tags_from_dialog")
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Tune,
+                                        contentDescription = "Gestionar etiquetas",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "Gestionar",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Active tags assigned to current item as removable chips
+                    if (activeTags.isNotEmpty()) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("active_tags_flow")
+                        ) {
+                            activeTags.forEach { tag ->
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = Color(0xFF231B15),
+                                    border = BorderStroke(1.dp, Color(0xFFFFB77C).copy(alpha = 0.65f)),
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .clickable {
+                                            activeTags = TagUtils.removeTag(activeTags, tag)
+                                        }
+                                        .testTag("active_tag_chip_$tag")
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "#$tag",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFFFFB77C)
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Quitar etiqueta $tag",
+                                            tint = Color(0xFFFFB77C),
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Input for adding new comma-separated tags
                     OutlinedTextField(
-                        value = tags,
-                        onValueChange = { tags = it },
-                        label = { Text("Etiquetas (separadas por coma)") },
+                        value = tagInput,
+                        onValueChange = { incoming ->
+                            if (incoming.contains(",")) {
+                                val parts = incoming.split(",")
+                                val completed = parts.dropLast(1)
+                                completed.forEach { part ->
+                                    activeTags = TagUtils.addTag(activeTags, part)
+                                }
+                                tagInput = parts.last()
+                            } else {
+                                tagInput = incoming
+                            }
+                        },
+                        label = { Text("Añadir etiquetas (separadas por coma)") },
                         placeholder = { Text("ej. Cables, HDMI, Video") },
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (tagInput.isNotBlank()) {
+                                    activeTags = TagUtils.addTagsFromInput(activeTags, tagInput)
+                                    tagInput = ""
+                                }
+                            }
+                        ),
+                        trailingIcon = if (tagInput.isNotBlank()) {
+                            {
+                                IconButton(
+                                    onClick = {
+                                        activeTags = TagUtils.addTagsFromInput(activeTags, tagInput)
+                                        tagInput = ""
+                                    },
+                                    modifier = Modifier.testTag("btn_add_tag_input")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Añadir etiqueta",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        } else null,
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("tag_input_field")
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        quickTags.forEach { qTag ->
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                modifier = Modifier.clickable {
-                                    tags = if (tags.isBlank()) qTag else "$tags, $qTag"
-                                }
+                    // Dynamic suggestions from Room
+                    if (availableSuggestions.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = "Sugerencias:",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp
+                            )
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.testTag("suggested_tags_flow")
                             ) {
-                                Text(
-                                    text = "+ $qTag",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
+                                availableSuggestions.forEach { qTag ->
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = Color(0xFF181512),
+                                        border = BorderStroke(1.dp, Color(0xFF2C2622)),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .clickable {
+                                                activeTags = TagUtils.addTag(activeTags, qTag)
+                                            }
+                                            .testTag("suggested_tag_chip_$qTag")
+                                    ) {
+                                        Text(
+                                            text = "+ $qTag",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -365,7 +556,10 @@ fun EditItemDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    onSave(name, description, quantity, selectedCategoryId, tags, photoUri, selectedBoxId)
+                    val finalTags = TagUtils.formatTags(
+                        TagUtils.addTagsFromInput(activeTags, tagInput)
+                    )
+                    onSave(name, description, quantity, selectedCategoryId, finalTags, photoUri, selectedBoxId)
                 },
                 enabled = name.isNotBlank() && selectedBoxId != null,
                 shape = RoundedCornerShape(12.dp),

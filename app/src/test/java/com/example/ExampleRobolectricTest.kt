@@ -436,4 +436,113 @@ class ExampleRobolectricTest {
 
         db.close()
     }
+
+    @Test
+    fun testCuratedIconMapperHasNoDuplicatesAndResolvesAllInventorySymbols() {
+        val options = com.example.presentation.components.IconMapper.curatedIconOptions
+        val keys = options.map { it.key.lowercase() }
+        assertEquals("Icon keys must have zero duplicates", keys.size, keys.distinct().size)
+
+        val vectors = options.map { it.vector }
+        assertEquals("Icon vectors must have zero duplicates", vectors.size, vectors.distinct().size)
+
+        // Ensure sports/leisure/health icons are excluded from selector
+        assertFalse(keys.contains("hiking"))
+        assertFalse(keys.contains("medical_services"))
+        assertFalse(keys.contains("sports_soccer"))
+
+        val requiredKeys = listOf(
+            "build", "hardware", "bolt", "construction", "settings", "tune", "precision_manufacturing",
+            "memory", "cable", "devices", "smartphone", "router", "power", "headphones", "speaker",
+            "description", "article", "folder", "folder_special", "receipt_long", "badge", "menu_book", "book",
+            "home", "checkroom", "kitchen", "microwave", "inventory_2", "package_2", "lightbulb", "cleaning_services"
+        )
+        requiredKeys.forEach { key ->
+            assertTrue("Missing required icon key: $key", keys.contains(key))
+            val resolved = com.example.presentation.components.IconMapper.getCategoryIcon(key)
+            assertNotNull(resolved)
+        }
+    }
+
+    @Test
+    fun testTagUtilsNormalizationAntiDuplicateAndDynamicSuggestions() {
+        // Normalization: trims & collapses internal spaces
+        assertEquals("Cables HDMI", com.example.domain.util.TagUtils.normalizeTag("   Cables   HDMI  "))
+
+        // Case-insensitive deduplication on parse & add
+        val parsed = com.example.domain.util.TagUtils.parseTags("  cables , Cables,  HDMI ,  hdmi  ,   Audio   Pro ")
+        assertEquals(listOf("cables", "HDMI", "Audio Pro"), parsed)
+
+        val afterAddDuplicate = com.example.domain.util.TagUtils.addTag(parsed, "CABLES")
+        assertEquals(parsed, afterAddDuplicate)
+
+        val afterAddNew = com.example.domain.util.TagUtils.addTag(parsed, "  Video   4K ")
+        assertEquals(listOf("cables", "HDMI", "Audio Pro", "Video 4K"), afterAddNew)
+
+        val afterRemove = com.example.domain.util.TagUtils.removeTag(afterAddNew, "hdmi")
+        assertEquals(listOf("cables", "Audio Pro", "Video 4K"), afterRemove)
+
+        // Dynamic suggestions fallback when no tags exist
+        val fallback = com.example.domain.util.TagUtils.computeSuggestedTags(emptyList())
+        assertEquals(com.example.domain.util.TagUtils.DEFAULT_FALLBACK_TAGS, fallback)
+
+        // Dynamic suggestions sorted by usage frequency
+        val items = listOf(
+            ItemEntity("1", "A", boxId = "b1", tags = "Taller, Eléctrico"),
+            ItemEntity("2", "B", boxId = "b1", tags = "Taller, Manual"),
+            ItemEntity("3", "C", boxId = "b1", tags = "Eléctrico")
+        )
+        val stats = com.example.domain.util.TagUtils.computeTagStats(items)
+        assertEquals(3, stats.size)
+        assertEquals("Eléctrico", stats[0].name)
+        assertEquals(2, stats[0].itemCount)
+        assertEquals("Taller", stats[1].name)
+        assertEquals(2, stats[1].itemCount)
+        assertEquals("Manual", stats[2].name)
+        assertEquals(1, stats[2].itemCount)
+    }
+
+    @Test
+    fun testRepositoryAtomicBulkRenameMergeAndDeleteTags() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val repo = com.example.data.repository.InventoryRepository(db)
+
+        db.boxDao().insertBox(BoxEntity(id = "box_1", name = "Caja Test"))
+        db.itemDao().insertItems(
+            listOf(
+                ItemEntity(id = "i1", name = "Cable A", boxId = "box_1", tags = "cables, HDMI"),
+                ItemEntity(id = "i2", name = "Cable B", boxId = "box_1", tags = "Cables, Cableado"),
+                ItemEntity(id = "i3", name = "Martillo", boxId = "box_1", tags = "Taller")
+            )
+        )
+
+        // 1. Bulk rename "cables" -> "Cableado" (should merge without duplicate "Cableado" on i2)
+        val renameResult = repo.renameTagGlobally("cables", "  Cableado  ")
+        assertTrue(renameResult.isSuccess)
+        assertEquals(2, renameResult.getOrNull())
+
+        val i1AfterRename = db.itemDao().getItemById("i1")!!
+        val i2AfterRename = db.itemDao().getItemById("i2")!!
+        val i3AfterRename = db.itemDao().getItemById("i3")!!
+
+        assertEquals("Cableado, HDMI", i1AfterRename.tags)
+        assertEquals("Cableado", i2AfterRename.tags)
+        assertEquals("Taller", i3AfterRename.tags)
+
+        // 2. Bulk delete "Cableado" (items must remain in DB, only the tag is removed)
+        val deleteResult = repo.deleteTagGlobally("cableado")
+        assertTrue(deleteResult.isSuccess)
+        assertEquals(2, deleteResult.getOrNull())
+
+        val allItemsAfterDelete = db.itemDao().getAllItemsSync()
+        assertEquals(3, allItemsAfterDelete.size)
+        assertEquals("HDMI", db.itemDao().getItemById("i1")!!.tags)
+        assertEquals("", db.itemDao().getItemById("i2")!!.tags)
+        assertEquals("Taller", db.itemDao().getItemById("i3")!!.tags)
+
+        db.close()
+    }
 }

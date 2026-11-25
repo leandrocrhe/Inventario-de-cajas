@@ -177,7 +177,14 @@ fun StatsDashboardDialog(
                                                     .clip(CircleShape)
                                                     .background(catColor)
                                             )
-                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Icon(
+                                                imageVector = IconMapper.getCategoryIcon(stat.category.iconName, stat.category.name),
+                                                contentDescription = null,
+                                                tint = catColor,
+                                                modifier = Modifier.size(15.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
                                             Text(
                                                 text = stat.category.name,
                                                 style = MaterialTheme.typography.bodyMedium,

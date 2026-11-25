@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,6 +25,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -31,25 +35,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Hardware
-import androidx.compose.material.icons.filled.Hiking
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Tag
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -98,37 +89,11 @@ val CATEGORY_COLORS = listOf(
     "#A855F7"  // Violet
 )
 
-val CATEGORY_ICON_OPTIONS = listOf(
-    Pair("category", Icons.Default.Category),
-    Pair("build", Icons.Default.Build),
-    Pair("hardware", Icons.Default.Hardware),
-    Pair("palette", Icons.Default.Palette),
-    Pair("checkroom", Icons.Default.Checkroom),
-    Pair("hiking", Icons.Default.Hiking),
-    Pair("description", Icons.Default.Description),
-    Pair("home", Icons.Default.Home),
-    Pair("inventory", Icons.Default.Inventory2),
-    Pair("tag", Icons.Default.Tag),
-    Pair("schedule", Icons.Default.Schedule),
-    Pair("settings", Icons.Default.Settings)
-)
+val CATEGORY_ICON_OPTIONS: List<Pair<String, ImageVector>> =
+    IconMapper.curatedIconOptions.map { it.key to it.vector }
 
 fun getCategoryIconByTag(iconName: String, fallbackName: String = ""): ImageVector {
-    val key = iconName.trim().lowercase()
-    val match = CATEGORY_ICON_OPTIONS.find { it.first.equals(key, ignoreCase = true) }
-    if (match != null) return match.second
-
-    val lowerName = fallbackName.lowercase()
-    return when {
-        lowerName.contains("herramienta") || lowerName.contains("tool") -> Icons.Default.Build
-        lowerName.contains("tecno") || lowerName.contains("audio") || lowerName.contains("electr") -> Icons.Default.Hardware
-        lowerName.contains("arte") || lowerName.contains("tinta") || lowerName.contains("pintur") -> Icons.Default.Palette
-        lowerName.contains("ropa") || lowerName.contains("textil") || lowerName.contains("invierno") -> Icons.Default.Checkroom
-        lowerName.contains("camp") || lowerName.contains("montaña") || lowerName.contains("viaje") -> Icons.Default.Hiking
-        lowerName.contains("doc") || lowerName.contains("papel") || lowerName.contains("factura") -> Icons.Default.Description
-        lowerName.contains("hogar") || lowerName.contains("casa") -> Icons.Default.Home
-        else -> Icons.Default.Category
-    }
+    return IconMapper.getCategoryIcon(iconName, fallbackName)
 }
 
 /**
@@ -418,43 +383,74 @@ fun CategoryManagementBottomSheet(
                             }
                         }
 
-                        // Icon Selector
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(
-                                text = "Icono representativo (Material Symbols):",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFFA89F95),
-                                fontWeight = FontWeight.Medium
-                            )
-
+                        // Icon Selector (Curated Horizontal Grid)
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val selectedOption = remember(formIcon) {
+                                IconMapper.getOption(formIcon)
+                            }
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                CATEGORY_ICON_OPTIONS.forEach { (iconKey, vector) ->
-                                    val isSelected = formIcon.equals(iconKey, ignoreCase = true)
+                                Text(
+                                    text = "Icono representativo (Material Symbols):",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color(0xFFA89F95),
+                                    fontWeight = FontWeight.Medium
+                                )
+                                if (selectedOption != null) {
                                     Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = if (isSelected) Color(0xFFFFB77C).copy(alpha = 0.25f) else Color(0xFF241D17),
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Color(0xFF231B15),
+                                        border = BorderStroke(1.dp, Color(0xFFFFB77C).copy(alpha = 0.45f))
+                                    ) {
+                                        Text(
+                                            text = selectedOption.label,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFFFFB77C),
+                                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            LazyHorizontalGrid(
+                                rows = GridCells.Fixed(3),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(166.dp)
+                                    .testTag("category_icon_horizontal_grid"),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(vertical = 2.dp)
+                            ) {
+                                gridItems(
+                                    items = IconMapper.curatedIconOptions,
+                                    key = { it.key }
+                                ) { option ->
+                                    val isSelected = formIcon.equals(option.key, ignoreCase = true)
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isSelected) Color(0xFFFFB77C).copy(alpha = 0.22f) else Color(0xFF181512),
                                         border = BorderStroke(
-                                            1.dp,
-                                            if (isSelected) Color(0xFFFFB77C) else Color(0xFF382E26)
+                                            width = if (isSelected) 1.5.dp else 1.dp,
+                                            color = if (isSelected) Color(0xFFFFB77C) else Color(0xFF2C2622)
                                         ),
                                         modifier = Modifier
-                                            .size(42.dp)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .clickable { formIcon = iconKey }
-                                            .testTag("icon_picker_$iconKey")
+                                            .size(48.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .clickable { formIcon = option.key }
+                                            .testTag("icon_picker_${option.key}")
                                     ) {
                                         Box(contentAlignment = Alignment.Center) {
                                             Icon(
-                                                imageVector = vector,
-                                                contentDescription = iconKey,
+                                                imageVector = option.vector,
+                                                contentDescription = option.label,
                                                 tint = if (isSelected) Color(0xFFFFB77C) else Color(0xFFA89F95),
-                                                modifier = Modifier.size(20.dp)
+                                                modifier = Modifier.size(22.dp)
                                             )
                                         }
                                     }

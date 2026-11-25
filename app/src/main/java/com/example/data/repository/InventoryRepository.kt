@@ -18,6 +18,7 @@ import com.example.data.local.relation.BoxWithItems
 import com.example.data.local.relation.ItemWithBox
 import com.example.domain.usecase.MoveBoxResult
 import com.example.domain.usecase.MoveBoxUseCase
+import com.example.domain.util.TagUtils
 import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -338,6 +339,7 @@ class InventoryRepository(private val database: AppDatabase) {
         tags: String
     ): String = withContext(Dispatchers.IO) {
         val id = UUID.randomUUID().toString()
+        val normalizedTags = TagUtils.formatTags(TagUtils.parseTags(tags))
         val item = ItemEntity(
             id = id,
             name = name.trim(),
@@ -346,14 +348,74 @@ class InventoryRepository(private val database: AppDatabase) {
             categoryId = categoryId,
             primaryPhotoUri = primaryPhotoUri,
             quantity = quantity.coerceAtLeast(1),
-            tags = tags.trim()
+            tags = normalizedTags
         )
         itemDao.insertItem(item)
         id
     }
 
     suspend fun updateItem(item: ItemEntity) = withContext(Dispatchers.IO) {
-        itemDao.updateItem(item)
+        val normalizedTags = TagUtils.formatTags(TagUtils.parseTags(item.tags))
+        itemDao.updateItem(item.copy(tags = normalizedTags))
+    }
+
+    /**
+     * Atomically renames a tag across all items in Room, normalizing and deduplicating
+     * automatically if the new name already exists on an item.
+     */
+    suspend fun renameTagGlobally(oldTag: String, newTag: String): Result<Int> = withContext(Dispatchers.IO) {
+        val cleanOld = TagUtils.normalizeTag(oldTag)
+        val cleanNew = TagUtils.normalizeTag(newTag)
+        if (cleanOld.isBlank()) {
+            return@withContext Result.failure(IllegalArgumentException("La etiqueta original no es válida"))
+        }
+        if (cleanNew.isBlank()) {
+            return@withContext Result.failure(IllegalArgumentException("El nuevo nombre de la etiqueta no puede estar vacío"))
+        }
+
+        database.withTransaction {
+            val allItems = itemDao.getAllItemsSync()
+            var updatedCount = 0
+            allItems.forEach { item ->
+                val parsed = TagUtils.parseTags(item.tags)
+                if (parsed.any { it.equals(cleanOld, ignoreCase = true) }) {
+                    val replaced = parsed.map { tag ->
+                        if (tag.equals(cleanOld, ignoreCase = true)) cleanNew else tag
+                    }
+                    val formatted = TagUtils.formatTags(replaced)
+                    if (formatted != item.tags) {
+                        itemDao.updateItem(item.copy(tags = formatted))
+                        updatedCount++
+                    }
+                }
+            }
+            Result.success(updatedCount)
+        }
+    }
+
+    /**
+     * Atomically removes a tag from all items in Room without deleting the items themselves.
+     */
+    suspend fun deleteTagGlobally(tagToDelete: String): Result<Int> = withContext(Dispatchers.IO) {
+        val cleanTarget = TagUtils.normalizeTag(tagToDelete)
+        if (cleanTarget.isBlank()) {
+            return@withContext Result.failure(IllegalArgumentException("La etiqueta no es válida"))
+        }
+
+        database.withTransaction {
+            val allItems = itemDao.getAllItemsSync()
+            var updatedCount = 0
+            allItems.forEach { item ->
+                val parsed = TagUtils.parseTags(item.tags)
+                if (parsed.any { it.equals(cleanTarget, ignoreCase = true) }) {
+                    val remaining = parsed.filterNot { it.equals(cleanTarget, ignoreCase = true) }
+                    val formatted = TagUtils.formatTags(remaining)
+                    itemDao.updateItem(item.copy(tags = formatted))
+                    updatedCount++
+                }
+            }
+            Result.success(updatedCount)
+        }
     }
 
     suspend fun deleteItem(itemId: String) = withContext(Dispatchers.IO) {

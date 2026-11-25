@@ -140,6 +140,7 @@ import com.example.presentation.components.SearchScreen
 import com.example.presentation.components.SettingsScreen
 import com.example.presentation.components.SettingsView
 import com.example.presentation.components.StatsDashboardDialog
+import com.example.presentation.components.TagManagementBottomSheet
 import com.example.presentation.components.ZonesView
 import com.example.presentation.components.parseColorSafe
 
@@ -213,6 +214,10 @@ fun MainInventoryScreen(
     val isLoansSheetOpen by viewModel.isLoansSheetOpen.collectAsState()
     val isBackupDialogOpen by viewModel.isBackupDialogOpen.collectAsState()
     val isCategoryManagementOpen by viewModel.isCategoryManagementOpen.collectAsState()
+    val isTagManagementOpen by viewModel.isTagManagementOpen.collectAsState()
+    val allTagStats by viewModel.allTagStats.collectAsState()
+    val suggestedTags by viewModel.suggestedTags.collectAsState()
+    val lastTagMutation by viewModel.lastTagMutation.collectAsState()
     val backupDialogInitialTab by viewModel.backupDialogInitialTab.collectAsState()
     val backupProgressState by viewModel.backupProgressState.collectAsState()
     val boxViewMode by viewModel.boxViewMode.collectAsState()
@@ -253,8 +258,11 @@ fun MainInventoryScreen(
     }
 
     // Intercept back button for nested navigation, tabs, search, and detail modal
-    BackHandler(enabled = isCategoryManagementOpen || selectedItemForDetail != null || isSearchAndFilterOpen || isSearchActive || searchQuery.isNotBlank() || currentBottomTab != AppBottomTab.CAJAS || currentBoxId != null) {
+    BackHandler(enabled = isTagManagementOpen || isCategoryManagementOpen || selectedItemForDetail != null || isSearchAndFilterOpen || isSearchActive || searchQuery.isNotBlank() || currentBottomTab != AppBottomTab.CAJAS || currentBoxId != null) {
         when {
+            isTagManagementOpen -> {
+                viewModel.closeTagManagement()
+            }
             isCategoryManagementOpen -> {
                 viewModel.closeCategoryManagement()
             }
@@ -765,7 +773,11 @@ fun MainInventoryScreen(
                         onExportPdfToFile = { uri -> viewModel.exportPdfToUri(uri, context) },
                         onImportJsonFromFile = { uri -> viewModel.importJsonFromUri(uri, context) },
                         categoryStats = categoryStats,
-                        allBoxes = allBoxes
+                        allBoxes = allBoxes,
+                        tagsCount = allTagStats.size,
+                        categoriesCount = categories.size,
+                        onManageTags = { viewModel.openTagManagement() },
+                        onManageCategories = { viewModel.openCategoryManagement() }
                     )
                 }
 
@@ -798,7 +810,8 @@ fun MainInventoryScreen(
                             onMoveBox = { box -> viewModel.openMoveBoxDialog(box) },
                             onEditBox = { box -> viewModel.openEditBoxDialog(box) },
                             onDeleteBox = { box -> viewModel.requestDeleteBox(BoxWithCounts(box, 0, 0)) },
-                            onManageCategories = { viewModel.openCategoryManagement() }
+                            onManageCategories = { viewModel.openCategoryManagement() },
+                            onManageTags = { viewModel.openTagManagement() }
                         )
                     } else if (currentBoxId == null) {
                         // =============================================================
@@ -1610,19 +1623,20 @@ fun MainInventoryScreen(
     }
 
     // Modal 2: Ficha Detallada de Objeto (Stitch AI Modal)
-    selectedItemForDetail?.let { item ->
-        val cat = categories.find { it.id == item.categoryId }
-        val locationPath = boxPaths[item.boxId] ?: currentBox?.name ?: "Inventario"
+    selectedItemForDetail?.let { selectedItem ->
+        val liveItem = allInventoryItems.find { it.id == selectedItem.id } ?: selectedItem
+        val cat = categories.find { it.id == liveItem.categoryId }
+        val locationPath = boxPaths[liveItem.boxId] ?: currentBox?.name ?: "Inventario"
         ObjectDetailSheet(
-            item = item,
+            item = liveItem,
             category = cat,
             boxLocationPath = locationPath,
-            onQuantityChange = { delta -> viewModel.adjustItemQuantity(item, delta) },
-            onMove = { viewModel.openMoveItemDialog(item) },
-            onEdit = { viewModel.openEditItemDialog(item) },
-            onDelete = { viewModel.requestDeleteItem(item) },
-            onLoan = { viewModel.openLoanDialog(item) },
-            onReturnLoan = { viewModel.returnItem(item) },
+            onQuantityChange = { delta -> viewModel.adjustItemQuantity(liveItem, delta) },
+            onMove = { viewModel.openMoveItemDialog(liveItem) },
+            onEdit = { viewModel.openEditItemDialog(liveItem) },
+            onDelete = { viewModel.requestDeleteItem(liveItem) },
+            onLoan = { viewModel.openLoanDialog(liveItem) },
+            onReturnLoan = { viewModel.returnItem(liveItem) },
             onDismiss = { selectedItemForDetail = null }
         )
     }
@@ -1652,6 +1666,9 @@ fun MainInventoryScreen(
             allBoxes = allBoxes,
             categories = categories,
             onManageCategories = { viewModel.openCategoryManagement() },
+            suggestedTags = suggestedTags,
+            onManageTags = { viewModel.openTagManagement() },
+            lastTagMutation = lastTagMutation,
             onSave = { name, desc, qty, catId, tags, photo, targetBoxId ->
                 viewModel.saveItem(name, desc, qty, catId, tags, photo, targetBoxId)
             },
@@ -1733,6 +1750,15 @@ fun MainInventoryScreen(
             onUpdateCategory = { id, name, colorHex, iconName -> viewModel.updateCategory(id, name, colorHex, iconName) },
             onDeleteCategory = { categoryId -> viewModel.deleteCategory(categoryId) },
             onDismiss = { viewModel.closeCategoryManagement() }
+        )
+    }
+
+    if (isTagManagementOpen) {
+        TagManagementBottomSheet(
+            tagStats = allTagStats,
+            onRenameTag = { oldTag, newTag -> viewModel.renameTagGlobally(oldTag, newTag) },
+            onDeleteTag = { tagName -> viewModel.deleteTagGlobally(tagName) },
+            onDismiss = { viewModel.closeTagManagement() }
         )
     }
 }

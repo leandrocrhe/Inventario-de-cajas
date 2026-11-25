@@ -73,6 +73,7 @@ import coil.compose.AsyncImage
 import com.example.data.local.dao.BoxWithCounts
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ItemEntity
+import com.example.domain.util.TagUtils
 
 fun parseColorSafe(hex: String, fallback: Color = Color(0xFFF59E0B)): Color {
     return try {
@@ -902,14 +903,25 @@ fun ItemGridCard(
                 )
 
                 if (category != null) {
-                    Text(
-                        text = category.name,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = catColor,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = IconMapper.getCategoryIcon(category.iconName, category.name),
+                            contentDescription = null,
+                            tint = catColor,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = category.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = catColor,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -1160,25 +1172,36 @@ fun ItemCard(
                             color = catColor.copy(alpha = 0.16f),
                             border = androidx.compose.foundation.BorderStroke(1.dp, catColor.copy(alpha = 0.35f))
                         ) {
-                            Text(
-                                text = category.name,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = catColor,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = IconMapper.getCategoryIcon(category.iconName, category.name),
+                                    contentDescription = null,
+                                    tint = catColor,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Text(
+                                    text = category.name,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = catColor
+                                )
+                            }
                         }
                     }
 
                     if (item.tags.isNotBlank()) {
-                        item.tags.split(",").map { it.trim() }.filter { it.isNotBlank() }.take(2).forEach { tag ->
+                        TagUtils.parseTags(item.tags).take(2).forEach { tag ->
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = MaterialTheme.colorScheme.surfaceVariant,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                             ) {
                                 Text(
-                                    text = tag,
+                                    text = "#$tag",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)

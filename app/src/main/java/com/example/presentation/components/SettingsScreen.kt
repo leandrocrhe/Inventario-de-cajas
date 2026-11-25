@@ -109,6 +109,10 @@ fun SettingsScreen(
     onImportJsonFromFile: ((Uri) -> Unit)? = null,
     categoryStats: List<CategoryStat> = emptyList(),
     allBoxes: List<BoxEntity> = emptyList(),
+    tagsCount: Int = 0,
+    categoriesCount: Int = 0,
+    onManageTags: (() -> Unit)? = null,
+    onManageCategories: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -1107,51 +1111,170 @@ fun SettingsScreen(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Administrar Zonas",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Configurar estanterías, habitaciones y trasteros",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Option A: Administrar Etiquetas (Bulk Rename / Merge / Delete)
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = onManageTags != null) { onManageTags?.invoke() }
+                            .padding(16.dp)
+                            .testTag("btn_manage_tags_settings"),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(9999.dp),
-                            color = Color(0xFF1C1814),
-                            border = BorderStroke(1.dp, Color(0xFF2C2622))
-                        ) {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "4 zonas",
-                                style = MaterialTheme.typography.labelSmall,
+                                text = "Administrar Etiquetas",
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFB77C),
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Renombrar, fusionar o eliminar etiquetas en bloque",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
-                        Icon(
-                            imageVector = Icons.Outlined.ChevronRight,
-                            contentDescription = null,
-                            tint = Color(0xFFA89F95),
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(9999.dp),
+                                color = Color(0xFF1C1814),
+                                border = BorderStroke(1.dp, Color(0xFF2C2622))
+                            ) {
+                                Text(
+                                    text = "$tagsCount etiqueta${if (tagsCount == 1) "" else "s"}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFFB77C),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
+                            }
+
+                            Icon(
+                                imageVector = Icons.Outlined.ChevronRight,
+                                contentDescription = null,
+                                tint = Color(0xFFA89F95),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(Color(0xFF2C2622))
+                    )
+
+                    // Option B: Administrar Categorías
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = onManageCategories != null) { onManageCategories?.invoke() }
+                            .padding(16.dp)
+                            .testTag("btn_manage_categories_settings"),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Administrar Categorías",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Personalizar nombres, colores e iconos",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(9999.dp),
+                                color = Color(0xFF1C1814),
+                                border = BorderStroke(1.dp, Color(0xFF2C2622))
+                            ) {
+                                Text(
+                                    text = "$categoriesCount categorías",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFFB77C),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
+                            }
+
+                            Icon(
+                                imageVector = Icons.Outlined.ChevronRight,
+                                contentDescription = null,
+                                tint = Color(0xFFA89F95),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(Color(0xFF2C2622))
+                    )
+
+                    // Option C: Administrar Zonas
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Administrar Zonas",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Configurar estanterías, habitaciones y trasteros",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(9999.dp),
+                                color = Color(0xFF1C1814),
+                                border = BorderStroke(1.dp, Color(0xFF2C2622))
+                            ) {
+                                Text(
+                                    text = "4 zonas",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFFB77C),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
+                            }
+
+                            Icon(
+                                imageVector = Icons.Outlined.ChevronRight,
+                                contentDescription = null,
+                                tint = Color(0xFFA89F95),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
