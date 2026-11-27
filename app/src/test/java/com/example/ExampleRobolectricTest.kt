@@ -647,4 +647,69 @@ class ExampleRobolectricTest {
         assertEquals("Tecnología", com.example.presentation.components.resolveSemanticBoxColor(loaded?.colorHex).meaning)
         db.close()
     }
+
+    @Test
+    fun testSemanticColorAutoScrollHelpers() {
+        // Not in visibleItemsInfo -> not visible
+        assertFalse(
+            com.example.presentation.components.isColorSwatchFullyVisible(
+                itemOffset = null,
+                itemSize = null,
+                viewportEndOffset = 300,
+                afterContentPadding = 10
+            )
+        )
+
+        // Partially clipped on the left (offset < 0) -> not visible
+        assertFalse(
+            com.example.presentation.components.isColorSwatchFullyVisible(
+                itemOffset = -12,
+                itemSize = 48,
+                viewportEndOffset = 300,
+                afterContentPadding = 10
+            )
+        )
+
+        // Partially clipped on the right (48dp item starting at 260, safeEnd = 290) -> not visible
+        assertFalse(
+            com.example.presentation.components.isColorSwatchFullyVisible(
+                itemOffset = 260,
+                itemSize = 48,
+                viewportEndOffset = 300,
+                afterContentPadding = 10
+            )
+        )
+
+        // Completely within visible safe viewport -> visible
+        assertTrue(
+            com.example.presentation.components.isColorSwatchFullyVisible(
+                itemOffset = 60,
+                itemSize = 48,
+                viewportEndOffset = 300,
+                afterContentPadding = 10
+            )
+        )
+
+        // Centering target calculation: viewport=260, item=48, stride=60 -> (260-48)/2 / 60 = 1 item before
+        assertEquals(
+            7,
+            com.example.presentation.components.computeTargetScrollIndexForSwatch(
+                selectedIndex = 8,
+                totalCount = 10,
+                viewportWidth = 260,
+                itemSize = 48,
+                itemStride = 60
+            )
+        )
+        assertEquals(
+            0,
+            com.example.presentation.components.computeTargetScrollIndexForSwatch(
+                selectedIndex = 0,
+                totalCount = 10,
+                viewportWidth = 260,
+                itemSize = 48,
+                itemStride = 60
+            )
+        )
+    }
 }

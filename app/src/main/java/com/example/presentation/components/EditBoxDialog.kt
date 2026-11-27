@@ -46,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.data.local.entity.BoxEntity
+import kotlinx.coroutines.flow.first
 
 data class SemanticBoxColor(
     val hex: String,
@@ -101,6 +103,31 @@ fun resolveSemanticBoxColor(hex: String?): SemanticBoxColor {
         )
 }
 
+internal fun isColorSwatchFullyVisible(
+    itemOffset: Int?,
+    itemSize: Int?,
+    viewportEndOffset: Int,
+    afterContentPadding: Int
+): Boolean {
+    if (itemOffset == null || itemSize == null) return false
+    val safeEnd = (viewportEndOffset - afterContentPadding).coerceAtLeast(0)
+    return itemOffset >= 0 && (itemOffset + itemSize) <= safeEnd
+}
+
+internal fun computeTargetScrollIndexForSwatch(
+    selectedIndex: Int,
+    totalCount: Int,
+    viewportWidth: Int,
+    itemSize: Int,
+    itemStride: Int
+): Int {
+    if (totalCount <= 0) return 0
+    val clampedSelected = selectedIndex.coerceIn(0, totalCount - 1)
+    if (itemSize <= 0 || itemStride <= 0 || viewportWidth <= itemSize) return clampedSelected
+    val itemsBeforeToCenter = (((viewportWidth - itemSize) / 2) / itemStride).coerceAtLeast(0)
+    return (clampedSelected - itemsBeforeToCenter).coerceIn(0, totalCount - 1)
+}
+
 @Composable
 fun EditBoxDialog(
     boxToEdit: BoxEntity?,
@@ -127,8 +154,38 @@ fun EditBoxDialog(
         val initialIdx = SEMANTIC_BOX_COLORS.indexOfFirst {
             it.hex.equals(selectedSemantic.hex, ignoreCase = true)
         }
-        if (initialIdx > 3) {
-            colorListState.scrollToItem((initialIdx - 1).coerceAtLeast(0))
+        if (initialIdx >= 0) {
+            val layoutInfo = snapshotFlow { colorListState.layoutInfo }
+                .first { it.visibleItemsInfo.isNotEmpty() && it.viewportSize.width > 0 }
+            val visibleItem = layoutInfo.visibleItemsInfo.firstOrNull { it.index == initialIdx }
+            val fullyVisible = isColorSwatchFullyVisible(
+                itemOffset = visibleItem?.offset,
+                itemSize = visibleItem?.size,
+                viewportEndOffset = layoutInfo.viewportEndOffset,
+                afterContentPadding = layoutInfo.afterContentPadding
+            )
+            if (!fullyVisible) {
+                val sampleSize = layoutInfo.visibleItemsInfo.first().size
+                val stride = if (layoutInfo.visibleItemsInfo.size >= 2) {
+                    (layoutInfo.visibleItemsInfo[1].offset - layoutInfo.visibleItemsInfo[0].offset)
+                        .coerceAtLeast(sampleSize)
+                } else {
+                    sampleSize
+                }
+                val usableViewportWidth = (
+                    layoutInfo.viewportSize.width -
+                        layoutInfo.beforeContentPadding -
+                        layoutInfo.afterContentPadding
+                    ).coerceAtLeast(sampleSize)
+                val targetIndex = computeTargetScrollIndexForSwatch(
+                    selectedIndex = initialIdx,
+                    totalCount = SEMANTIC_BOX_COLORS.size,
+                    viewportWidth = usableViewportWidth,
+                    itemSize = sampleSize,
+                    itemStride = stride
+                )
+                colorListState.animateScrollToItem(index = targetIndex)
+            }
         }
     }
 
