@@ -322,10 +322,12 @@ class InventoryRepository(private val database: AppDatabase) {
         parentBoxId: String?,
         primaryPhotoUri: String?,
         colorHex: String,
-        zone: String? = null
+        zone: String? = null,
+        iconName: String = "inventory_2"
     ): String = withContext(Dispatchers.IO) {
         val id = UUID.randomUUID().toString()
         val trimmedZone = zone?.takeIf { it.isNotBlank() }?.trim()
+        val cleanIcon = iconName.trim().ifBlank { "inventory_2" }
         val box = BoxEntity(
             id = id,
             name = name.trim(),
@@ -333,6 +335,7 @@ class InventoryRepository(private val database: AppDatabase) {
             parentBoxId = parentBoxId,
             primaryPhotoUri = primaryPhotoUri,
             colorHex = colorHex,
+            iconName = cleanIcon,
             zone = trimmedZone
         )
         boxDao.insertBox(box)
@@ -549,6 +552,7 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Estantería metálica del fondo, balda 2",
             parentBoxId = null,
             colorHex = "#F59E0B",
+            iconName = "inventory_2",
             zone = "Trastero",
             createdAt = seedNow - 6 * hourMs
         )
@@ -558,6 +562,7 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Maletín de llaves, tornillería y taladro",
             parentBoxId = "box_trastero",
             colorHex = "#EF4444",
+            iconName = "build",
             primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuCAew30R10pnSi74P-3gS6FwxtvW-QjepoKz-jmgBPY7DEP6iLOcG22hxX-a7ucTOuIJRk8UcE3AlZn5inE-aj_ZNiwctuFLmLHLZ-Ww0Lb_ftR7vjeOR3nOu9rGWaAhD5KP3vsvVpsFAxjlKl4rW74diWttEVxo644O_BGFDMSIoaThon86W0Nt2NGary8tJDNlD-6vLsjqYp725yQ1MZpgVeW5SWHPVjIMPIzrU_y",
             zone = "Taller",
             createdAt = seedNow - 5 * hourMs
@@ -568,6 +573,7 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "HDMI, USB-C, adaptadores y regletas",
             parentBoxId = "box_trastero",
             colorHex = "#3B82F6",
+            iconName = "cable",
             primaryPhotoUri = "https://lh3.googleusercontent.com/aida-public/AB6AXuBUj9geDQBhgmf756qfUrtwUrHfkAMA0Y4KzQpon1nLUhaR-0ZzXAthPQjmJif3yaLxfa7jhI6-ImK1pLEh4ipmJc358uK3Pg_4J6eO9Ts_zdp-lmqu6yM_k0-x6tqHsXahTQ59wE2op6s0YNFVpKjlpzuXEaOFxC0qdUt11OCFCPeiAETg2FixYBL2i_AsR61Zo1nw_JwKiNCVZW37Fj7ScbegI-pTw9NuWZxH_e3r",
             zone = "Taller",
             createdAt = seedNow - 4 * hourMs
@@ -578,6 +584,7 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Cajonera blanca junto al escritorio",
             parentBoxId = null,
             colorHex = "#8B5CF6",
+            iconName = "home",
             zone = "Estudio",
             createdAt = seedNow - 3 * hourMs
         )
@@ -587,6 +594,7 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Carpetas 2024-2026 ordenadas alfabéticamente",
             parentBoxId = "box_armario",
             colorHex = "#10B981",
+            iconName = "folder",
             zone = "Estudio",
             createdAt = seedNow - 2 * hourMs
         )
@@ -596,6 +604,7 @@ class InventoryRepository(private val database: AppDatabase) {
             description = "Abrigos de montaña, guantes y bufandas al vacío",
             parentBoxId = null,
             colorHex = "#EC4899",
+            iconName = "package_2",
             zone = "Dormitorio",
             createdAt = seedNow - 1 * hourMs
         )

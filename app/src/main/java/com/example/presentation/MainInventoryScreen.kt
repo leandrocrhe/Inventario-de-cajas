@@ -134,6 +134,7 @@ import com.example.presentation.components.CategoryManagementBottomSheet
 import com.example.presentation.components.DeleteConfirmDialog
 import com.example.presentation.components.EditBoxDialog
 import com.example.presentation.components.EditItemDialog
+import com.example.presentation.components.IconMapper
 import com.example.presentation.components.ItemCard
 import com.example.presentation.components.ItemGridCard
 import com.example.presentation.components.LoanDialog
@@ -1406,7 +1407,7 @@ fun MainInventoryScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Inventory2,
+                                                    imageVector = IconMapper.getBoxIcon(activeBox.iconName),
                                                     contentDescription = null,
                                                     tint = accentColor,
                                                     modifier = Modifier.size(24.dp)
@@ -1713,8 +1714,8 @@ fun MainInventoryScreen(
             currentParentBox = currentBox,
             existingZones = allZones,
             initialZone = prefilledZone ?: createBoxInitialZone,
-            onSave = { name, desc, color, photo, zone ->
-                viewModel.saveBox(name, desc, color, photo, zone)
+            onSave = { name, desc, color, photo, zone, iconName ->
+                viewModel.saveBox(name, desc, color, photo, zone, iconName)
                 createBoxInitialZone = null
             },
             onDismiss = {

@@ -712,4 +712,152 @@ class ExampleRobolectricTest {
             )
         )
     }
+
+    @Test
+    fun testBoxIconCatalogPersistenceAndMigration(): Unit = kotlinx.coroutines.runBlocking {
+        // 1. Verify 6 primary + 6 additional box icons without duplicates
+        val primary = com.example.presentation.components.IconMapper.primaryBoxIcons
+        val additional = com.example.presentation.components.IconMapper.additionalBoxIcons
+        assertEquals(6, primary.size)
+        assertEquals(6, additional.size)
+        assertEquals("inventory_2", primary.first().key)
+
+        val allKeys = (primary + additional).map { it.key }
+        assertEquals(12, allKeys.distinct().size)
+        allKeys.forEach { key ->
+            assertNotNull(com.example.presentation.components.IconMapper.getBoxIcon(key))
+        }
+        // Fallback resolves cleanly to standard inventory_2 icon
+        assertEquals(
+            com.example.presentation.components.IconMapper.getBoxIcon("inventory_2"),
+            com.example.presentation.components.IconMapper.getBoxIcon("unknown_icon")
+        )
+
+        // 2. Verify Room persistence + BackupManager export/import roundtrip
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val repo = com.example.data.repository.InventoryRepository(db)
+        val createdId = repo.createBox(
+            name = "Caja Audio",
+            description = "Micrófonos",
+            parentBoxId = null,
+            primaryPhotoUri = null,
+            colorHex = "#3B82F6",
+            zone = "Estudio",
+            iconName = "headphones"
+        )
+        val loaded = db.boxDao().getBoxById(createdId)
+        assertNotNull(loaded)
+        assertEquals("headphones", loaded?.iconName)
+
+        val backupManager = com.example.data.backup.BackupManager(db)
+        val exportedJson = backupManager.exportJson(context)
+        db.boxDao().deleteAllBoxes()
+        val importResult = backupManager.importJson(exportedJson, context)
+        assertTrue(importResult.success)
+        val restored = db.boxDao().getBoxById(createdId)
+        assertEquals("headphones", restored?.iconName)
+        db.close()
+
+        // 3. Verify MIGRATION_5_6 adds icon_name column without losing existing rows
+        val dbFile = context.getDatabasePath("migration_test_5_6.db")
+        if (dbFile.exists()) dbFile.delete()
+        val rawSqlite = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(dbFile, null)
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS boxes (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                parent_box_id TEXT,
+                primary_photo_uri TEXT,
+                color_hex TEXT NOT NULL,
+                zone TEXT,
+                sort_order INTEGER NOT NULL,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY(parent_box_id) REFERENCES boxes(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_boxes_parent_box_id ON boxes(parent_box_id)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_boxes_name ON boxes(name)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_boxes_zone ON boxes(zone)")
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS categories (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                icon_name TEXT NOT NULL,
+                color_hex TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_categories_name ON categories(name)")
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS items (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                box_id TEXT NOT NULL,
+                category_id TEXT,
+                primary_photo_uri TEXT,
+                quantity INTEGER NOT NULL,
+                tags TEXT NOT NULL,
+                is_loaned INTEGER NOT NULL,
+                loaned_to TEXT,
+                loaned_at INTEGER,
+                notes TEXT,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY(box_id) REFERENCES boxes(id) ON DELETE CASCADE,
+                FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_items_box_id ON items(box_id)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_items_category_id ON items(category_id)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_items_name ON items(name)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_items_is_loaned ON items(is_loaned)")
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS search_history (
+                `query` TEXT NOT NULL PRIMARY KEY,
+                timestamp INTEGER NOT NULL
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS zones (
+                name TEXT NOT NULL PRIMARY KEY,
+                color_hex TEXT NOT NULL,
+                created_at INTEGER NOT NULL
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL(
+            "INSERT INTO boxes (id, name, description, parent_box_id, primary_photo_uri, color_hex, zone, sort_order, created_at) " +
+                "VALUES ('old_box_1', 'Caja Legacy', 'Desc', NULL, NULL, '#F59E0B', 'Taller', 0, 1000)"
+        )
+        rawSqlite.version = 5
+        rawSqlite.close()
+
+        val migratedDb = androidx.room.Room.databaseBuilder(
+            context,
+            com.example.data.local.AppDatabase::class.java,
+            "migration_test_5_6.db"
+        )
+            .addMigrations(com.example.data.local.AppDatabase.MIGRATION_5_6)
+            .allowMainThreadQueries()
+            .build()
+        val migratedBox = migratedDb.boxDao().getBoxById("old_box_1")
+        assertNotNull(migratedBox)
+        assertEquals("Caja Legacy", migratedBox?.name)
+        assertEquals("inventory_2", migratedBox?.iconName)
+        migratedDb.close()
+        dbFile.delete()
+        Unit
+    }
 }

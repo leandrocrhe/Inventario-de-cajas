@@ -465,11 +465,19 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     // CRUD actions
-    fun saveBox(name: String, description: String?, colorHex: String, photoUri: String?, zone: String? = null) {
+    fun saveBox(
+        name: String,
+        description: String?,
+        colorHex: String,
+        photoUri: String?,
+        zone: String? = null,
+        iconName: String = "inventory_2"
+    ) {
         viewModelScope.launch {
             val cleanZone = zone?.trim()?.takeIf {
                 it.isNotBlank() && !it.equals("null", ignoreCase = true) && !it.equals("sin zona asignada", ignoreCase = true)
             }
+            val cleanIcon = iconName.trim().ifBlank { "inventory_2" }
             val editing = _boxToEdit.value
             if (editing != null) {
                 repository.updateBox(
@@ -477,6 +485,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                         name = name.trim(),
                         description = description?.takeIf { it.isNotBlank() }?.trim(),
                         colorHex = colorHex,
+                        iconName = cleanIcon,
                         primaryPhotoUri = photoUri ?: editing.primaryPhotoUri,
                         zone = cleanZone
                     )
@@ -492,7 +501,8 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                     parentBoxId = _currentBoxId.value,
                     primaryPhotoUri = photoUri,
                     colorHex = colorHex,
-                    zone = cleanZone
+                    zone = cleanZone,
+                    iconName = cleanIcon
                 )
                 _snackbarMessage.value = "Caja creada: $name"
             }

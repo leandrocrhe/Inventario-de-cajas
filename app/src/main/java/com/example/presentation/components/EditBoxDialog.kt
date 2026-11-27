@@ -1,8 +1,14 @@
 package com.example.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,6 +21,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,7 +36,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -50,6 +58,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
@@ -58,9 +67,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.data.local.entity.BoxEntity
+import com.example.ui.theme.AmoledBlack
 import kotlinx.coroutines.flow.first
 
 data class SemanticBoxColor(
@@ -134,7 +146,7 @@ fun EditBoxDialog(
     currentParentBox: BoxEntity?,
     existingZones: List<String> = emptyList(),
     initialZone: String? = null,
-    onSave: (name: String, description: String?, colorHex: String, photoUri: String?, zone: String?) -> Unit,
+    onSave: (name: String, description: String?, colorHex: String, photoUri: String?, zone: String?, iconName: String) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf(boxToEdit?.name ?: "") }
@@ -144,11 +156,21 @@ fun EditBoxDialog(
     } ?: ""
     var zone by remember { mutableStateOf(initialCleanZone) }
     var selectedColor by remember { mutableStateOf(boxToEdit?.colorHex ?: "#F59E0B") }
+    var selectedIcon by remember(boxToEdit?.id) {
+        mutableStateOf(IconMapper.getBoxIconOption(boxToEdit?.iconName).key)
+    }
+    var showMoreIcons by remember(boxToEdit?.id) {
+        mutableStateOf(
+            IconMapper.additionalBoxIcons.any { it.key.equals(selectedIcon, ignoreCase = true) }
+        )
+    }
     var photoUri by remember { mutableStateOf(boxToEdit?.primaryPhotoUri) }
 
     val selectedSemantic = remember(selectedColor) { resolveSemanticBoxColor(selectedColor) }
     val selectedColorValue = remember(selectedColor) { parseColorSafe(selectedColor) }
+    val selectedIconOption = remember(selectedIcon) { IconMapper.getBoxIconOption(selectedIcon) }
     val colorListState = rememberLazyListState()
+    val isAmoledDark = MaterialTheme.colorScheme.background == AmoledBlack
 
     LaunchedEffect(boxToEdit?.id) {
         val initialIdx = SEMANTIC_BOX_COLORS.indexOfFirst {
@@ -196,32 +218,42 @@ fun EditBoxDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(selectedColorValue.copy(alpha = 0.2f))
                         .border(1.dp, selectedColorValue.copy(alpha = 0.35f), RoundedCornerShape(10.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Inventory2,
+                        imageVector = selectedIconOption.vector,
                         contentDescription = null,
                         tint = selectedColorValue,
                         modifier = Modifier.size(22.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = if (boxToEdit == null) "Nueva Caja" else "Editar Caja",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    Text(
+                        text = if (boxToEdit == null) {
+                            "Añade un contenedor para organizar tus objetos"
+                        } else {
+                            "Actualiza los detalles y apariencia de tu caja"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     if (boxToEdit == null && currentParentBox != null) {
                         Text(
                             text = "Dentro de: ${currentParentBox.name}",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(top = 2.dp)
                         )
                     }
                 }
@@ -479,6 +511,16 @@ fun EditBoxDialog(
                     }
                 }
 
+                // Representative Icon Selector (6 primary + expandable 6 additional)
+                BoxIconSelectorSection(
+                    selectedIconKey = selectedIcon,
+                    selectedIconOption = selectedIconOption,
+                    showMoreIcons = showMoreIcons,
+                    isAmoledDark = isAmoledDark,
+                    onSelectIcon = { selectedIcon = it },
+                    onToggleMoreIcons = { showMoreIcons = !showMoreIcons }
+                )
+
                 // Photo picker & camera capture section
                 PhotoPickerSection(
                     photoUri = photoUri,
@@ -494,7 +536,14 @@ fun EditBoxDialog(
                     val cleanZ = zone.trim().takeIf {
                         it.isNotBlank() && !it.equals("null", ignoreCase = true) && !it.equals("cajas sin zona asignada", ignoreCase = true)
                     }
-                    onSave(name.trim(), description.trim().takeIf { it.isNotBlank() }, selectedColor, photoUri, cleanZ)
+                    onSave(
+                        name.trim(),
+                        description.trim().takeIf { it.isNotBlank() },
+                        selectedColor,
+                        photoUri,
+                        cleanZ,
+                        selectedIcon
+                    )
                 },
                 enabled = name.isNotBlank(),
                 shape = RoundedCornerShape(12.dp),
@@ -512,4 +561,231 @@ fun EditBoxDialog(
             }
         }
     )
+}
+
+@Composable
+private fun BoxIconSelectorSection(
+    selectedIconKey: String,
+    selectedIconOption: BoxIconOption,
+    showMoreIcons: Boolean,
+    isAmoledDark: Boolean,
+    onSelectIcon: (String) -> Unit,
+    onToggleMoreIcons: () -> Unit
+) {
+    val restingBg = if (isAmoledDark) Color(0xFF181512) else MaterialTheme.colorScheme.surfaceVariant
+    val restingBorder = if (isAmoledDark) Color(0xFF2C2622) else MaterialTheme.colorScheme.outlineVariant
+    val accentColor = if (isAmoledDark) Color(0xFFFFB77C) else MaterialTheme.colorScheme.primary
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (showMoreIcons) 180f else 0f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "box_icons_chevron_rotation"
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Section Header: Title + Selected Icon Indicator Pill
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Icono representativo",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Surface(
+                shape = RoundedCornerShape(9999.dp),
+                color = restingBg,
+                border = BorderStroke(1.dp, accentColor.copy(alpha = 0.45f)),
+                modifier = Modifier.testTag("selected_box_icon_badge")
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Icon(
+                        imageVector = selectedIconOption.vector,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Text(
+                        text = selectedIconOption.label,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+
+        // Primary 6 icons (2 rows x 3 columns)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            IconMapper.primaryBoxIcons.chunked(3).forEach { rowIcons ->
+                BoxIconGridRow(
+                    rowIcons = rowIcons,
+                    selectedIconKey = selectedIconKey,
+                    restingBg = restingBg,
+                    restingBorder = restingBorder,
+                    accentColor = accentColor,
+                    onSelectIcon = onSelectIcon
+                )
+            }
+
+            // Expandable additional 6 icons (2 rows x 3 columns)
+            AnimatedVisibility(
+                visible = showMoreIcons,
+                enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) + fadeIn(),
+                exit = shrinkVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) + fadeOut()
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconMapper.additionalBoxIcons.chunked(3).forEach { rowIcons ->
+                        BoxIconGridRow(
+                            rowIcons = rowIcons,
+                            selectedIconKey = selectedIconKey,
+                            restingBg = restingBg,
+                            restingBorder = restingBorder,
+                            accentColor = accentColor,
+                            onSelectIcon = onSelectIcon
+                        )
+                    }
+                }
+            }
+        }
+
+        // Expand/Collapse AMOLED button
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = restingBg,
+            border = BorderStroke(1.dp, restingBorder),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable { onToggleMoreIcons() }
+                .testTag("toggle_more_box_icons_button")
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (showMoreIcons) "- Menos iconos" else "+ Más iconos (6 adicionales)",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = accentColor
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Icon(
+                    imageVector = Icons.Default.ExpandMore,
+                    contentDescription = if (showMoreIcons) "Mostrar menos iconos" else "Mostrar más iconos",
+                    tint = accentColor,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .rotate(chevronRotation)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoxIconGridRow(
+    rowIcons: List<BoxIconOption>,
+    selectedIconKey: String,
+    restingBg: Color,
+    restingBorder: Color,
+    accentColor: Color,
+    onSelectIcon: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        rowIcons.forEach { option ->
+            val isSelected = selectedIconKey.equals(option.key, ignoreCase = true)
+            val cellBg by animateColorAsState(
+                targetValue = if (isSelected) accentColor.copy(alpha = 0.14f) else restingBg,
+                animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                label = "icon_cell_bg"
+            )
+            val cellBorder by animateColorAsState(
+                targetValue = if (isSelected) accentColor else restingBorder,
+                animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                label = "icon_cell_border"
+            )
+
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = cellBg,
+                border = BorderStroke(if (isSelected) 1.5.dp else 1.dp, cellBorder),
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 66.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable(
+                        role = Role.RadioButton,
+                        onClickLabel = option.label
+                    ) {
+                        onSelectIcon(option.key)
+                    }
+                    .semantics {
+                        selected = isSelected
+                        contentDescription = option.label
+                    }
+                    .testTag("box_icon_option_${option.key}")
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp, vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(accentColor)
+                        )
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = option.vector,
+                            contentDescription = null,
+                            tint = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text(
+                            text = option.shortLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+        repeat(3 - rowIcons.size) {
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    }
 }

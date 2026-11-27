@@ -46,6 +46,13 @@ data class CategoryIconOption(
     val vector: ImageVector
 )
 
+data class BoxIconOption(
+    val key: String,
+    val label: String,
+    val shortLabel: String,
+    val vector: ImageVector
+)
+
 /**
  * Curated, duplicate-free Material Symbols icon catalog tailored for inventory categories.
  * Excludes sports/leisure and medical/first-aid icons.
@@ -135,5 +142,51 @@ object IconMapper {
             lowerName.contains("luz") || lowerName.contains("ilumin") -> Icons.Default.Lightbulb
             else -> Icons.Default.Category
         }
+    }
+
+    val primaryBoxIcons: List<BoxIconOption> = listOf(
+        BoxIconOption("inventory_2", "Estándar / Caja", "Estándar", Icons.Default.Inventory2),
+        BoxIconOption("build", "Herramientas / Taller", "Taller", Icons.Default.Build),
+        BoxIconOption("memory", "Electrónica / Tech", "Electrónica", Icons.Default.Memory),
+        BoxIconOption("cable", "Cables / Red", "Cables / Red", Icons.Default.Cable),
+        BoxIconOption("folder", "Documentos / Archivos", "Documentos", Icons.Default.Folder),
+        BoxIconOption("home", "Hogar / Repuestos", "Hogar", Icons.Default.Home)
+    )
+
+    val additionalBoxIcons: List<BoxIconOption> = listOf(
+        BoxIconOption("headphones", "Audio / Periféricos", "Audio", Icons.Default.Headphones),
+        BoxIconOption("lightbulb", "Iluminación / Energía", "Iluminación", Icons.Default.Lightbulb),
+        BoxIconOption("cleaning_services", "Limpieza / Mantenimiento", "Limpieza", Icons.Default.CleaningServices),
+        BoxIconOption("menu_book", "Manuales / Libros", "Manuales", Icons.AutoMirrored.Filled.MenuBook),
+        BoxIconOption("description", "Oficina / Papelería", "Oficina", Icons.Default.Description),
+        BoxIconOption("package_2", "Miscelánea / Varios", "Miscelánea", Icons.Default.AllInbox)
+    )
+
+    val allBoxIcons: List<BoxIconOption> = primaryBoxIcons + additionalBoxIcons
+
+    fun getBoxIconOption(iconName: String?): BoxIconOption {
+        val key = iconName?.trim()?.lowercase().orEmpty()
+        if (key.isEmpty()) return primaryBoxIcons.first()
+        return allBoxIcons.find { it.key.equals(key, ignoreCase = true) }
+            ?: when (key) {
+                "home_repair_service" -> primaryBoxIcons[1]
+                "devices" -> primaryBoxIcons[2]
+                "router" -> primaryBoxIcons[3]
+                "settings" -> primaryBoxIcons[5]
+                "speaker" -> additionalBoxIcons[0]
+                "bolt" -> additionalBoxIcons[1]
+                "badge" -> additionalBoxIcons[4]
+                "category" -> additionalBoxIcons[5]
+                else -> BoxIconOption(
+                    key = key,
+                    label = getOption(key)?.label ?: "Estándar / Caja",
+                    shortLabel = getOption(key)?.label ?: "Caja",
+                    vector = iconMap[key] ?: legacyAliasMap[key] ?: Icons.Default.Inventory2
+                )
+            }
+    }
+
+    fun getBoxIcon(iconName: String?): ImageVector {
+        return getBoxIconOption(iconName).vector
     }
 }

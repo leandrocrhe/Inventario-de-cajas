@@ -92,6 +92,7 @@ class BackupManager(private val database: AppDatabase) {
                     put("description", box.description ?: "")
                     put("parentBoxId", box.parentBoxId ?: JSONObject.NULL)
                     put("colorHex", box.colorHex)
+                    put("iconName", box.iconName)
                     put("primaryPhotoUri", box.primaryPhotoUri ?: JSONObject.NULL)
                     put("zone", box.zone ?: JSONObject.NULL)
                     put("sortOrder", box.sortOrder)
@@ -885,6 +886,12 @@ class BackupManager(private val database: AppDatabase) {
                         else -> null
                     }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: "#F59E0B"
 
+                    val rawIconName = when {
+                        !obj.isNull("iconName") -> obj.optString("iconName").trim()
+                        !obj.isNull("icon") -> obj.optString("icon").trim()
+                        else -> null
+                    }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: "inventory_2"
+
                     parsedBoxes.add(
                         BoxEntity(
                             id = id,
@@ -892,6 +899,7 @@ class BackupManager(private val database: AppDatabase) {
                             description = rawDesc,
                             parentBoxId = parentId,
                             colorHex = rawColor,
+                            iconName = rawIconName,
                             primaryPhotoUri = restoredPhotoUri,
                             zone = zoneVal,
                             sortOrder = obj.optInt("sortOrder", i),

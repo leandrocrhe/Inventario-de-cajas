@@ -224,7 +224,7 @@ fun BoxGridCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Inventory2,
+                                imageVector = IconMapper.getBoxIcon(box.iconName),
                                 contentDescription = null,
                                 tint = tagColor,
                                 modifier = Modifier.size(30.dp)
@@ -258,7 +258,7 @@ fun BoxGridCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Tag,
+                            imageVector = IconMapper.getBoxIcon(box.iconName),
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(11.dp)
@@ -576,7 +576,7 @@ fun BoxCard(
                         )
                     } else {
                         Icon(
-                            imageVector = Icons.Default.Inventory2,
+                            imageVector = IconMapper.getBoxIcon(box.iconName),
                             contentDescription = null,
                             tint = tagColor,
                             modifier = Modifier.size(30.dp)

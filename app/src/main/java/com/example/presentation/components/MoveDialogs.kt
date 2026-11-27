@@ -185,7 +185,7 @@ fun MoveBoxDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = if (!isValid) Icons.Default.Block else Icons.Default.Inventory2,
+                                    imageVector = if (!isValid) Icons.Default.Block else IconMapper.getBoxIcon(targetBox.iconName),
                                     contentDescription = null,
                                     tint = when {
                                         !isValid -> MaterialTheme.colorScheme.error
@@ -310,7 +310,7 @@ fun MoveItemDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Inventory2,
+                                    imageVector = IconMapper.getBoxIcon(box.iconName),
                                     contentDescription = null,
                                     tint = parseColorSafe(box.colorHex),
                                     modifier = Modifier.size(24.dp)

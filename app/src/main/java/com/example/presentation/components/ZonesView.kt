@@ -452,11 +452,11 @@ fun ZonesView(
                                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(8.dp)
-                                                    .clip(CircleShape)
-                                                    .background(bColor)
+                                            Icon(
+                                                imageVector = IconMapper.getBoxIcon(box.iconName),
+                                                contentDescription = null,
+                                                tint = bColor,
+                                                modifier = Modifier.size(13.dp)
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Text(
@@ -520,6 +520,13 @@ fun ZonesView(
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
+                                        Icon(
+                                            imageVector = IconMapper.getBoxIcon(box.iconName),
+                                            contentDescription = null,
+                                            tint = parseColorSafe(box.colorHex),
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
                                         Text(
                                             text = box.name,
                                             style = MaterialTheme.typography.labelSmall,
