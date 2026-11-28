@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -124,6 +125,40 @@ fun Modifier.pressScaleEffect(
                 Modifier
             }
         )
+}
+
+@Composable
+fun FragileBoxBadge(
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(9999.dp),
+        color = Color(0xFF181512).copy(alpha = 0.92f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFF8A65).copy(alpha = 0.6f)),
+        shadowElevation = 2.dp,
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.WarningAmber,
+                contentDescription = "Contenido frágil",
+                tint = Color(0xFFFF8A65),
+                modifier = Modifier.size(11.dp)
+            )
+            Text(
+                text = "Frágil",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFFB77C),
+                fontSize = 10.sp,
+                maxLines = 1
+            )
+        }
+    }
 }
 
 // =====================================================================
@@ -326,6 +361,16 @@ fun BoxGridCard(
                     }
                 }
 
+                // Bottom-Left Fragile Badge (only when isFragile == true)
+                if (box.isFragile) {
+                    FragileBoxBadge(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp)
+                            .testTag("fragile_badge_${box.id}")
+                    )
+                }
+
                 // Bottom-Right Mini Objects Preview Capsule (Real Coil Photos from Room)
                 val validItemPhotos = remember(itemPhotos) {
                     itemPhotos.filter { it.isNotBlank() }
@@ -518,6 +563,7 @@ fun BoxGridCard(
 // =====================================================================
 // BOX CARD (Stitch AI List View Row)
 // =====================================================================
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BoxCard(
     boxWithCounts: BoxWithCounts,
@@ -609,10 +655,16 @@ fun BoxCard(
 
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    Row(
+                    FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        if (box.isFragile) {
+                            FragileBoxBadge(
+                                modifier = Modifier.testTag("fragile_badge_${box.id}")
+                            )
+                        }
+
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,

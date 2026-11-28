@@ -849,13 +849,167 @@ class ExampleRobolectricTest {
             com.example.data.local.AppDatabase::class.java,
             "migration_test_5_6.db"
         )
-            .addMigrations(com.example.data.local.AppDatabase.MIGRATION_5_6)
+            .addMigrations(com.example.data.local.AppDatabase.MIGRATION_5_6, com.example.data.local.AppDatabase.MIGRATION_6_7)
             .allowMainThreadQueries()
             .build()
         val migratedBox = migratedDb.boxDao().getBoxById("old_box_1")
         assertNotNull(migratedBox)
         assertEquals("Caja Legacy", migratedBox?.name)
         assertEquals("inventory_2", migratedBox?.iconName)
+        assertFalse(migratedBox?.isFragile ?: true)
+        migratedDb.close()
+        dbFile.delete()
+        Unit
+    }
+
+    @Test
+    fun testFragileBoxPersistenceBackupAndMigration6To7(): Unit = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.data.local.AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val repo = com.example.data.repository.InventoryRepository(db)
+
+        // 1. Default isFragile == false, explicit isFragile == true
+        val normalId = repo.createBox(
+            name = "Caja Libros",
+            description = "Novelas",
+            parentBoxId = null,
+            primaryPhotoUri = null,
+            colorHex = "#10B981",
+            zone = "Estudio"
+        )
+        val fragileId = repo.createBox(
+            name = "Cristalería",
+            description = "Copas de vino",
+            parentBoxId = null,
+            primaryPhotoUri = null,
+            colorHex = "#EF4444",
+            zone = "Cocina",
+            iconName = "inventory_2",
+            isFragile = true
+        )
+
+        val normalBox = db.boxDao().getBoxById(normalId)
+        val fragileBox = db.boxDao().getBoxById(fragileId)
+        assertNotNull(normalBox)
+        assertNotNull(fragileBox)
+        assertFalse(normalBox!!.isFragile)
+        assertTrue(fragileBox!!.isFragile)
+
+        // Update toggling fragile on and off
+        repo.updateBox(normalBox.copy(isFragile = true))
+        assertTrue(db.boxDao().getBoxById(normalId)!!.isFragile)
+        repo.updateBox(normalBox.copy(isFragile = false))
+        assertFalse(db.boxDao().getBoxById(normalId)!!.isFragile)
+
+        // 2. BackupManager JSON export / import roundtrip preserves isFragile
+        val backupManager = com.example.data.backup.BackupManager(db)
+        val exportedJson = backupManager.exportJson(context)
+        db.boxDao().deleteAllBoxes()
+        val importResult = backupManager.importJson(exportedJson, context)
+        assertTrue(importResult.success)
+        assertFalse(db.boxDao().getBoxById(normalId)!!.isFragile)
+        assertTrue(db.boxDao().getBoxById(fragileId)!!.isFragile)
+        db.close()
+
+        // 3. Verify MIGRATION_6_7 adds is_fragile column without losing existing v6 rows
+        val dbFile = context.getDatabasePath("migration_test_6_7.db")
+        if (dbFile.exists()) dbFile.delete()
+        val rawSqlite = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(dbFile, null)
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS boxes (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                parent_box_id TEXT,
+                primary_photo_uri TEXT,
+                color_hex TEXT NOT NULL,
+                icon_name TEXT NOT NULL DEFAULT 'inventory_2',
+                zone TEXT,
+                sort_order INTEGER NOT NULL,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY(parent_box_id) REFERENCES boxes(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_boxes_parent_box_id ON boxes(parent_box_id)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_boxes_name ON boxes(name)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_boxes_zone ON boxes(zone)")
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS categories (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                icon_name TEXT NOT NULL,
+                color_hex TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_categories_name ON categories(name)")
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS items (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                box_id TEXT NOT NULL,
+                category_id TEXT,
+                primary_photo_uri TEXT,
+                quantity INTEGER NOT NULL,
+                tags TEXT NOT NULL,
+                is_loaned INTEGER NOT NULL,
+                loaned_to TEXT,
+                loaned_at INTEGER,
+                notes TEXT,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY(box_id) REFERENCES boxes(id) ON DELETE CASCADE,
+                FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_items_box_id ON items(box_id)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_items_category_id ON items(category_id)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_items_name ON items(name)")
+        rawSqlite.execSQL("CREATE INDEX IF NOT EXISTS index_items_is_loaned ON items(is_loaned)")
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS search_history (
+                `query` TEXT NOT NULL PRIMARY KEY,
+                timestamp INTEGER NOT NULL
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS zones (
+                name TEXT NOT NULL PRIMARY KEY,
+                color_hex TEXT NOT NULL,
+                created_at INTEGER NOT NULL
+            )
+            """.trimIndent()
+        )
+        rawSqlite.execSQL(
+            "INSERT INTO boxes (id, name, description, parent_box_id, primary_photo_uri, color_hex, icon_name, zone, sort_order, created_at) " +
+                "VALUES ('v6_box_1', 'Caja v6', 'Desc v6', NULL, NULL, '#3B82F6', 'build', 'Taller', 0, 2000)"
+        )
+        rawSqlite.version = 6
+        rawSqlite.close()
+
+        val migratedDb = androidx.room.Room.databaseBuilder(
+            context,
+            com.example.data.local.AppDatabase::class.java,
+            "migration_test_6_7.db"
+        )
+            .addMigrations(com.example.data.local.AppDatabase.MIGRATION_6_7)
+            .allowMainThreadQueries()
+            .build()
+        val migratedBox = migratedDb.boxDao().getBoxById("v6_box_1")
+        assertNotNull(migratedBox)
+        assertEquals("Caja v6", migratedBox?.name)
+        assertEquals("build", migratedBox?.iconName)
+        assertFalse(migratedBox?.isFragile ?: true)
         migratedDb.close()
         dbFile.delete()
         Unit

@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
@@ -46,6 +47,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -146,7 +149,7 @@ fun EditBoxDialog(
     currentParentBox: BoxEntity?,
     existingZones: List<String> = emptyList(),
     initialZone: String? = null,
-    onSave: (name: String, description: String?, colorHex: String, photoUri: String?, zone: String?, iconName: String) -> Unit,
+    onSave: (name: String, description: String?, colorHex: String, photoUri: String?, zone: String?, iconName: String, isFragile: Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf(boxToEdit?.name ?: "") }
@@ -165,6 +168,7 @@ fun EditBoxDialog(
         )
     }
     var photoUri by remember { mutableStateOf(boxToEdit?.primaryPhotoUri) }
+    var isFragile by remember(boxToEdit?.id) { mutableStateOf(boxToEdit?.isFragile ?: false) }
 
     val selectedSemantic = remember(selectedColor) { resolveSemanticBoxColor(selectedColor) }
     val selectedColorValue = remember(selectedColor) { parseColorSafe(selectedColor) }
@@ -528,6 +532,13 @@ fun EditBoxDialog(
                     title = "Foto de la caja (Cámara o Galería)",
                     prefixTag = "box_photo"
                 )
+
+                // Contenido frágil switch (Part 2 - sin opción de Permitir préstamo)
+                FragileContentSwitchCard(
+                    isFragile = isFragile,
+                    isAmoledDark = isAmoledDark,
+                    onCheckedChange = { isFragile = it }
+                )
             }
         },
         confirmButton = {
@@ -542,7 +553,8 @@ fun EditBoxDialog(
                         selectedColor,
                         photoUri,
                         cleanZ,
-                        selectedIcon
+                        selectedIcon,
+                        isFragile
                     )
                 },
                 enabled = name.isNotBlank(),
@@ -786,6 +798,111 @@ private fun BoxIconGridRow(
         }
         repeat(3 - rowIcons.size) {
             Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun FragileContentSwitchCard(
+    isFragile: Boolean,
+    isAmoledDark: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val accentColor = if (isAmoledDark) Color(0xFFFFB77C) else MaterialTheme.colorScheme.primary
+    val warningTone = Color(0xFFFF8A65)
+    val baseBg = if (isAmoledDark) Color(0xFF181512) else MaterialTheme.colorScheme.surfaceVariant
+    val baseBorder = if (isAmoledDark) Color(0xFF2C2622) else MaterialTheme.colorScheme.outlineVariant
+
+    val cardBg by animateColorAsState(
+        targetValue = if (isFragile) {
+            if (isAmoledDark) Color(0xFF211712) else warningTone.copy(alpha = 0.12f)
+        } else {
+            baseBg
+        },
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "fragile_card_bg"
+    )
+    val cardBorder by animateColorAsState(
+        targetValue = if (isFragile) accentColor.copy(alpha = 0.65f) else baseBorder,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "fragile_card_border"
+    )
+
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = cardBg,
+        border = BorderStroke(1.dp, cardBorder),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(
+                role = Role.Switch,
+                onClickLabel = "Contenido frágil"
+            ) {
+                onCheckedChange(!isFragile)
+            }
+            .testTag("box_fragile_row")
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(
+                        if (isFragile) warningTone.copy(alpha = 0.18f) else MaterialTheme.colorScheme.surface
+                    )
+                    .border(
+                        1.dp,
+                        if (isFragile) warningTone.copy(alpha = 0.45f) else baseBorder,
+                        RoundedCornerShape(10.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.WarningAmber,
+                    contentDescription = null,
+                    tint = if (isFragile) warningTone else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = "Contenido frágil",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Manejar con precaución al mover",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Switch(
+                checked = isFragile,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color(0xFF2F1500),
+                    checkedTrackColor = accentColor,
+                    checkedBorderColor = accentColor,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    uncheckedTrackColor = if (isAmoledDark) Color(0xFF0E0C0A) else MaterialTheme.colorScheme.surface,
+                    uncheckedBorderColor = baseBorder
+                ),
+                modifier = Modifier.testTag("box_fragile_switch")
+            )
         }
     }
 }

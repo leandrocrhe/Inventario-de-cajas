@@ -129,6 +129,7 @@ import com.example.domain.model.InventorySortOption
 import com.example.presentation.components.BackupDialog
 import com.example.presentation.components.BoxCard
 import com.example.presentation.components.BoxGridCard
+import com.example.presentation.components.FragileBoxBadge
 import com.example.presentation.components.BreadcrumbBar
 import com.example.presentation.components.CategoryManagementBottomSheet
 import com.example.presentation.components.DeleteConfirmDialog
@@ -1415,14 +1416,25 @@ fun MainInventoryScreen(
                                             }
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    text = activeBox.name,
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Color.White,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                ) {
+                                                    Text(
+                                                        text = activeBox.name,
+                                                        style = MaterialTheme.typography.titleMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color.White,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        modifier = Modifier.weight(1f, fill = false)
+                                                    )
+                                                    if (activeBox.isFragile) {
+                                                        FragileBoxBadge(
+                                                            modifier = Modifier.testTag("fragile_badge_${activeBox.id}")
+                                                        )
+                                                    }
+                                                }
                                                 if (!activeBox.description.isNullOrBlank()) {
                                                     Text(
                                                         text = activeBox.description,
@@ -1714,8 +1726,8 @@ fun MainInventoryScreen(
             currentParentBox = currentBox,
             existingZones = allZones,
             initialZone = prefilledZone ?: createBoxInitialZone,
-            onSave = { name, desc, color, photo, zone, iconName ->
-                viewModel.saveBox(name, desc, color, photo, zone, iconName)
+            onSave = { name, desc, color, photo, zone, iconName, isFragile ->
+                viewModel.saveBox(name, desc, color, photo, zone, iconName, isFragile)
                 createBoxInitialZone = null
             },
             onDismiss = {

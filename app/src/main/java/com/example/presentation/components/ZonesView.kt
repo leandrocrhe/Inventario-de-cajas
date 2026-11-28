@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -466,6 +467,17 @@ fun ZonesView(
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
+                                            if (box.isFragile) {
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Icon(
+                                                    imageVector = Icons.Default.WarningAmber,
+                                                    contentDescription = "Contenido frágil",
+                                                    tint = Color(0xFFFF8A65),
+                                                    modifier = Modifier
+                                                        .size(12.dp)
+                                                        .testTag("fragile_zone_chip_${box.id}")
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -532,6 +544,17 @@ fun ZonesView(
                                             style = MaterialTheme.typography.labelSmall,
                                             color = Color(0xFFA89F95)
                                         )
+                                        if (box.isFragile) {
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Icon(
+                                                imageVector = Icons.Default.WarningAmber,
+                                                contentDescription = "Contenido frágil",
+                                                tint = Color(0xFFFF8A65),
+                                                modifier = Modifier
+                                                    .size(12.dp)
+                                                    .testTag("fragile_zone_chip_${box.id}")
+                                            )
+                                        }
                                     }
                                 }
                             }

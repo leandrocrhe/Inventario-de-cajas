@@ -93,6 +93,7 @@ class BackupManager(private val database: AppDatabase) {
                     put("parentBoxId", box.parentBoxId ?: JSONObject.NULL)
                     put("colorHex", box.colorHex)
                     put("iconName", box.iconName)
+                    put("isFragile", box.isFragile)
                     put("primaryPhotoUri", box.primaryPhotoUri ?: JSONObject.NULL)
                     put("zone", box.zone ?: JSONObject.NULL)
                     put("sortOrder", box.sortOrder)
@@ -892,6 +893,11 @@ class BackupManager(private val database: AppDatabase) {
                         else -> null
                     }?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) } ?: "inventory_2"
 
+                    val isFragile = obj.optBoolean(
+                        "isFragile",
+                        obj.optBoolean("is_fragile", obj.optBoolean("fragil", false))
+                    )
+
                     parsedBoxes.add(
                         BoxEntity(
                             id = id,
@@ -900,6 +906,7 @@ class BackupManager(private val database: AppDatabase) {
                             parentBoxId = parentId,
                             colorHex = rawColor,
                             iconName = rawIconName,
+                            isFragile = isFragile,
                             primaryPhotoUri = restoredPhotoUri,
                             zone = zoneVal,
                             sortOrder = obj.optInt("sortOrder", i),

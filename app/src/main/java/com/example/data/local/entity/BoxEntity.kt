@@ -35,6 +35,8 @@ data class BoxEntity(
     val colorHex: String = "#F59E0B",
     @ColumnInfo(name = "icon_name")
     val iconName: String = "inventory_2",
+    @ColumnInfo(name = "is_fragile")
+    val isFragile: Boolean = false,
     @ColumnInfo(name = "zone")
     val zone: String? = null,
     @ColumnInfo(name = "sort_order")

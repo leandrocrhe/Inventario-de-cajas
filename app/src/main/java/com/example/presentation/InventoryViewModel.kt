@@ -471,7 +471,8 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
         colorHex: String,
         photoUri: String?,
         zone: String? = null,
-        iconName: String = "inventory_2"
+        iconName: String = "inventory_2",
+        isFragile: Boolean = false
     ) {
         viewModelScope.launch {
             val cleanZone = zone?.trim()?.takeIf {
@@ -486,6 +487,7 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                         description = description?.takeIf { it.isNotBlank() }?.trim(),
                         colorHex = colorHex,
                         iconName = cleanIcon,
+                        isFragile = isFragile,
                         primaryPhotoUri = photoUri ?: editing.primaryPhotoUri,
                         zone = cleanZone
                     )
@@ -502,7 +504,8 @@ class InventoryViewModel(application: Application) : AndroidViewModel(applicatio
                     primaryPhotoUri = photoUri,
                     colorHex = colorHex,
                     zone = cleanZone,
-                    iconName = cleanIcon
+                    iconName = cleanIcon,
+                    isFragile = isFragile
                 )
                 _snackbarMessage.value = "Caja creada: $name"
             }

@@ -323,7 +323,8 @@ class InventoryRepository(private val database: AppDatabase) {
         primaryPhotoUri: String?,
         colorHex: String,
         zone: String? = null,
-        iconName: String = "inventory_2"
+        iconName: String = "inventory_2",
+        isFragile: Boolean = false
     ): String = withContext(Dispatchers.IO) {
         val id = UUID.randomUUID().toString()
         val trimmedZone = zone?.takeIf { it.isNotBlank() }?.trim()
@@ -336,6 +337,7 @@ class InventoryRepository(private val database: AppDatabase) {
             primaryPhotoUri = primaryPhotoUri,
             colorHex = colorHex,
             iconName = cleanIcon,
+            isFragile = isFragile,
             zone = trimmedZone
         )
         boxDao.insertBox(box)
